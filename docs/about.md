@@ -36,6 +36,7 @@ isNoBackBtn: true
 - **[笑友](https://juejin.cn/post/7230351646797217847)**：一种游戏化的方式让用户填写心理健康问卷的小程序；
 - **[FAV0 周刊](https://fav0.com)**：中英双语周刊，记录并分享每周所见所闻；
 - **[Template0](https://template0.com)**: 近一千份免费前端模板，包含用途、技术栈、预览图快速筛选。
+- **[OG Image Download](https://ogimage.download)**: 一键下载网站的 OG 图的浏览器插件；
 - **[Weekly0](https://weekly0.com)**：周刊集合导航网站，收刮中文互联网上的周刊内容；
 - **[UseSora](https://usesora.app)**：Sora 刚出时做的 Sora 视频演示导航站；
 - **[Excel2Json](https://bug404.dev)**：导入 Excel 文件，生成带合并单元格的配置；
