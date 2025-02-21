@@ -79,7 +79,7 @@ const onCurrentChange: PaginationProps["onCurrentChange"] = (
 	index,
 	pageInfo
 ) => {
-	MessagePlugin.success(`Go to page ${index}`);
+	// MessagePlugin.success(`Go to page ${index}`);
 
 	const url = new URL(window.location as any);
 	url.searchParams.set("page", index.toString());

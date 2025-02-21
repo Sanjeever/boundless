@@ -75,7 +75,7 @@ const onCurrentChange: PaginationProps["onCurrentChange"] = (
 	index,
 	pageInfo
 ) => {
-	MessagePlugin.success(`转到第${index}页`);
+	// MessagePlugin.success(`转到第${index}页`);
 
 	const url = new URL(window.location as any);
 	url.searchParams.set("page", index.toString());
