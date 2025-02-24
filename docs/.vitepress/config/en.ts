@@ -2,6 +2,9 @@ import { defineConfig} from 'vitepress'
 
 import { createSideBarEN } from "../theme/utils/createSideBar";
 
+const sideBarConfig = createSideBarEN();
+const firstNoteItemLink = sideBarConfig['/en/notes/'][0].items[0].link
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "Justin3go",
@@ -13,12 +16,12 @@ export default defineConfig({
     nav: [
 			{ text: "Blog", link: "/en/" },
       { text: "Archive", link: "/en/archive/", activeMatch: '/en/archive/' },
-			{ text: "Notes", link: "/en/notes/Python基础/01python数据模型", activeMatch: '/en/notes/' },
+			{ text: "Notes", link: firstNoteItemLink, activeMatch: '/en/notes/' },
 			{ text: "About", link: "/en/about", activeMatch: '/en/about' },
 			{ text: "Sponsor", link: "/en/support-me", activeMatch: '/en/support-me' },
     ],
 
-    sidebar: createSideBarEN(),
+    sidebar: sideBarConfig,
 
     socialLinks: [
       { icon: 'x', link: 'https://x.com/Justin1024go' },
