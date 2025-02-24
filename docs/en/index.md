@@ -47,6 +47,7 @@ isNoBackBtn: true
 
 <script lang="ts" setup>
 import { ref, computed } from "vue";
+import { useRoute, useRouter } from "vitepress";
 // 非 Vue 组件需要手动引入
 import {
 	MessagePlugin,
@@ -60,13 +61,24 @@ import enConfig from 'tdesign-vue-next/es/locale/en_US';
 import { data as posts } from "../.vitepress/theme/posts-en.data.mts";
 import { isMobile } from "../.vitepress/theme/utils/mobile.ts";
 
-const search = window.location.search.slice(1);
-const searchParams = new URLSearchParams(search);
-const page = searchParams.get("page") || 1;
+const route = useRoute();
 
-const current = ref(+page);
+const getPage = () => {
+  const search = route.query
+  const searchParams = new URLSearchParams(search);
+
+  return Number(searchParams.get("page") || "1");
+}
+
+const current = ref(getPage())
 const pageSize = ref(10);
 const total = ref(posts.length);
+
+// 在首页有page参数时，从NAV跳转到当前页，清空了参数，但没有刷新页面内容的问题，需要手动更新current
+const router = useRouter();
+router.onAfterRouteChange = (to) => {
+  current.value = getPage();
+}
 
 const curPosts = computed(() => {
 	return posts.slice(
