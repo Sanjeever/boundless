@@ -13,7 +13,7 @@ export default defineConfig({
     nav: [
 			{ text: "博客", link: "/" },
 			{ text: "归档", link: "/archive", activeMatch: '/archive' },
-			{ text: "笔记", link: "/notes/", activeMatch: '/notes/' },
+			{ text: "笔记", link: "/notes/Python基础/01python数据模型", activeMatch: '/notes/' },
 			{ text: "关于", link: "/about", activeMatch: '/about' },
 			{ text: "赞助", link: "/support-me", activeMatch: '/support-me' },
     ],

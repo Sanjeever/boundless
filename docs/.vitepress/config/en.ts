@@ -13,7 +13,7 @@ export default defineConfig({
     nav: [
 			{ text: "Blog", link: "/en/" },
       { text: "Archive", link: "/en/archive/", activeMatch: '/en/archive/' },
-			{ text: "Notes", link: "/en/notes/", activeMatch: '/en/notes/' },
+			{ text: "Notes", link: "/en/notes/Python基础/01python数据模型", activeMatch: '/en/notes/' },
 			{ text: "About", link: "/en/about", activeMatch: '/en/about' },
 			{ text: "Sponsor", link: "/en/support-me", activeMatch: '/en/support-me' },
     ],
