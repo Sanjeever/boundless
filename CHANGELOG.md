@@ -1,5 +1,29 @@
 # Changelog
 
+## [2.0.0](https://github.com/Justin3go/justin3go.com/compare/v1.3.4...v2.0.0) (2025-02-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade vitepress to v2.0.0-alpha.2
+
+### Features
+
+* upgrade vitepress to v2.0.0-alpha.2 ([974516a](https://github.com/Justin3go/justin3go.com/commit/974516a3bee8a3517345b94e9fd009c33527f811))
+
+
+### Bug Fixes
+
+* 笔记页面改为构建时动态生成Nav路径，而非硬编码以及之前的重定向 ([ec5b69e](https://github.com/Justin3go/justin3go.com/commit/ec5b69e4d48e20883eba2cf5171e17bb09ad0a29))
+* 笔记页面自动重定向实效，暂时换成硬编码重定向 ([bfceef5](https://github.com/Justin3go/justin3go.com/commit/bfceef54314ed56b0ed64c7e7d2d3ac26a9de88b))
+* 首页有page参数时，从NAV跳转到当前页，清空了参数，但没有刷新页面内容的问题，需要手动更新current ([b5b8291](https://github.com/Justin3go/justin3go.com/commit/b5b82914892fa1b4b856f536cfc485aed204b8c4))
+
+
+### Docs
+
+* &lt;blog&gt; 同步一篇以前的文章 ([34cbf28](https://github.com/Justin3go/justin3go.com/commit/34cbf28f21813d2d83a83fb5b45639cb98194b70))
+* 添加 OG Image Download 浏览器插件链接 ([ebdcdae](https://github.com/Justin3go/justin3go.com/commit/ebdcdaebd6c72f6fa77523d9522fdf9e6a2ff91e))
+
 ## [1.3.4](https://github.com/Justin3go/justin3go.com/compare/v1.3.3...v1.3.4) (2025-01-31)
 
 
