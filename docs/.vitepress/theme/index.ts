@@ -15,13 +15,15 @@ export default {
 		return h(Theme.Layout, null, {
 			// https://vitepress.dev/guide/extending-default-theme#layout-slots
 			"doc-after": () => h(Comment),
-			"doc-bottom": () => h(ImageViewer),
+			"doc-top": () => h(ImageViewer),
 			"aside-top": () => h(GoBack),
 		});
 	},
 
 	enhanceApp({ app, router }: any) {
 		app.component("Comment", Comment);
+		app.component("ImageViewer", ImageViewer);
+		app.component("GoBack", GoBack);
 
 		router.onAfterRouteChanged = (to: string) => {
 			// 兼容旧博客的中文路径，重定向到新路径，避免外链失效
