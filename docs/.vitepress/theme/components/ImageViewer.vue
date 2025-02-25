@@ -1,16 +1,18 @@
 <template>
 	<div class="image-viewer">
-		<t-config-provider :global-config="globalConfig">
-			<t-image-viewer
-				v-model:visible="show"
-				:images="previewImageInfo.list"
-				:default-index="previewImageInfo.idx"
-				:key="previewImageInfo.idx"
-				@close="show = false"
-			>
-			</t-image-viewer>
-			<TDesignDark />
-		</t-config-provider>
+		<ClientOnly>
+			<t-config-provider :global-config="globalConfig">
+				<t-image-viewer
+					v-model:visible="show"
+					:images="previewImageInfo.list"
+					:default-index="previewImageInfo.idx"
+					:key="previewImageInfo.idx"
+					@close="show = false"
+				>
+				</t-image-viewer>
+				<TDesignDark />
+			</t-config-provider>
+		</ClientOnly>
 	</div>
 </template>
 <script setup lang="ts">
