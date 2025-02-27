@@ -4,6 +4,7 @@ layout: doc
 editLink: false
 lastUpdated: false
 isNoBackBtn: true
+footer: false
 ---
 
 # About Me

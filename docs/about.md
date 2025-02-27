@@ -3,6 +3,7 @@ layout: doc
 editLink: false
 lastUpdated: false
 isNoBackBtn: true
+footer: false
 ---
 
 # 关于我

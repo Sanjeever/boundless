@@ -6,6 +6,7 @@ lastUpdated: false
 isNoComment: true
 isNoBackBtn: true
 aside: false
+footer: false
 ---
 
 <SupportMe />
