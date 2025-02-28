@@ -17,3 +17,7 @@ I’m Corey, a software developer engineer based in Shenzhen, China. I love codi
 ### [Frendguo](https://frendguo.com/)
 
 Frendguo is currently engaged in Windows system performance optimization, video translation, the establishment and operation of an American company, as well as the processing of ITIN and American credit cards. Additionally, he is exploring SEO and building a navigation site.
+
+### [Javayhu](https://javayhu.com/)
+
+Hi, I'm javayhu, an indie maker who builds in public. I share thoughts and ideas about indie hacking here, and build amazing products people need.

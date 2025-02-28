@@ -17,3 +17,7 @@ isNoBackBtn: true
 ### [Frendguo](https://frendguo.com/)
 
 Frendguo 正在进行 Windows 系统性能优化、视频翻译、美国公司的创立与运营，以及 ITIN 和美卡的办理。同时，他也在进行 SEO 探索和导航站的建设。
+
+### [Javayhu](https://javayhu.com/)
+
+嗨，我是 javayhu，一个在公开场合创作的独立开发者。我在这里分享关于独立开发的想法和理念，并构建人们需要的惊人产品。
