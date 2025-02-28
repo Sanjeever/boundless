@@ -21,11 +21,12 @@ export default defineConfig({
 			{ text: "Sponsor", link: "/en/support-me", activeMatch: '/en/support-me' },
     ],
     footer: {
-      message: '✧ <a href="https://justin3go.com/en/about#toys-projects">Projects</a>' + 
+      message: 'Copyright © 2022-present <a href="https://justin3go.com/about">Justin3go</a>.' +
+      '&nbsp;&nbsp;&nbsp;✧ <a href="https://justin3go.com/en/about#toys-projects">Projects</a>' + 
       '&nbsp;&nbsp;&nbsp;✧ <a href="https://justin3go.com/en/about#contact-me">Contact</a>' + 
       '&nbsp;&nbsp;&nbsp;✧ <a href="https://justin3go.com/friends">Friends</a>',
       
-      copyright: 'Copyright © 2022-present <a href="https://justin3go.com/about">Justin3go</a>.',
+      // copyright: 'Copyright © 2022-present <a href="https://justin3go.com/about">Justin3go</a>.',
     },
 
     sidebar: sideBarConfig,

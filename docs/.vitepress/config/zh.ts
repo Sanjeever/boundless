@@ -21,11 +21,12 @@ export default defineConfig({
 			{ text: "赞助", link: "/support-me", activeMatch: '/support-me' },
     ],
     footer: {
-      message: '✧ <a href="https://justin3go.com/about#%E7%8E%A9%E5%85%B7-%E4%BD%9C%E5%93%81">个人项目</a>' + 
+      message: 'Copyright © 2022-present <a href="https://justin3go.com/about">Justin3go</a>.' +
+      '&nbsp;&nbsp;&nbsp;✧ <a href="https://justin3go.com/about#%E7%8E%A9%E5%85%B7-%E4%BD%9C%E5%93%81">个人项目</a>' + 
       '&nbsp;&nbsp;&nbsp;✧ <a href="https://justin3go.com/about#%E8%81%94%E7%B3%BB%E6%88%91">联系方式</a>' + 
       '&nbsp;&nbsp;&nbsp;✧ <a href="https://justin3go.com/friends">友情链接</a>',
       
-      copyright: 'Copyright © 2022-present <a href="https://justin3go.com/about">Justin3go</a>.',
+      // copyright: 'Copyright © 2022-present <a href="https://justin3go.com/about">Justin3go</a>.',
     },
     docFooter: {
       prev: '上一篇',
