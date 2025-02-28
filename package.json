@@ -3,7 +3,6 @@
   "version": "2.0.0",
   "description": "坚持深耕技术领域的 T 型前端程序员, 关注独立开发与 AI，喜欢 Vuejs、Nestjs, 还会点 Python、搜索引擎、NLP、Web3、后端",
   "main": "index.js",
-  "packageManager": "pnpm@9.5.0",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "docs:dev": "vitepress dev docs",
@@ -25,7 +24,7 @@
   "dependencies": {
     "@giscus/vue": "^3.0.0",
     "tdesign-icons-vue-next": "^0.2.2",
-    "tdesign-vue-next": "^1.11.0",
+    "tdesign-vue-next": "1.9.5",
     "vue": "^3.5.13"
   }
 }
