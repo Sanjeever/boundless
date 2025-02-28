@@ -29,3 +29,7 @@ Frendguo 正在进行 Windows 系统性能优化、视频翻译、美国公司�
 ### [Bingal](https://www.bingal.com/)
 
 作为一名拥有超过10年经验的资深全栈开发者，我专注于使用Python、Qt和JavaScript等技术，为Android、iOS、Windows和Mac等平台开发过高质量的应用程序。我热衷于探索人工智能技术的应用，将最新的AI成果转化为实用、高效的应用程序。
+
+### [Keepchen](https://blog.keepchen.com/)
+
+我是一名90后，有着些许的理想主义。待人真诚，坚信三人行必有我师。喜欢花花草草，猫猫狗狗（至今还是云养猫狗），如果条件允许，想养只柯基。

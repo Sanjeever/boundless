@@ -29,3 +29,7 @@ I am Defou, an experienced operations professional with over ten years in the fi
 ### [Bingal](https://www.bingal.com/)
 
 As a seasoned full-stack developer with over 10 years of experience, I specialize in using technologies such as Python, Qt, and JavaScript to develop high-quality applications for platforms like Android, iOS, Windows, and Mac. I am passionate about exploring the applications of artificial intelligence, transforming the latest AI advancements into practical and efficient applications.
+
+### [Keepchen](https://blog.keepchen.com/)
+
+I am a post-90s, with a bit of idealism. I am sincere to people and firmly believe that there is always something to learn from others. I like flowers and plants, cats and dogs (still thinking about raising a corgi). If conditions permit, I would like to raise a corgi.
