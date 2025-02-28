@@ -21,3 +21,7 @@ Frendguo 正在进行 Windows 系统性能优化、视频翻译、美国公司�
 ### [Javayhu](https://javayhu.com/)
 
 嗨，我是 javayhu，一个在公开场合创作的独立开发者。我在这里分享关于独立开发的想法和理念，并构建人们需要的惊人产品。
+
+### [WangDefou](https://wangdefou.com/)
+
+我是得否，一个从业十多年的老运营人，目前在探索出海，平时喜欢借助AI捣鼓点自己用的小工具。

@@ -21,3 +21,7 @@ Frendguo is currently engaged in Windows system performance optimization, video 
 ### [Javayhu](https://javayhu.com/)
 
 Hi, I'm javayhu, an indie maker who builds in public. I share thoughts and ideas about indie hacking here, and build amazing products people need.
+
+### [WangDefou](https://wangdefou.com/)
+
+I am Defou, an experienced operations professional with over ten years in the field. Currently, I am exploring overseas markets and enjoy tinkering with small tools for personal use with the help of AI in my spare time.
