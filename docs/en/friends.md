@@ -25,3 +25,7 @@ Hi, I'm javayhu, an indie maker who builds in public. I share thoughts and ideas
 ### [WangDefou](https://wangdefou.com/)
 
 I am Defou, an experienced operations professional with over ten years in the field. Currently, I am exploring overseas markets and enjoy tinkering with small tools for personal use with the help of AI in my spare time.
+
+### [Bingal](https://www.bingal.com/)
+
+As a seasoned full-stack developer with over 10 years of experience, I specialize in using technologies such as Python, Qt, and JavaScript to develop high-quality applications for platforms like Android, iOS, Windows, and Mac. I am passionate about exploring the applications of artificial intelligence, transforming the latest AI advancements into practical and efficient applications.

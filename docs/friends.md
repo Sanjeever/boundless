@@ -25,3 +25,7 @@ Frendguo 正在进行 Windows 系统性能优化、视频翻译、美国公司�
 ### [WangDefou](https://wangdefou.com/)
 
 我是得否，一个从业十多年的老运营人，目前在探索出海，平时喜欢借助AI捣鼓点自己用的小工具。
+
+### [Bingal](https://www.bingal.com/)
+
+作为一名拥有超过10年经验的资深全栈开发者，我专注于使用Python、Qt和JavaScript等技术，为Android、iOS、Windows和Mac等平台开发过高质量的应用程序。我热衷于探索人工智能技术的应用，将最新的AI成果转化为实用、高效的应用程序。
