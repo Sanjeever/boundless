@@ -1,5 +1,33 @@
 # Changelog
 
+## [2.1.0](https://github.com/Justin3go/justin3go.com/compare/v2.0.0...v2.1.0) (2025-03-02)
+
+
+### Features
+
+* 修改footer样式排版 ([9c9aab1](https://github.com/Justin3go/justin3go.com/commit/9c9aab1f3e094585654cbecd4d06705d6a534db1))
+* 添加页面底部信息和友情链接，更新相关文档 ([45eeada](https://github.com/Justin3go/justin3go.com/commit/45eeadaff0ec324f4ab56d01feb810e7c1da6979))
+
+
+### Bug Fixes
+
+* build ([eba199f](https://github.com/Justin3go/justin3go.com/commit/eba199fa5b082b2a253c6c67158136797828a437))
+* 尝试使用ClientOnly避免预览组件仅在生产环境上报错 ([93256b4](https://github.com/Justin3go/justin3go.com/commit/93256b4982caaf641ffd9d3f8b6a7f7c3cd5710c))
+
+
+### Docs
+
+* 添加Bingal的友情链接 ([d8dadbd](https://github.com/Justin3go/justin3go.com/commit/d8dadbde7c89cdb8c55f0b09c66663aaa9b434a7))
+* 添加Frendguo的友情链接 ([1367f80](https://github.com/Justin3go/justin3go.com/commit/1367f80eeb3973abf5d30d95d915de84ea50fc60))
+* 添加Javayhu友情链接 ([2e605f3](https://github.com/Justin3go/justin3go.com/commit/2e605f30402518afd290c969c9a61269f1ae98ef))
+* 添加Keepchen的友情链接 ([31f43ee](https://github.com/Justin3go/justin3go.com/commit/31f43ee37c8c8d64993dec6b79ca6a26778c56b9))
+* 添加WangDefou的友情链接 ([457e1da](https://github.com/Justin3go/justin3go.com/commit/457e1da53aa38ad00e7857202973469caf7dca7e))
+
+
+### Build System
+
+* 暂时锁定TDesign版本，其新版本会导致1.11.0会导致构建错误 ([034cc23](https://github.com/Justin3go/justin3go.com/commit/034cc239053ae75f003c68db9c2959a45fa9ff06))
+
 ## [2.0.0](https://github.com/Justin3go/justin3go.com/compare/v1.3.4...v2.0.0) (2025-02-24)
 
 
