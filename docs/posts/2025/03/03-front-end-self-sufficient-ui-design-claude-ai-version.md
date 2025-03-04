@@ -33,6 +33,8 @@ tags:
 
 ## 先看效果
 
+### 健康类 APP
+
 输入：健康类 APP
 
 > AI 开始思考并设计功能，以及统一设计风格；然后调用可视化插件进行 HTML 的预览（这些步骤你也可以在 Cursor 等编辑器完成，然后直接预览 HTML 即可）
@@ -54,6 +56,37 @@ tags:
 最后，输入：继续【社区功能】
 
 ![](https://oss.justin3go.com/blogs/Pasted%20image%2020250303150626.png)
+
+### 播客类 APP
+
+> 输入播客类 APP，然后一直继续下去就可以了，效果如下：
+
+![](https://oss.justin3go.com/blogs/20250304155943507.png)
+
+![](https://oss.justin3go.com/blogs/20250304160130247.png)
+
+![](https://oss.justin3go.com/blogs/20250304160202306.png)
+
+![](https://oss.justin3go.com/blogs/20250304160231953.png)
+
+![](https://oss.justin3go.com/blogs/20250304160254854.png)
+
+![](https://oss.justin3go.com/blogs/20250304160309438.png)
+
+### 类似推特的 APP
+
+> 输入推特类 APP，然后一直继续下去就可以了，效果如下：
+
+![](https://oss.justin3go.com/blogs/20250304160402030.png)
+
+![](https://oss.justin3go.com/blogs/20250304160418750.png)
+
+![](https://oss.justin3go.com/blogs/20250304160436182.png)
+
+![](https://oss.justin3go.com/blogs/20250304160451704.png)
+
+![](https://oss.justin3go.com/blogs/20250304160513726.png)
+
 ## 提示词如下
 
 ```

@@ -33,6 +33,8 @@ Through comparative testing, Claude (especially version 3.5) currently performs 
 
 ## Let's See the Results
 
+### Health App
+
 Input: Health App
 
 > AI begins to think and design features, as well as unify the design style; then calls visualization plugins for HTML preview (these steps can also be completed in editors like Cursor, and then directly preview the HTML)
@@ -54,6 +56,36 @@ Similarly, input: Continue with [Diet Management Module]
 Finally, input: Continue with [Community Features]
 
 ![](https://oss.justin3go.com/blogs/Pasted%20image%2020250303150626.png)
+
+### Podcast App
+
+> Enter a Podcast-related app, and then just keep going, as shown below:
+
+![](https://oss.justin3go.com/blogs/20250304155943507.png)
+
+![](https://oss.justin3go.com/blogs/20250304160130247.png)
+
+![](https://oss.justin3go.com/blogs/20250304160202306.png)
+
+![](https://oss.justin3go.com/blogs/20250304160231953.png)
+
+![](https://oss.justin3go.com/blogs/20250304160254854.png)
+
+![](https://oss.justin3go.com/blogs/20250304160309438.png)
+
+### Twitter-like App
+
+> Enter a Twitter-like app, and then just keep going, as shown below:
+
+![](https://oss.justin3go.com/blogs/20250304160402030.png)
+
+![](https://oss.justin3go.com/blogs/20250304160418750.png)
+
+![](https://oss.justin3go.com/blogs/20250304160436182.png)
+
+![](https://oss.justin3go.com/blogs/20250304160451704.png)
+
+![](https://oss.justin3go.com/blogs/20250304160513726.png)
 
 ## Prompts as Follows
 
