@@ -121,7 +121,7 @@ Generate the corresponding code through HTML + Tailwind and then run it. Use CDN
 
 Some Tips:
 
-- Use Lucia Icon CDN to avoid AI consuming a large number of tokens to draw SVG paths
+- Use Lucide Icon CDN to avoid AI consuming a large number of tokens to draw SVG paths
 - Use a modular approach to avoid truncation issues (currently, Claude 3.7 has severe truncation issues, so Claude 3.5 is temporarily used as a substitute, and the effect is also good)
 - Think about the functions and overall design style in advance to facilitate reference when designing pages by function
 
