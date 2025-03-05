@@ -17,15 +17,15 @@ export default defineConfig({
     hostname: 'https://justin3go.com'
   },
   head: [
-		["script", { async: "", src: "https://www.googletagmanager.com/gtag/js?id=G-MB7XVBG1TQ" }],
-		[
-			"script",
-			{},
-			`window.dataLayer = window.dataLayer || [];
+    ["script", { async: "", src: "https://www.googletagmanager.com/gtag/js?id=G-MB7XVBG1TQ" }],
+    [
+      "script",
+      {},
+      `window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-MB7XVBG1TQ');`,
-		],
+    ],
 
     [
       "link",
@@ -48,9 +48,21 @@ export default defineConfig({
     // https://vitepress.dev/reference/default-theme-config
     outline: [2, 4],
 
+    // 本地搜索
+    // search: {
+    //   provider: "local",
+    //   options: {
+    //     locales: { ...zhSearch }
+    //   }
+    // },
+
+    // algolia搜索，需要申请，如不需要，删除下面的配置，可使用本地搜索
     search: {
-      provider: "local",
+      provider: 'algolia',
       options: {
+        appId: 'LGWG5THRKY',
+        apiKey: '8fb5c1dc72bc92580f7fa1471ad2b814',
+        indexName: 'justin3go',
         locales: { ...zhSearch }
       }
     },
