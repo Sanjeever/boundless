@@ -72,7 +72,7 @@ const postGroups = computed(() => {
 		left: -10px;
 
 		z-index: -1;
-		opacity: .12;
+		opacity: .16;
 		font-size: 86px;
 		font-weight: 900;
 	}
