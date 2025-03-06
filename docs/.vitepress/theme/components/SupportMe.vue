@@ -1,10 +1,12 @@
 <template>
-	<t-card :style="{ maxWidth: '520px', margin: 'auto', marginTop: '20px' }">
-		<h3 align="center" style="border: 0">Support Me</h3>
+	<t-card :style="{ maxWidth: '520px', margin: 'auto', marginTop: '20px', paddingBottom: '10px' }">
+		<h3 align="center" style="border: 0; margin: 10px 0 0;">Support Me</h3>
 		<div class="card-container">
-			<t-card theme="poster2" :style="{ width: '200px' }">
+			<t-card theme="poster2" :class="'payment-card'">
 				<template #cover>
-					<img :src="weiXinPayUrl" alt="" />
+					<div class="img-container">
+						<img :src="weiXinPayUrl" alt="WeChat Pay QR Code" />
+					</div>
 				</template>
 				<template #footer>
 					<div align="center">
@@ -12,9 +14,11 @@
 					</div></template
 				>
 			</t-card>
-			<t-card theme="poster2" :style="{ width: '200px' }">
+			<t-card theme="poster2" :class="'payment-card'">
 				<template #cover>
-					<img :src="zhiFuBaoPayUrl" alt="" />
+					<div class="img-container">
+						<img :src="zhiFuBaoPayUrl" alt="Alipay QR Code" />
+					</div>
 				</template>
 				<template #footer>
 					<div align="center">{{ isEN ? "Alipay" : "支付宝支付" }}</div>
@@ -57,6 +61,28 @@ const handleClickKoFi = () => {
 	display: flex;
 	justify-content: space-between;
 	margin: 25px 0 20px;
+	flex-wrap: wrap;
+	gap: 20px;
+}
+
+.payment-card {
+	width: 200px;
+	flex-grow: 1;
+	min-width: 150px;
+}
+
+.img-container {
+	height: 198px;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.img-container img {
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: contain;
 }
 
 .support-me {
@@ -65,7 +91,7 @@ const handleClickKoFi = () => {
 	left: 0;
 	right: 0;
 	top: 100px;
-	width: 725.05px;
+	width: 680px;
 
 	z-index: -1;
 	opacity: 0.12;
@@ -79,7 +105,7 @@ const handleClickKoFi = () => {
 	left: 0;
 	right: 0;
 	bottom: 30px;
-	width: 828.36px;
+	width: 770px;
 
 	z-index: -1;
 	opacity: 0.12;
