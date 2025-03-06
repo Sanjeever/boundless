@@ -17,7 +17,7 @@ isNoBackBtn: true
       :aria-label="`Permalink to &quot;${post.title}&quot;`"
       >​</a
     >
-    <div class="post-date hollow-text">{{ post.date.string }}</div>
+    <div class="post-date hollow-text source-han-serif">{{ post.date.string }}</div>
   </h2>
   <t-tag
     v-for="tag in post.tags"

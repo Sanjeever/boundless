@@ -29,12 +29,12 @@
 			theme="primary"
 			class="mt-10"
 			block
-			variant="dashed"
+			variant="outline"
 			>{{ isEN ? "Any Positive Feedback" : "任何正向的反馈" }}</t-button
 		>
 	</t-card>
-	<div class="support-me hollow-text">Support Me</div>
-	<div class="my-name hollow-text">I'm Justin3go</div>
+	<div class="support-me hollow-text source-han-serif">Support Me</div>
+	<div class="my-name hollow-text source-han-serif">I'm Justin3go</div>
 </template>
 <script setup lang="ts">
 import { computed } from "vue";
