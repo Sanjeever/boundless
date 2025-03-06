@@ -31,7 +31,8 @@
 		<t-button
 			href="mailto:just@justin3go.com"
 			theme="primary"
-			class="mt-10"
+			class="mt-10 no-underline"
+			style="text-decoration: none;"
 			block
 			variant="outline"
 			>{{ isEN ? "Any Positive Feedback" : "任何正向的反馈" }}</t-button
@@ -115,6 +116,12 @@ const handleClickKoFi = () => {
 
 .mt-10 {
 	margin-top: 10px;
+}
+
+.no-underline {
+	&:hover {
+		text-decoration: none !important;
+	}
 }
 
 .hollow-text {
