@@ -17,7 +17,7 @@ isNoBackBtn: true
       :aria-label="`Permalink to &quot;${post.title}&quot;`"
       >​</a
     >
-    <div class="post-date hollow-text">{{ post.date.string }}</div>
+    <div class="post-date hollow-text source-han-serif">{{ post.date.string }}</div>
   </h2>
   <t-tag
     v-for="tag in post.tags"
@@ -114,20 +114,29 @@ const onCurrentChange: PaginationProps["onCurrentChange"] = (
 
 .post-title {
 	margin-bottom: 6px;
+	margin-top: 60px;
 	border-top: 0px;
 	position: relative;
 	top: 0;
 	left: 0;
 
+	> a {
+		font-weight: 400;
+	}
+
 	.post-date {
 		position: absolute;
-		top: -6px;
+		top: -12px;
 		left: -10px;
 
 		z-index: -1;
-		opacity: .12;
-		font-size: 66px;
+		opacity: .16;
+		font-size:76px;
 		font-weight: 900;
+	}
+	
+	&:first-child {
+		margin-top: 20px;
 	}
 }
 

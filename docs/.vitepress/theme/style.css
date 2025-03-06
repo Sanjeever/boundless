@@ -4,9 +4,11 @@
 	src: url("/assets/fonts/FiraCode-VF.woff2");
 }
 /** 正文字体 */
+/** 1. 原始完整字体下载链接：https://github.com/adobe-fonts/source-han-serif/releases  */
+/** 2. 使用 http://font.ssjjss.com/font-subset/ 对字体进行子集化，这里根据我的网站只保留了这些字符：1234567890/SupportMeI'mJustin3go年 */
 @font-face {
 	font-family: "SourceHanSerifCN";
-	src: local("SourceHanSerifCN"), url("/assets/fonts/SourceHanSerifCN-VF.woff2");
+	src: local("SourceHanSerifCN"), url("/assets/fonts/SourceHanSerifCN-VF.otf");
 }
 /** logo 字体 */
 @font-face {
@@ -59,7 +61,7 @@
  * -------------------------------------------------------------------------- */
 
 :root {
-	--vp-font-family-base: "SourceHanSerifCN";
+	/* --vp-font-family-base: "SourceHanSerifCN"; */
 	--vp-font-family-mono: "FiraCode";
 }
 
@@ -70,16 +72,21 @@
 	--td-brand-color-hover: var(--vp-c-brand-1) !important;
 	--td-brand-color-active: var(--vp-c-brand-2) !important;
 	/* 字体 family token */
-	--td-font-family: SourceHanSerifCN, PingFang SC, Microsoft YaHei,
+	/* --td-font-family: SourceHanSerifCN, PingFang SC, Microsoft YaHei,
 		Arial Regular;
 	--td-font-family-medium: SourceHanSerifCN, PingFang SC, Microsoft YaHei,
-		Arial Medium;
+		Arial Medium; */
 }
 
 /**
  * 特殊配置
  * -------------------------------------------------------------------------- */
 
+/* 宋体字体类 */
+.source-han-serif {
+	font-family: "SourceHanSerifCN", "PingFang SC", "Microsoft YaHei",
+		"Arial Regular";
+}
 
 /* logo 字体设置 */
 .VPNavBarTitle .title {
