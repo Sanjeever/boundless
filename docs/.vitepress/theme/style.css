@@ -3,11 +3,7 @@
 	font-family: "FiraCode";
 	src: url("/assets/fonts/FiraCode-VF.woff2");
 }
-/** 正文字体 */
-@font-face {
-	font-family: "SourceHanSerifCN";
-	src: local("SourceHanSerifCN"), url("/assets/fonts/SourceHanSerifCN-VF.woff2");
-}
+
 /** logo 字体 */
 @font-face {
 	font-family: "Niconne";
@@ -59,7 +55,6 @@
  * -------------------------------------------------------------------------- */
 
 :root {
-	--vp-font-family-base: "SourceHanSerifCN";
 	--vp-font-family-mono: "FiraCode";
 }
 
@@ -69,11 +64,6 @@
 	--td-brand-color-light: var(--vp-c-brand-soft) !important;
 	--td-brand-color-hover: var(--vp-c-brand-1) !important;
 	--td-brand-color-active: var(--vp-c-brand-2) !important;
-	/* 字体 family token */
-	--td-font-family: SourceHanSerifCN, PingFang SC, Microsoft YaHei,
-		Arial Regular;
-	--td-font-family-medium: SourceHanSerifCN, PingFang SC, Microsoft YaHei,
-		Arial Medium;
 }
 
 /**
@@ -83,7 +73,7 @@
 
 /* logo 字体设置 */
 .VPNavBarTitle .title {
-	font-family: "Niconne", "SourceHanSerifCN";
+	font-family: "Niconne";
 	font-size: 24px !important;
 }
 
