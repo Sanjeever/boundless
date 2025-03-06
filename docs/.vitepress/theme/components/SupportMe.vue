@@ -78,6 +78,8 @@ const handleClickKoFi = () => {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	background-color: white;
+	border-radius: 6px;
 }
 
 .img-container img {
