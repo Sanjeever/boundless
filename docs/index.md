@@ -114,6 +114,7 @@ const onCurrentChange: PaginationProps["onCurrentChange"] = (
 
 .post-title {
 	margin-bottom: 6px;
+	margin-top: 60px;
 	border-top: 0px;
 	position: relative;
 	top: 0;
@@ -125,13 +126,17 @@ const onCurrentChange: PaginationProps["onCurrentChange"] = (
 
 	.post-date {
 		position: absolute;
-		top: -6px;
+		top: -12px;
 		left: -10px;
 
 		z-index: -1;
 		opacity: .16;
-		font-size: 66px;
+		font-size:76px;
 		font-weight: 900;
+	}
+	
+	&:first-child {
+		margin-top: 20px;
 	}
 }
 
