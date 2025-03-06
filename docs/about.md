@@ -10,7 +10,7 @@ footer: false
 
 ## 自我描述
 
-网名*Justin3go*，现居重庆。
+现居中国重庆，网名*Justin3go*，一位 Indie Maker / AI Coder / Full Stacker，喜欢的一句话：“赢在执行力，贵在坚持”。
 
 坚持深耕技术领域的 T 型前端程序员，关注 AI 与独立开发，喜欢 Vuejs、Nestjs，还会点 Python、搜索引擎、NLP、Web3、后端；
 
