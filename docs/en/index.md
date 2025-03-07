@@ -139,6 +139,12 @@ const onCurrentChange: PaginationProps["onCurrentChange"] = (
 		font-weight: 900;
 	}
 
+	@media (max-width: 425px) {
+		.post-date {
+			font-size: 60px !important;
+		}
+	}
+	
   &:first-child {
 		margin-top: 20px;
 	}
