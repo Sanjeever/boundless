@@ -11,9 +11,10 @@
 	src: local("SourceHanSerifCN"), url("/assets/fonts/SourceHanSerifCN-VF.otf");
 }
 /** logo 字体 */
+/** 使用 http://font.ssjjss.com/font-subset/ 对字体(/assets/fonts/Niconne-Regular.ttf)进行子集化，这里根据我的网站只保留了这些字符：Justin3go */
 @font-face {
 	font-family: "Niconne";
-	src: local("Niconne"), url("/assets/fonts/Niconne-Regular.ttf");
+	src: local("Niconne"), url("/assets/fonts/Niconne-Regular-Subset.ttf");
 }
 
 /* 参考 https://github.com/vuejs/vitepress/blob/main/src/client/theme-default/styles/vars.css */

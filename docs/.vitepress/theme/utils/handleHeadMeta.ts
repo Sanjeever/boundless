@@ -24,7 +24,7 @@ export function handleHeadMeta(context: TransformContext) {
   // 预加载字体
   const preloadHead: HeadConfig[] = handleFontsPreload(context)
 
-  return [ ...twitterHead, ...preloadHead ]
+  return [...twitterHead, ...preloadHead]
 }
 
 export function addBase(relativePath: string) {
@@ -37,23 +37,40 @@ export function addBase(relativePath: string) {
 }
 
 export function handleFontsPreload({ assets }: TransformContext) {
-  // 只预加载正文字体，代码字体不预加载，因为可能不会使用或者很少使用
   const SourceHanSerifCN = assets.find(file => /SourceHanSerifCN-VF\.\w+\.otf/)
-  
-  if (SourceHanSerifCN) {
-    return [
-      [
-        'link',
-        {
-          rel: 'preload',
-          href: SourceHanSerifCN,
-          as: 'font',
-          type: 'font/otf',
-          crossorigin: ''
-        }
-      ]
-    ] as HeadConfig[]
-  }
+  const FiraCode = assets.find(file => /FiraCode-VF\.\w+\.woff2/)
+  const Niconne = assets.find(file => /Niconne-Regular\.\w+\.ttf/)
 
-  return []
+  return [
+    SourceHanSerifCN && [
+      'link',
+      {
+        rel: 'preload',
+        href: SourceHanSerifCN,
+        as: 'font',
+        type: 'font/otf',
+        crossorigin: ''
+      }
+    ],
+    FiraCode && [
+      'link',
+      {
+        rel: 'preload',
+        href: FiraCode,
+        as: 'font',
+        type: 'font/woff2',
+        crossorigin: ''
+      }
+    ],
+    Niconne && [
+      'link',
+      {
+        rel: 'preload',
+        href: Niconne,
+        as: 'font',
+        type: 'font/ttf',
+        crossorigin: ''
+      }
+    ]
+  ].filter(Boolean) as HeadConfig[]
 }
