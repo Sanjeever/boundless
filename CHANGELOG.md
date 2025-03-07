@@ -1,5 +1,40 @@
 # Changelog
 
+## [2.2.0](https://github.com/Justin3go/justin3go.com/compare/v2.1.0...v2.2.0) (2025-03-07)
+
+
+### Features
+
+* 更新VitePress配置，切换搜索提供者为Algolia并添加相关配置 ([59cd82e](https://github.com/Justin3go/justin3go.com/commit/59cd82eea932a2d01e173426bfc19cb18051ee49))
+
+
+### Bug Fixes
+
+* 为响应式布局添加小屏幕下文章日期字体大小调整 ([ac7aa9d](https://github.com/Justin3go/justin3go.com/commit/ac7aa9d065e9a26a989756b3f04e469637a62380))
+* 为支持我组件添加白色背景和圆角样式 ([667d602](https://github.com/Justin3go/justin3go.com/commit/667d602b782b116fa2972ddeb038330b5169b4cf))
+* 为支持我组件的按钮添加无下划线样式，优化悬停效果 ([163ae8b](https://github.com/Justin3go/justin3go.com/commit/163ae8b63bf3bb3dae38a3f09ad3ebdb6e019c64))
+* 优化支持我组件的样式和布局，图片未加载时默认显示高度，同时保持响应式布局 ([b593e63](https://github.com/Justin3go/justin3go.com/commit/b593e63e42a0b196e96bde4c42f5b8a74c4060c8))
+* 修正字体预加载类型为OTF ([73989f3](https://github.com/Justin3go/justin3go.com/commit/73989f3d15fde6aa33d22ef3d11534098a6d1196))
+* 更新关于页面中的项目列表，调整当前和之前项目的描述 ([4d0f29b](https://github.com/Justin3go/justin3go.com/commit/4d0f29bd07b391ab5fe44670228725d24838b2a2))
+* 更新字体预加载逻辑，使用子集化字体以优化性能 ([28202bc](https://github.com/Justin3go/justin3go.com/commit/28202bc5f0f59a2090f9aca26ba52d67006b7f58))
+* 调整文档中元素的不透明度为0.16 ([78248f8](https://github.com/Justin3go/justin3go.com/commit/78248f85fcd1b2831e527289151a750d6aeb3950))
+* 调整文章标题的样式，增加顶部间距，修正日期位置和字体大小 ([0a68d9d](https://github.com/Justin3go/justin3go.com/commit/0a68d9dc1beed83d1fc31ef764fd59672139ae7f))
+
+
+### Docs
+
+* 修改APP需求设计步骤中的描述，简化语言 ([68ba7a1](https://github.com/Justin3go/justin3go.com/commit/68ba7a180f3980d93b0395e0d1edf521b2e27396))
+* 修正Lucia Icon CDN为Lucide Icon CDN的拼写错误 ([d889535](https://github.com/Justin3go/justin3go.com/commit/d8895359c84c82f978fefd041fa555ef16fd8940))
+* 更新个人描述，添加更多信息和个人座右铭 ([12186b4](https://github.com/Justin3go/justin3go.com/commit/12186b4593e46eea3e31882fb0d2d241cd90dc25))
+* 添加健康类、播客类和类似推特的APP示例及效果图 ([a33527f](https://github.com/Justin3go/justin3go.com/commit/a33527f936558d57e7e6dea39665b7be6cc57113))
+* 添加前端自给自足UI设计稿（Claude AI版本）文章 ([ffc13e6](https://github.com/Justin3go/justin3go.com/commit/ffc13e6f6b684aeadf79afc74c8a42e054669a3f))
+
+
+### Code Refactoring
+
+* 更新主题配置，取消自定义字体 ([040da93](https://github.com/Justin3go/justin3go.com/commit/040da9334f80c4c32918b4fa0f7a8a3d1c240645))
+* 更新字体配置 ([630196a](https://github.com/Justin3go/justin3go.com/commit/630196ae9aa05addf69ec759aa28b8ba56ea1632))
+
 ## [2.1.0](https://github.com/Justin3go/justin3go.com/compare/v2.0.0...v2.1.0) (2025-03-02)
 
 
