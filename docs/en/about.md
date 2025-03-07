@@ -34,15 +34,20 @@ Although I am a front-end engineer, I am more of a computer enthusiast. I often 
 
 ## Toys & Projects
 
+Current:
+
 - **[SearchSearchGo](https://ssgo.app)**: A small search engine for resources on Alibaba Cloud Drive.
-- **[XiaoYou](https://juejin.cn/post/7230351646797217847)**: A mini-program that gamifies the process of filling out mental health questionnaires.
 - **[FAV0 Weekly](https://fav0.com)**: A bilingual weekly newsletter in Chinese and English, documenting and sharing my weekly observations.
 - **[Template0](https://template0.com)**: Nearly a thousand free front-end templates, with quick filtering by purpose, technology stack, and preview images.
 - **[OG Image Download](https://ogimage.download)**: A browser extension that allows you to download a website's OG image with one click.
+
+Previous:
+
+- **[XiaoYou](https://juejin.cn/post/7230351646797217847)**: A mini-program that gamifies the process of filling out mental health questionnaires.
 - **[Weekly0](https://weekly0.com)**: A navigation site collecting weekly content from the Chinese internet.
 - **[UseSora](https://usesora.app)**: A video demo navigation site I created when Sora was first released.
 - **[Excel2Json](https://bug404.dev)**: Imports Excel files and generates configurations with merged cells.
-- **[RSS0 (building)](https://rss0.com/read)**: An AI-based RSS reader.
+- **[RSS0 (Semi-finished)](https://rss0.com/read)**: An AI-based RSS reader.
 
 I also occasionally participate in open source projects and have contributed to [LobeChat](https://github.com/lobehub/lobe-chat), [LobeChatAgent](https://github.com/lobehub/lobe-chat-agents), [LobeUI](https://github.com/lobehub/lobe-ui), and [VitePress](https://github.com/vuejs/vitepress).
 
