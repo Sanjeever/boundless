@@ -11,7 +11,7 @@ footer: false
 
 ## Self Description
 
-Currently residing in Chongqing, China, with the online alias *Justin3go*, I am an Indie Maker / AI Coder / Full Stacker. A favorite saying of mine is: "Success lies in execution, and the value is in perseverance."
+Currently residing in Chongqing, China, with the online alias *Justin3go*, I am an Indie Hacker / AI Maker / Full Stacker. A favorite saying of mine is: "Success lies in execution, and the value is in perseverance."
 
 I am a T-shaped front-end developer who is committed to deepening my expertise in the technical field, focusing on AI and independent development. I enjoy working with Vue.js and Nest.js, and I have some knowledge of Python, search engines, NLP, Web3, and back-end development.
 
