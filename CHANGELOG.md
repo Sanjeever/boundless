@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.1](https://github.com/Justin3go/justin3go.com/compare/v2.2.0...v2.2.1) (2025-03-11)
+
+
+### Bug Fixes
+
+* 更新自我描述中的角色，从 Indie Maker / AI Coder 修改为 Indie Hacker / AI Maker ([317dcbf](https://github.com/Justin3go/justin3go.com/commit/317dcbf2e2d9d028edf9f12ee8c8e44b9a27b6f8))
+
 ## [2.2.0](https://github.com/Justin3go/justin3go.com/compare/v2.1.0...v2.2.0) (2025-03-07)
 
 
