@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.3.0](https://github.com/Justin3go/justin3go.com/compare/v2.2.1...v2.3.0) (2025-03-22)
+
+
+### Features
+
+* 在关于页面中添加 Turbo0 项目，更新内容创作者工具与资源导航站的描述 ([1c3260a](https://github.com/Justin3go/justin3go.com/commit/1c3260a760720a0d496d4f175325011405498e8d))
+
+
+### Docs
+
+* 新增 Turbo0 - 最受欢迎的内容创作工具目录，提供全面的工具资源导航和筛选功能 ([e7058ba](https://github.com/Justin3go/justin3go.com/commit/e7058bab39e93d763e6c3e24d2e77c525725fd5a))
+
 ## [2.2.1](https://github.com/Justin3go/justin3go.com/compare/v2.2.0...v2.2.1) (2025-03-11)
 
 
