@@ -33,3 +33,7 @@ Frendguo 正在进行 Windows 系统性能优化、视频翻译、美国公司�
 ### [Keepchen](https://blog.keepchen.com/)
 
 我是一名90后，有着些许的理想主义。待人真诚，坚信三人行必有我师。喜欢花花草草，猫猫狗狗（至今还是云养猫狗），如果条件允许，想养只柯基。
+
+### [YaoLifeng](https://yaolifeng.com/)
+
+Hi~ 我是姚利锋，一名向往自由职业的独立开发者。

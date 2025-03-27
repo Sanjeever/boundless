@@ -33,3 +33,7 @@ As a seasoned full-stack developer with over 10 years of experience, I specializ
 ### [Keepchen](https://blog.keepchen.com/)
 
 I am a post-90s, with a bit of idealism. I am sincere to people and firmly believe that there is always something to learn from others. I like flowers and plants, cats and dogs (still thinking about raising a corgi). If conditions permit, I would like to raise a corgi.
+
+### [YaoLifeng](https://yaolifeng.com/)
+
+Hello~ I am Yao Lifeng, an independent developer aspiring for a freelance career.
