@@ -40,6 +40,7 @@ Current:
 - **[FAV0 Weekly](https://fav0.com)**: A bilingual weekly newsletter in Chinese and English, documenting and sharing my weekly observations.
 - **[Template0](https://template0.com)**: Nearly a thousand free front-end templates, with quick filtering by purpose, technology stack, and preview images.
 - **[Turbo0](https://turbo0.com/)**: The most popular content creation tools & resources for content creators.
+- **[Hunt0](https://hunt0.com)**: Automatically curates products from Show HN using AI and compiles them into a daily report.
 - **[OG Image Download](https://ogimage.download)**: A browser extension that allows you to download a website's OG image with one click.
 
 Previous:

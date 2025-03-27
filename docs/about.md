@@ -39,6 +39,7 @@ footer: false
 - **[FAV0 周刊](https://fav0.com)**：中英双语周刊，记录并分享每周所见所闻；
 - **[Template0](https://template0.com)**: 近一千份免费前端模板，包含用途、技术栈、预览图快速筛选。
 - **[Turbo0](https://turbo0.com)**: 最受欢迎的内容创作者工具与资源导航站。
+- **[Hunt0](https://hunt0.com)**: AI自动精选Show HN上的产品，并整理为日报。
 - **[OG Image Download](https://ogimage.download)**: 一键下载网站的 OG 图的浏览器插件；
 
 之前的：
