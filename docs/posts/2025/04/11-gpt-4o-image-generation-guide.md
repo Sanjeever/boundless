@@ -1,5 +1,5 @@
 ---
-title: GPT-4o Image Generation Guide
+title: GPT4o生图风格小全
 date: 2025-04-11
 tags:
   - GPT-4o
@@ -9,7 +9,7 @@ tags:
   - Prompt
   - Style
 ---
-# GPT-4o Image Generation Guide
+# GPT4o生图风格小全
 
 > 原文链接：[GPT-4o Image Generation Guide](https://turbo0.com/blog/gpt-4o-image-generation-guide)
 
