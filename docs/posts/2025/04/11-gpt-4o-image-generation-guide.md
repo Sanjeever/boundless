@@ -79,7 +79,7 @@ tags:
 > Create an image in pixel art style of an original Macintosh computer with keyboard. On the screen is the uploaded image opened in MacPaint, converted to black and white. ratio is 2:3
 
 ![](https://oss.justin3go.com/blogs/Pasted%20image%2020250411112631.png)
-### 3D Q版弥勒佛形象
+### [3D Q版弥勒佛形象](https://x.com/dotey/status/1909804614460785042)
 
 > 3D Q版弥勒佛形象
 

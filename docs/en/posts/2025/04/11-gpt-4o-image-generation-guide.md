@@ -81,7 +81,7 @@ These styles can be applied to various practical scenarios such as *brand design
 
 ![](https://oss.justin3go.com/blogs/Pasted%20image%2020250411112631.png)
 
-### 3D Chibi Maitreya Buddha
+### [3D Chibi Maitreya Buddha](https://x.com/dotey/status/1909804614460785042)
 
 > 3D Chibi style Maitreya Buddha
 
