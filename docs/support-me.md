@@ -17,11 +17,11 @@ footer: false
 
 ## 赞助者
 
-[Katon](https://hellokaton.me/)、\*\*华
+[Katon](https://hellokaton.me/)、\*\*华、Tom\*\*🐯
 
 ## 感谢信
 
-这里空空如也...
+- 文章写得不错，有点意思。
 
 <script lang="ts" setup>
 import SupportMe from "./.vitepress/theme/components/SupportMe.vue";

@@ -17,11 +17,11 @@ If you enjoy my work, feel free to support me in any way, as it will be the moti
 
 ## Sponsors
 
-[Katon](https://hellokaton.me/)、\*\*Hua
+[Katon](https://hellokaton.me/)、\*\*Hua、Tom\*\*🐯
 
 ## Thank You Notes
 
-Empty here...
+- Nice article, quite interesting. (Translated from Chinese)
 
 <script lang="ts" setup>
 import SupportMe from "../.vitepress/theme/components/SupportMe.vue";
