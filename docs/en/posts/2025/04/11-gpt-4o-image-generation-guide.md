@@ -230,6 +230,12 @@ Four key techniques: using search engines, social media, the Sora.com platform, 
 
 These methods help users master the use of prompts, enhance sensitivity and understanding, and create novel visual effects by imitating and blending prompts of different styles. The blog also emphasizes the importance of sharing your success stories, forming a positive feedback loop through sharing and exchanges, jointly exploring more possibilities.
 
+## Postscript (More Resource Recommendations)
+
+> 2025-04-14
+
+Some friends have started collecting such prompts and organizing them into a GitHub repository. Highly recommended to check it out: [Awesome GPT-4o Images](https://github.com/jamez-bondos/awesome-gpt4o-images)
+
 ## References
 
 Some references are directly cited within the article, while others are as follows:
