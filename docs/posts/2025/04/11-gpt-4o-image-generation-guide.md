@@ -222,9 +222,10 @@ tags:
 
 ## 后记（更多资源推荐）
 
-> 2025-04-14
+> 欢迎在评论区自荐或推荐GPT-4o绘图资源
 
-开始有朋友收集此类提示词并整理为github仓库了，非常推荐看看：[Awesome GPT-4o Images](https://github.com/jamez-bondos/awesome-gpt4o-images)
+- 2025-04-14：开始有朋友收集此类提示词并整理为github仓库了，非常推荐看看：[Awesome GPT-4o Images](https://github.com/jamez-bondos/awesome-gpt4o-images)
+- 2025-04-16：[长贴演示GPT-4o绘图风格及场景](https://x.com/hylarucoder/status/1904866006700613760)
 
 ## 参考资料
 

@@ -232,9 +232,10 @@ These methods help users master the use of prompts, enhance sensitivity and unde
 
 ## Postscript (More Resource Recommendations)
 
-> 2025-04-14
+> Feel free to self-recommend or suggest GPT-4o drawing resources in the comments section.
 
-Some friends have started collecting such prompts and organizing them into a GitHub repository. Highly recommended to check it out: [Awesome GPT-4o Images](https://github.com/jamez-bondos/awesome-gpt4o-images)
+- 2025-04-14: Some friends have started collecting such prompts and organizing them into a GitHub repository. Highly recommended to check it out: [Awesome GPT-4o Images](https://github.com/jamez-bondos/awesome-gpt4o-images)
+- 2025-04-16: [Long post demonstrating GPT-4o drawing styles and scenes](https://x.com/hylarucoder/status/1904866006700613760)
 
 ## References
 
