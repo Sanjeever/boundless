@@ -226,6 +226,7 @@ tags:
 
 - 2025-04-14：开始有朋友收集此类提示词并整理为github仓库了，非常推荐看看：[Awesome GPT-4o Images](https://github.com/jamez-bondos/awesome-gpt4o-images)
 - 2025-04-16：[长贴演示GPT-4o绘图风格及场景](https://x.com/hylarucoder/status/1904866006700613760)
+- 2025-04-16：有朋友整理了[飞书多维表格](https://dev-qiuyu.feishu.cn/base/RKJsbYoT8aXLsOs2aaBciTmOnQh?table=tblEv0PjREXSDuSu&view=vewEBIpUHH)，以及开源成了[导航站](https://github.com/iAmCorey/prompt.surf)
 
 ## 参考资料
 

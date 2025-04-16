@@ -236,6 +236,7 @@ These methods help users master the use of prompts, enhance sensitivity and unde
 
 - 2025-04-14: Some friends have started collecting such prompts and organizing them into a GitHub repository. Highly recommended to check it out: [Awesome GPT-4o Images](https://github.com/jamez-bondos/awesome-gpt4o-images)
 - 2025-04-16: [Long post demonstrating GPT-4o drawing styles and scenes](https://x.com/hylarucoder/status/1904866006700613760)
+- 2025-04-16: A friend organized a [Feishu multi-dimensional spreadsheet](https://dev-qiuyu.feishu.cn/base/RKJsbYoT8aXLsOs2aaBciTmOnQh?table=tblEv0PjREXSDuSu&view=vewEBIpUHH) and open-sourced it into a [navigation site](https://github.com/iAmCorey/prompt.surf)
 
 ## References
 
