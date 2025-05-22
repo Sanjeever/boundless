@@ -37,3 +37,9 @@ Frendguo 正在进行 Windows 系统性能优化、视频翻译、美国公司�
 ### [YaoLifeng](https://yaolifeng.com/)
 
 Hi~ 我是姚利锋，一名向往自由职业的独立开发者。
+
+### [Rico](https://www.ricoui.com/)
+
+我是 Rico， 一名网页/UI设计师和新人开发者，目前在探索网站项目的开发，也学习制作了一些开源作品。
+
+目前我在积极的创作一些有趣的作品，做有趣和创意性的东西。

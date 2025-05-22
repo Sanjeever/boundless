@@ -37,3 +37,9 @@ I am a post-90s, with a bit of idealism. I am sincere to people and firmly belie
 ### [YaoLifeng](https://yaolifeng.com/)
 
 Hello~ I am Yao Lifeng, an independent developer aspiring for a freelance career.
+
+### [Rico](https://www.ricoui.com/)
+
+I am Rico, a web/UI designer and new developer, currently exploring website project development and learning to create some open source works.
+
+I am actively creating interesting works and making things that are fun and creative.
