@@ -43,3 +43,7 @@ Hello~ I am Yao Lifeng, an independent developer aspiring for a freelance career
 I am Rico, a web/UI designer and new developer, currently exploring website project development and learning to create some open source works.
 
 I am actively creating interesting works and making things that are fun and creative.
+
+### [liruifengv](https://liruifengv.com/)
+
+I am a front-end development engineer, currently focusing on Web development. I love open source, enjoy tinkering with technology, and like to share. I work remotely and live in Beijing.
