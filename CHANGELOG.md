@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.3.1](https://github.com/Justin3go/justin3go.com/compare/v2.3.0...v2.3.1) (2025-06-21)
+
+
+### Docs
+
+* 下架笔记入口，避免版权问题 ([d945f08](https://github.com/Justin3go/justin3go.com/commit/d945f08646e93f8c044417e3e390899aee92fbe9))
+* 在《GPT-4o图像生成指南》中新增后记部分，推荐GitHub资源库以便用户获取更多提示词 ([ae99091](https://github.com/Justin3go/justin3go.com/commit/ae99091950f76521057a9d743d60578ab64c17ba))
+* 在《GPT-4o图像生成指南》中新增飞书多维表格及导航站链接，丰富用户资源推荐 ([689e6bb](https://github.com/Justin3go/justin3go.com/commit/689e6bb1d553d1fbda981d00f435d8e594481224))
+* 在关于页面中新增 Hunt0 项目，更新 AI 自动精选产品的描述 ([ccc16b3](https://github.com/Justin3go/justin3go.com/commit/ccc16b37b7f5d5def1fedae813da0eeb6d7c5052))
+* 在朋友页面新增liruifengv的介绍，更新个人信息以丰富内容 ([56302eb](https://github.com/Justin3go/justin3go.com/commit/56302eb832ccf15a2ef277273b1dd6ceed06c427))
+* 在朋友页面新增Rico的介绍，更新个人信息以丰富内容 ([00b53c5](https://github.com/Justin3go/justin3go.com/commit/00b53c5fefb03656775819dd4d697e4ae0d3d0ac))
+* 新增《GPT-4o图像生成指南》，详细介绍多种艺术风格及应用场景，提供系统化的参考与技巧分享 ([4a5714a](https://github.com/Justin3go/justin3go.com/commit/4a5714afee38d9a0da3d38c2b3e734e234986abe))
+* 新增《两年后又捣鼓了一个健康类小程序》文章，详细介绍小程序重构过程及技术实现 ([ffb0444](https://github.com/Justin3go/justin3go.com/commit/ffb0444ffa63cf6478c717937c614d5dad5f5269))
+* 新增ads.txt文件，包含谷歌广告相关信息 ([8343e51](https://github.com/Justin3go/justin3go.com/commit/8343e518110d7e90dace5a0271144c07836f7c7f))
+* 新增Hacker News每日产品精选页面，介绍自动化内容聚合平台及其多语言支持功能 ([d67e37c](https://github.com/Justin3go/justin3go.com/commit/d67e37c8726f015d7e2462dface3db65c9df9fc7))
+* 新增谷歌Agent2Agent（A2A）协议深度调研报告，详细介绍协议的技术原理、应用场景及行业影响 ([c08480c](https://github.com/Justin3go/justin3go.com/commit/c08480c4306a0e375e1f5186b42793eb0da157cf))
+* 更新《GPT-4o图像生成指南》中3D Q版弥勒佛形象标题，添加链接以便于访问相关内容 ([08a2c8a](https://github.com/Justin3go/justin3go.com/commit/08a2c8af911540b589be5b7a3a269a4ce87a8da8))
+* 更新《GPT-4o图像生成指南》后记部分，新增用户自荐及推荐资源的说明，并添加相关链接 ([d4be73e](https://github.com/Justin3go/justin3go.com/commit/d4be73e67ae77d9aa68db5fe17960839b67512b6))
+* 更新《GPT-4o图像生成指南》标题为《GPT4o生图风格小全》，以更好地反映内容主题 ([8dad53e](https://github.com/Justin3go/justin3go.com/commit/8dad53eb8e122c0b3aa7028c42dcc40848f1662f))
+* 更新《支持我》页面，新增赞助者Tom及感谢信内容 ([10cdd27](https://github.com/Justin3go/justin3go.com/commit/10cdd27aea0d047223a7cbbb9374a071074bc890))
+
 ## [2.3.0](https://github.com/Justin3go/justin3go.com/compare/v2.2.1...v2.3.0) (2025-03-22)
 
 
