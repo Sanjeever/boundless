@@ -17,7 +17,7 @@ footer: false
 
 ## 赞助者
 
-[Katon](https://hellokaton.me/)、\*\*华、Tom\*\*🐯
+[Katon](https://hellokaton.me/)、\*\*华、Tom\*\*🐯、[临时邮箱](https://tempmail100.com/zh-cn/)
 
 ## 感谢信
 
