@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.2](https://github.com/Justin3go/justin3go.com/compare/v2.3.1...v2.3.2) (2025-07-18)
+
+
+### Docs
+
+* 更新《支持我》页面，新增赞助者临时邮箱链接 ([373b97e](https://github.com/Justin3go/justin3go.com/commit/373b97e75e707ab5ca0202a00930fc0521e8cde3))
+
 ## [2.3.1](https://github.com/Justin3go/justin3go.com/compare/v2.3.0...v2.3.1) (2025-06-21)
 
 
