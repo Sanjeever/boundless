@@ -35,15 +35,17 @@ footer: false
 
 现在的：
 
+- **[Turbo0](https://turbo0.com)**: 最受欢迎的内容创作者工具与资源导航站；
+- **[Edit0](https://eidt0.com)**: 轻松版本管理、对话式的AI图像编辑器；
+- **[心之链](https://xin2.link)**: 基于换位思考、AI智能分析、可视化对比的心理问卷小程序；
 - **[SearchSearchGo](https://ssgo.app)**：一个阿里云盘资源搜索的小型搜索引擎；
-- **[FAV0 周刊](https://fav0.com)**：中英双语周刊，记录并分享每周所见所闻；
-- **[Template0](https://template0.com)**: 近一千份免费前端模板，包含用途、技术栈、预览图快速筛选。
-- **[Turbo0](https://turbo0.com)**: 最受欢迎的内容创作者工具与资源导航站。
-- **[Hunt0](https://hunt0.com)**: AI自动精选Show HN上的产品，并整理为日报。
+- **[Template0](https://template0.com)**: 近一千份免费前端模板，包含用途、技术栈、预览图快速筛选；
+- **[Hunt0](https://hunt0.com)**: AI自动精选Show HN上的产品，并整理为日报；
 - **[OG Image Download](https://ogimage.download)**: 一键下载网站的 OG 图的浏览器插件；
 
 之前的：
 
+- **[FAV0 周刊](https://fav0.com)**：中英双语周刊，记录并分享每周所见所闻；
 - **[笑友](https://juejin.cn/post/7230351646797217847)**：一种游戏化的方式让用户填写心理健康问卷的小程序；
 - **[Weekly0](https://weekly0.com)**：周刊集合导航网站，收刮中文互联网上的周刊内容；
 - **[UseSora](https://usesora.app)**：Sora 刚出时做的 Sora 视频演示导航站；

@@ -36,15 +36,17 @@ Although I am a front-end engineer, I am more of a computer enthusiast. I often 
 
 Current:
 
+- **[Turbo0](https://turbo0.com)**: The most popular content creation tools & resources for content creators.
+- **[Edit0](https://eidt0.com)**: Easy version management, conversational AI image editor.
+- **[Xin2link](https://xin2.link)**: A psychological questionnaire mini-program based on empathy, AI intelligent analysis, and visual comparison.
 - **[SearchSearchGo](https://ssgo.app)**: A small search engine for resources on Alibaba Cloud Drive.
-- **[FAV0 Weekly](https://fav0.com)**: A bilingual weekly newsletter in Chinese and English, documenting and sharing my weekly observations.
 - **[Template0](https://template0.com)**: Nearly a thousand free front-end templates, with quick filtering by purpose, technology stack, and preview images.
-- **[Turbo0](https://turbo0.com/)**: The most popular content creation tools & resources for content creators.
 - **[Hunt0](https://hunt0.com)**: Automatically curates products from Show HN using AI and compiles them into a daily report.
 - **[OG Image Download](https://ogimage.download)**: A browser extension that allows you to download a website's OG image with one click.
 
 Previous:
 
+- **[FAV0 Weekly](https://fav0.com)**: A bilingual weekly newsletter in Chinese and English, documenting and sharing my weekly observations.
 - **[XiaoYou](https://juejin.cn/post/7230351646797217847)**: A mini-program that gamifies the process of filling out mental health questionnaires.
 - **[Weekly0](https://weekly0.com)**: A navigation site collecting weekly content from the Chinese internet.
 - **[UseSora](https://usesora.app)**: A video demo navigation site I created when Sora was first released.
