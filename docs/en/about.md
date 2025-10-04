@@ -11,7 +11,7 @@ footer: false
 
 ## Self Description
 
-Currently residing in Chongqing, China, with the online alias *Justin3go*, I am an Indie Hacker / AI Maker / Full Stacker. A favorite saying of mine is: "Success lies in execution, and the value is in perseverance."
+Currently residing in Beijing, China, with the online alias *Justin3go*, I am an Indie Hacker / AI Maker / Full Stacker. A favorite saying of mine is: "Success lies in execution, and the value is in perseverance."
 
 I am a T-shaped front-end developer who is committed to deepening my expertise in the technical field, focusing on AI and independent development. I enjoy working with Vue.js and Nest.js, and I have some knowledge of Python, search engines, NLP, Web3, and back-end development.
 
@@ -27,7 +27,8 @@ Although I am a front-end engineer, I am more of a computer enthusiast. I often 
 - 2001, I was born!
 - 2019 - 2023, I attended a non-211 university, majoring in Computer Science and Technology.
 - From July 2022 to October 2022, I interned at a major internet company as a front-end developer.
-- Since March 2023, I have been working at a state-owned enterprise as a front-end developer.
+- From March 2023 to September 2025, I worked at a state-owned enterprise as a front-end developer.
+- From September 2025 to present, I have been working at a major internet company as a front-end developer.
 - ...
 - 2101, I hope I am still alive!
 - 3001, after a millennium of practice, I am still cultivating!
