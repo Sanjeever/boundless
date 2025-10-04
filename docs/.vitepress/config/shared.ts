@@ -88,5 +88,8 @@ export default defineConfig({
         })],
       }),
     ],
+    ssr: {
+      noExternal: ['tdesign-vue-next', 'tdesign-icons-vue-next']
+    }
   },
 })
