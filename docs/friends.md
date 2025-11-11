@@ -6,7 +6,7 @@ isNoBackBtn: true
 ---
 # Justin3go的朋友们
 
-> 认识一些有趣的朋友～
+> 认识一些有趣的朋友～ (排名不分先后)
 
 ### [Corey Chiu](https://coreychiu.com/)
 
@@ -47,3 +47,7 @@ Hi~ 我是姚利锋，一名向往自由职业的独立开发者。
 ### [liruifengv](https://liruifengv.com/)
 
 我是一名前端开发工程师，目前专注 Web 开发，热爱开源，喜欢折腾，喜欢分享。现在远程工作，居住在北京。
+
+### [小孙同学](https://blog.guoqi.dev/)
+
+一个理性的浪漫主义者

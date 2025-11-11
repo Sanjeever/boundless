@@ -47,3 +47,7 @@ I am actively creating interesting works and making things that are fun and crea
 ### [liruifengv](https://liruifengv.com/)
 
 I am a front-end development engineer, currently focusing on Web development. I love open source, enjoy tinkering with technology, and like to share. I work remotely and live in Beijing.
+
+### [Guoqi](https://blog.guoqi.dev/)
+
+A rational romantic
