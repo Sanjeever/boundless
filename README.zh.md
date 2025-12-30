@@ -2,11 +2,11 @@
 
 <div align="center">
 
-<a href="https://justin3go.com" target="blank">
-  <img src="https://justin3go.com/ava.png" height="100px" alt="logo"/>
+<a href="#" target="blank">
+  <img src="./images/demo.png" height="100px" alt="logo"/>
 </a>
 
-# Justin3go Blog
+# 无垠 Boundless
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![VitePress](https://img.shields.io/badge/VitePress-646CFF?style=for-the-badge&logo=vite&logoColor=white)
@@ -25,9 +25,7 @@
 [![changelog](https://img.shields.io/badge/changelog-→-0052CC?style=for-the-badge&logo=ReSharper&logoColor=white)](./CHANGELOG.md)
 
 
-[![PR Welcome](https://img.shields.io/badge/PR-Welcome-EA4AAA?style=for-the-badge&logo=git&logoColor=white)](https://github.com/Justin3go/justin3go.com/pulls)
-[![Request-Feature](https://img.shields.io/badge/Request-Feature-007BFF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Justin3go/justin3go.com/issues/new/choose)
-[![Report-Bug](https://img.shields.io/badge/Report-Bug-red?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Justin3go/justin3go.com/issues/new/choose)
+<!-- 仓库链接在个性化过程中移除 -->
 
 ![demo](./images/demo.png)
 
@@ -47,8 +45,8 @@
 ## 开发
 
 ```bash
-git clone git@github.com:Justin3go/justin3go.com.git
-cd FAV0
+git clone <你的仓库地址>
+cd <你的项目文件夹>
 
 npm i -g pnpm # 如果需要
 pnpm i
@@ -68,10 +66,6 @@ pnpm docs:dev
 
 具体内容请查看[LICENSE](./LICENSE)文件。
 
-## 旧版博客
-
-本次博客重构做了许多变化，如果你更喜欢查看旧版博客，请访问：
-
-[v0-9-5.justin3go-com.pages.dev](https://v0-9-5.justin3go-com.pages.dev/)
+<!-- 旧版博客相关内容移除 -->
 
 

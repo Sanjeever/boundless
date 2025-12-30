@@ -2,11 +2,11 @@
 
 <div align="center">
 
-<a href="https://justin3go.com" target="blank">
-  <img src="https://justin3go.com/ava.png" height="100px" alt="logo"/>
+<a href="#" target="blank">
+  <img src="./images/demo.png" height="100px" alt="logo"/>
 </a>
 
-# Justin3go Blog
+# Boundless Blog
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![VitePress](https://img.shields.io/badge/VitePress-646CFF?style=for-the-badge&logo=vite&logoColor=white)
@@ -25,9 +25,7 @@ Releases will be made once every weekend/Saturday if there are updates. Article 
 [![changelog](https://img.shields.io/badge/changelog-→-0052CC?style=for-the-badge&logo=ReSharper&logoColor=white)](./CHANGELOG.md)
 
 
-[![PR Welcome](https://img.shields.io/badge/PR-Welcome-EA4AAA?style=for-the-badge&logo=git&logoColor=white)](https://github.com/Justin3go/justin3go.com/pulls)
-[![Request-Feature](https://img.shields.io/badge/Request-Feature-007BFF?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Justin3go/justin3go.com/issues/new/choose)
-[![Report-Bug](https://img.shields.io/badge/Report-Bug-red?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Justin3go/justin3go.com/issues/new/choose)
+<!-- repository links removed during personalization -->
 
 ![demo](./images/demo.png)
 
@@ -47,8 +45,8 @@ Releases will be made once every weekend/Saturday if there are updates. Article 
 ## Development
 
 ```bash
-git clone git@github.com:Justin3go/justin3go.com.git
-cd FAV0
+git clone <your-repo-url>
+cd <your-project-folder>
 
 npm i -g pnpm # If needed
 pnpm i
@@ -68,8 +66,4 @@ This repository is licensed under a dual license, namely the MIT License and the
 
 For specific details, please refer to the [LICENSE](./LICENSE) file.
 
-## Old Version Blog
-
-This blog has undergone many changes during the restructuring. If you prefer to view the old version of the blog, please visit:
-
-[v0-9-5.justin3go-com.pages.dev](https://v0-9-5.justin3go-com.pages.dev/)
+<!-- old version blog section removed -->

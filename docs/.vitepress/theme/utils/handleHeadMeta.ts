@@ -1,24 +1,44 @@
-import { type HeadConfig, type TransformContext } from "vitepress";
+import { type HeadConfig, type TransformContext } from 'vitepress'
 
 // 处理每个页面的元数据
 export function handleHeadMeta(context: TransformContext) {
-  const { description, title, relativePath, frontmatter } = context.pageData;
+  const { description, title, relativePath, frontmatter } = context.pageData
 
-  const curDesc = description || context.description;
-  const cover = frontmatter.cover || 'https://justin3go.com/bg.jpg'
+  const curDesc = description || context.description
+  const cover = frontmatter.cover || '/logo.png'
   const cardType = frontmatter.cover ? 'summary_large_image' : 'summary'
   // 增加 Twitter 卡片
-  const ogUrl: HeadConfig = ["meta", { property: "og:url", content: addBase(relativePath) }]
-  const ogTitle: HeadConfig = ["meta", { property: "og:title", content: title }]
-  const ogDescription: HeadConfig = ["meta", { property: "og:description", content: curDesc }]
-  const ogImage: HeadConfig = ["meta", { property: "og:image", content: cover }]
-  const twitterCard: HeadConfig = ["meta", { name: "twitter:card", content: cardType }]
-  const twitterImage: HeadConfig = ["meta", { name: "twitter:image:src", content: cover }]
-  const twitterDescription: HeadConfig = ["meta", { name: "twitter:description", content: curDesc }]
+  const ogUrl: HeadConfig = [
+    'meta',
+    { property: 'og:url', content: addBase(relativePath) },
+  ]
+  const ogTitle: HeadConfig = ['meta', { property: 'og:title', content: title }]
+  const ogDescription: HeadConfig = [
+    'meta',
+    { property: 'og:description', content: curDesc },
+  ]
+  const ogImage: HeadConfig = ['meta', { property: 'og:image', content: cover }]
+  const twitterCard: HeadConfig = [
+    'meta',
+    { name: 'twitter:card', content: cardType },
+  ]
+  const twitterImage: HeadConfig = [
+    'meta',
+    { name: 'twitter:image:src', content: cover },
+  ]
+  const twitterDescription: HeadConfig = [
+    'meta',
+    { name: 'twitter:description', content: curDesc },
+  ]
 
   const twitterHead: HeadConfig[] = [
-    ogUrl, ogTitle, ogDescription, ogImage,
-    twitterCard, twitterDescription, twitterImage,
+    ogUrl,
+    ogTitle,
+    ogDescription,
+    ogImage,
+    twitterCard,
+    twitterDescription,
+    twitterImage,
   ]
 
   // 预加载字体
@@ -28,7 +48,7 @@ export function handleHeadMeta(context: TransformContext) {
 }
 
 export function addBase(relativePath: string) {
-  const host = 'https://justin3go.com'
+  const host = 'https://sanjeev.top'
   if (relativePath.startsWith('/')) {
     return host + relativePath
   } else {
@@ -49,8 +69,8 @@ export function handleFontsPreload({ assets }: TransformContext) {
         href: SourceHanSerifCN,
         as: 'font',
         type: 'font/otf',
-        crossorigin: ''
-      }
+        crossorigin: '',
+      },
     ],
     FiraCode && [
       'link',
@@ -59,8 +79,8 @@ export function handleFontsPreload({ assets }: TransformContext) {
         href: FiraCode,
         as: 'font',
         type: 'font/woff2',
-        crossorigin: ''
-      }
+        crossorigin: '',
+      },
     ],
     Niconne && [
       'link',
@@ -69,8 +89,8 @@ export function handleFontsPreload({ assets }: TransformContext) {
         href: Niconne,
         as: 'font',
         type: 'font/ttf',
-        crossorigin: ''
-      }
-    ]
+        crossorigin: '',
+      },
+    ],
   ].filter(Boolean) as HeadConfig[]
 }
