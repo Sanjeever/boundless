@@ -11,7 +11,7 @@
   },
   "keywords": [],
   "author": "Sanjeev <bestoftribe@foxmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.12.12",
     "feed": "^4.2.2",

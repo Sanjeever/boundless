@@ -1,69 +1,49 @@
-<h4 align="right"><strong>English</strong> | <a href="./README.zh.md">简体中文</a> </h4>
+# 无垠（Boundless）博客
 
-<div align="center">
+一个基于 VitePress 的简洁、现代、功能完备的个人博客，用于记录与分享。
 
-<a href="#" target="blank">
-  <img src="./images/demo.png" height="100px" alt="logo"/>
-</a>
+## 功能特性
 
-# Boundless Blog
+- 深色/浅色主题切换，舒适阅读
+- 文章摘要与标签，便捷浏览
+- 中英双语站点与归档页
+- RSS 订阅（中文与英文）
+- 高清图片预览
+- 自定义字体与基础 SEO（含 Sitemap、OG/Twitter Cards）
+- 评论系统支持 Giscus（当前默认关闭）
 
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![VitePress](https://img.shields.io/badge/VitePress-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![Vue-3](https://img.shields.io/badge/Vue-3-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)
-![TDesign](https://img.shields.io/badge/TDesign-0052CC?style=for-the-badge&logo=tdesign&logoColor=white)
-![Cloudflare Pages](https://img.shields.io/badge/Cloudflare%20Pages-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
-![Giscus](https://img.shields.io/badge/Giscus-181717?style=for-the-badge&logo=github&logoColor=white)
-![Support RSS](https://img.shields.io/badge/Support%20RSS-FFA500?style=for-the-badge&logo=rss&logoColor=white)
-![Support I18N](https://img.shields.io/badge/Support%20I18N-0078D4?style=for-the-badge&logo=google-translate&logoColor=white)
-![SEO](https://img.shields.io/badge/SEO-4285F4?style=for-the-badge&logo=google&logoColor=white)
-
-A fully-featured, modern, and elegantly simple static blog based on VitePress; it mainly records ✍️ my blog and notes.
-
-Releases will be made once every weekend/Saturday if there are updates. Article publications and website modifications will be recorded in the releases. Feel free to star/watch (custom->release) to stay updated on the latest news~
-
-[![changelog](https://img.shields.io/badge/changelog-→-0052CC?style=for-the-badge&logo=ReSharper&logoColor=white)](./CHANGELOG.md)
-
-
-<!-- repository links removed during personalization -->
-
-![demo](./images/demo.png)
-
-</div>
-
-## Features
-
-1. 🌓 Provides a dark/light mode toggle for different reading environments.
-2. 📖 Supports blog pagination, summaries, and tags for convenient user navigation.
-3. 🌍 Supports a bilingual interface in Chinese and English for users of different languages.
-4. 📡 Offers RSS subscription functionality, supporting content updates in both Chinese and English.
-5. 💬 Integrates the Giscus commenting system for user interaction and feedback.
-6. 🖼️ Supports high-definition image previews for an optimized visual experience.
-7. 📜 Allows custom font settings to enhance reading comfort.
-8. 🔍 Implements SEO optimizations, including Sitemap generation and support for Twitter Cards and Open Graph tags to improve search engine visibility.
-
-## Development
+## 快速开始
 
 ```bash
-git clone <your-repo-url>
-cd <your-project-folder>
+git clone https://github.com/Sanjeever/boundless.git
+cd boundless
 
-npm i -g pnpm # If needed
+npm i -g pnpm
 pnpm i
 pnpm docs:dev
 ```
-1. Modify the Giscus comment configuration in the `giscus` settings of `.vitepress/theme/components/Comments.vue`;
-2. Adjust the sidebar configuration, RSS settings, metadata configuration, etc., in the `utils` folder;
-3. Change the relevant configurations in the `config` folder, mainly the title, description, and GA settings in the head;
-4. Replace the content in the `posts/**` and `en/posts/**` directories with your own content;
 
-## License
+## 构建与部署
 
-This repository is licensed under a dual license, namely the MIT License and the CC-BY-4.0 License:
+```bash
+pnpm docs:build
+```
 
-- All `.md` files are licensed under CC-BY-4.0, and you must retain attribution rights.
-- Other code files are licensed under the MIT License, and you can use them freely.
+将 `docs/.vitepress/dist` 目录部署到任意静态站点托管服务（Cloudflare Pages、Vercel、Netlify 等）。
 
-For specific details, please refer to the [LICENSE](./LICENSE) file.
+## 目录说明
 
-<!-- old version blog section removed -->
+- `docs/` 内容根目录（包含中文与英文站点）
+- `docs/.vitepress/` 站点配置与主题代码
+- `docs/posts/**` 与 `docs/en/posts/**` 博客文章目录
+
+## 许可证
+
+本仓库的所有代码与文章内容均采用 MIT License。
+详见 [LICENSE](./LICENSE)。
+
+## 致谢
+
+本项目在搭建过程中参考并部分沿用了以下优秀开源项目的思路与实现，特此感谢：
+
+- https://github.com/Justin3go/justin3go.com
