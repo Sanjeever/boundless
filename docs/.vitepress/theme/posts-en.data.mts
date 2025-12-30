@@ -6,7 +6,7 @@ interface Post {
   date: {
     time: number
     string: string
-    year: string 
+    year: string
     monthDay: string
   }
   tags: string[]
@@ -19,43 +19,54 @@ export default createContentLoader('en/posts/**/*.md', {
   excerpt: excerptFn,
   transform(raw): Post[] {
     return raw
+      .filter(({ frontmatter }) => !!frontmatter?.title)
       .map(({ url, frontmatter, excerpt }) => ({
         title: frontmatter.title,
         url,
         excerpt,
         date: formatDate(frontmatter.date),
-        tags: frontmatter.tags
+        tags: Array.isArray(frontmatter.tags) ? frontmatter.tags : [],
       }))
       .sort((a, b) => {
-        const dateDiff = b.date.time - a.date.time;
+        const dateDiff = b.date.time - a.date.time
         if (dateDiff !== 0) {
-          return dateDiff;
+          return dateDiff
         }
-        return b.url.localeCompare(a.url);
+        return b.url.localeCompare(a.url)
       })
-  }
+  },
 })
 
-function excerptFn(file: { data: { [key: string]: any }; content: string; excerpt?: string }, options?: any) {
-  file.excerpt = file.content.split('<!-- DESC SEP -->')[1];
+function excerptFn(
+  file: { data: { [key: string]: any }; content: string; excerpt?: string },
+  options?: any
+) {
+  file.excerpt = file.content.split('<!-- DESC SEP -->')[1]
 }
 
 function formatDate(raw: string): Post['date'] {
   const date = new Date(raw)
   date.setUTCHours(12)
+  const invalid = Number.isNaN(date.getTime())
   return {
-    time: +date,
-    string: date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    }),
-    year: date.toLocaleDateString('en-US', {
-      year: 'numeric'
-    }),
-    monthDay: date.toLocaleDateString('en-US', {
-      month: '2-digit',
-      day: '2-digit'
-    })
+    time: invalid ? 0 : +date,
+    string: invalid
+      ? ''
+      : date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        }),
+    year: invalid
+      ? ''
+      : date.toLocaleDateString('en-US', {
+          year: 'numeric',
+        }),
+    monthDay: invalid
+      ? ''
+      : date.toLocaleDateString('en-US', {
+          month: '2-digit',
+          day: '2-digit',
+        }),
   }
 }

@@ -19,12 +19,13 @@ export default createContentLoader('posts/**/*.md', {
   excerpt: excerptFn,
   transform(raw): Post[] {
     return raw
+      .filter(({ frontmatter }) => !!frontmatter?.title)
       .map(({ url, frontmatter, excerpt }) => ({
         title: frontmatter.title,
         url,
         excerpt,
         date: formatDate(frontmatter.date),
-        tags: frontmatter.tags,
+        tags: Array.isArray(frontmatter.tags) ? frontmatter.tags : [],
       }))
       .sort((a, b) => {
         const dateDiff = b.date.time - a.date.time
@@ -46,19 +47,26 @@ function excerptFn(
 function formatDate(raw: string): Post['date'] {
   const date = new Date(raw)
   date.setUTCHours(12)
+  const invalid = Number.isNaN(date.getTime())
   return {
-    time: +date,
-    string: date.toLocaleDateString('zh-Hans', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    }),
-    year: date.toLocaleDateString('zh-Hans', {
-      year: 'numeric',
-    }),
-    monthDay: date.toLocaleDateString('zh-Hans', {
-      month: '2-digit',
-      day: '2-digit',
-    }),
+    time: invalid ? 0 : +date,
+    string: invalid
+      ? ''
+      : date.toLocaleDateString('zh-Hans', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        }),
+    year: invalid
+      ? ''
+      : date.toLocaleDateString('zh-Hans', {
+          year: 'numeric',
+        }),
+    monthDay: invalid
+      ? ''
+      : date.toLocaleDateString('zh-Hans', {
+          month: '2-digit',
+          day: '2-digit',
+        }),
   }
 }
