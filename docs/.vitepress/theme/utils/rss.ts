@@ -3,7 +3,7 @@ import { writeFileSync } from 'node:fs'
 import { Feed } from 'feed'
 import { createContentLoader, type SiteConfig } from 'vitepress'
 
-const hostname = 'https://boundless.example.com'
+const hostname = 'https://sanjeev.top'
 
 export async function generateRssZH(): Promise<string> {
   const feed = new Feed({
