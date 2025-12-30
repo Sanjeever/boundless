@@ -4,7 +4,7 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { TDesignResolver } from 'unplugin-vue-components/resolvers'
 
-import { createRssFileZH, createRssFileEN } from '../theme/utils/rss'
+import { createRssFileZH, createRssFileEN, generateRssZH, generateRssEN } from '../theme/utils/rss'
 import { handleHeadMeta } from '../theme/utils/handleHeadMeta'
 import { search as zhSearch } from './zh'
 
@@ -69,6 +69,27 @@ export default defineConfig({
           }),
         ],
       }),
+      {
+        name: 'boundless-rss-dev',
+        configureServer(server) {
+          server.middlewares.use(async (req, res, next) => {
+            if (!req.url) return next();
+            if (req.url === '/feed.xml') {
+              const xml = await generateRssZH();
+              res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
+              res.end(xml);
+              return;
+            }
+            if (req.url === '/feed-en.xml' || req.url === '/en/feed.xml') {
+              const xml = await generateRssEN();
+              res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
+              res.end(xml);
+              return;
+            }
+            next();
+          });
+        },
+      },
     ],
     ssr: {
       noExternal: ['tdesign-vue-next', 'tdesign-icons-vue-next'],
