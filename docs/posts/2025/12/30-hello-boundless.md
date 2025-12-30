@@ -71,6 +71,19 @@ export function sum(a: number, b: number) {
 }
 ```
 
+## 代码块中的颜色差异
+
+```js
+export default {
+  data () {
+    return {
+      msg: 'Removed' // [!code --]
+      msg: 'Added' // [!code ++]
+    }
+  }
+}
+```
+
 ## 数学公式
 
 行内公式示例：$E = mc^2$

@@ -71,6 +71,19 @@ export function sum(a: number, b: number) {
 }
 ```
 
+## Colored Diffs in Code Blocks
+
+```js
+export default {
+  data () {
+    return {
+      msg: 'Removed' // [!code --]
+      msg: 'Added' // [!code ++]
+    }
+  }
+}
+```
+
 ## Math Formulas
 
 Inline formula example: $E = mc^2$
