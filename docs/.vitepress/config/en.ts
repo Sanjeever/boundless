@@ -28,10 +28,5 @@ export default defineConfig({
         link: '/feed-en.xml',
       },
     ],
-
-    editLink: {
-      pattern:
-        'https://github.com/Justin3go/justin3go.com/edit/master/docs/:path',
-    },
   },
 })
