@@ -6,7 +6,7 @@ interface Post {
   date: {
     time: number
     string: string
-    year: string 
+    year: string
     monthDay: string
   }
   tags: string[]
@@ -24,14 +24,23 @@ export default createContentLoader('posts/**/*.md', {
         url,
         excerpt,
         date: formatDate(frontmatter.date),
-        tags: frontmatter.tags
+        tags: frontmatter.tags,
       }))
-      .sort((a, b) => b.date.time - a.date.time)
-  }
+      .sort((a, b) => {
+        const dateDiff = b.date.time - a.date.time
+        if (dateDiff !== 0) {
+          return dateDiff
+        }
+        return b.url.localeCompare(a.url)
+      })
+  },
 })
 
-function excerptFn(file: { data: { [key: string]: any }; content: string; excerpt?: string }, options?: any) {
-  file.excerpt = file.content.split('<!-- DESC SEP -->')[1];
+function excerptFn(
+  file: { data: { [key: string]: any }; content: string; excerpt?: string },
+  options?: any
+) {
+  file.excerpt = file.content.split('<!-- DESC SEP -->')[1]
 }
 
 function formatDate(raw: string): Post['date'] {
@@ -42,14 +51,14 @@ function formatDate(raw: string): Post['date'] {
     string: date.toLocaleDateString('zh-Hans', {
       year: 'numeric',
       month: '2-digit',
-      day: '2-digit'
+      day: '2-digit',
     }),
     year: date.toLocaleDateString('zh-Hans', {
-      year: 'numeric'
+      year: 'numeric',
     }),
     monthDay: date.toLocaleDateString('zh-Hans', {
       month: '2-digit',
-      day: '2-digit'
-    })
+      day: '2-digit',
+    }),
   }
 }

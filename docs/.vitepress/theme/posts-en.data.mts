@@ -26,7 +26,13 @@ export default createContentLoader('en/posts/**/*.md', {
         date: formatDate(frontmatter.date),
         tags: frontmatter.tags
       }))
-      .sort((a, b) => b.date.time - a.date.time)
+      .sort((a, b) => {
+        const dateDiff = b.date.time - a.date.time;
+        if (dateDiff !== 0) {
+          return dateDiff;
+        }
+        return b.url.localeCompare(a.url);
+      })
   }
 })
 
