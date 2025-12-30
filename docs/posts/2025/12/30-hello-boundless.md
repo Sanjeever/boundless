@@ -30,6 +30,10 @@ aside: true
 部分能力依赖站点配置与插件，请以实际构建结果为准。
 :::
 
+## 图片预览
+
+![Green Hair Water Monster](/public/2025/12/GreenHairWaterMonster.jpg)
+
 ## 代码分组
 
 ::: code-group

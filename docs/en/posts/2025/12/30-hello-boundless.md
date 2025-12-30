@@ -30,6 +30,10 @@ The following showcases common interactions and Markdown enhancements available 
 Some features depend on site configuration and plugins; refer to the actual build result.
 :::
 
+## Image Preview
+
+![Green Hair Water Monster](/public/2025/12/GreenHairWaterMonster.jpg)
+
 ## Code Groups
 
 ::: code-group
