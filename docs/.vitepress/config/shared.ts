@@ -15,7 +15,6 @@ import { search as zhSearch } from './zh'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  base: '/boundless/',
   lastUpdated: true,
   cleanUrls: true,
   ignoreDeadLinks: true,
