@@ -91,7 +91,8 @@
 
 /* logo 字体设置 */
 .VPNavBarTitle .title {
-	font-family: "Niconne", "SourceHanSerifCN";
+	font-family: "SourceHanSerifCN", "PingFang SC", "Microsoft YaHei",
+		"Arial Regular";
 	font-size: 24px !important;
 }
 
