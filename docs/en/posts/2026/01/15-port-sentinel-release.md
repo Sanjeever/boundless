@@ -1,5 +1,5 @@
 ---
-title: Port Sentinel: I Built a Windows Port Management Tool
+title: Port Sentinel
 date: 2026-01-15
 tags:
   - Open Source
@@ -11,7 +11,7 @@ outline: deep
 aside: true
 ---
 
-# Port Sentinel: I Built a Windows Port Management Tool
+# Port Sentinel
 
 <!-- DESC SEP -->
 

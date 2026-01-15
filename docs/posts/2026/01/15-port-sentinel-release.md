@@ -1,5 +1,5 @@
 ---
-title: Port Sentinel：我做了一款 Windows 端口管理工具
+title: Port Sentinel
 date: 2026-01-15
 tags:
   - 开源
@@ -11,7 +11,7 @@ outline: deep
 aside: true
 ---
 
-# Port Sentinel：我做了一款 Windows 端口管理工具
+# Port Sentinel
 
 <!-- DESC SEP -->
 
