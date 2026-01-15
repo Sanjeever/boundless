@@ -1,5 +1,5 @@
 ---
-title: Port Sentinel
+title: 端口哨兵
 date: 2026-01-15
 tags:
   - 开源
@@ -11,7 +11,7 @@ outline: deep
 aside: true
 ---
 
-# Port Sentinel
+# 端口哨兵
 
 <!-- DESC SEP -->
 
