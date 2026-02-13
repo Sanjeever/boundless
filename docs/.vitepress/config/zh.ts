@@ -34,6 +34,10 @@ export default defineConfig({
         },
         link: '/feed.xml',
       },
+      {
+        icon: 'github',
+        link: 'https://github.com/Sanjeever',
+      },
     ],
 
     returnToTopLabel: '回到顶部',

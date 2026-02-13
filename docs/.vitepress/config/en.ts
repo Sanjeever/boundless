@@ -28,6 +28,10 @@ export default defineConfig({
         },
         link: '/feed-en.xml',
       },
+      {
+        icon: 'github',
+        link: 'https://github.com/Sanjeever',
+      },
     ],
   },
 })
