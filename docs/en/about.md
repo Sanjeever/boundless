@@ -39,7 +39,7 @@ This is my personal blog for documenting learning and life.
 
 ### Music
 
-- Cheer Chen, Dean Ting
+- Cheer Chen, Dean Ting, Chen Li, Li Zhi
 
 ### Literature
 
