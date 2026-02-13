@@ -10,6 +10,12 @@ footer: false
 
 介绍我创建或维护的项目。
 
+## Sanjeever/dartcode
+
+用 Dart 编写的极简 Claude Code 替代品，是 nanocode 的 Dart 移植版，提供轻量的编码助手与交互式 REPL。
+
+- [GitHub](https://github.com/Sanjeever/dartcode)
+
 ## Sanjeever/port_sentinel
 
 Flutter Windows 桌面应用程序，用于监控端口和管理进程。
