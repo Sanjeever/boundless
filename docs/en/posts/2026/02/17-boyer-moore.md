@@ -1,5 +1,5 @@
 ---
-title: Boyer-Moore: Faster String Search from Right to Left
+title: "Boyer-Moore: Faster String Search from Right to Left"
 date: 2026-02-17
 tags:
   - Algorithm
@@ -53,7 +53,7 @@ We compare from the right and hit a mismatch. Two facts help us jump:
 - If the right side already matched, we try to align that suffix with another place in the pattern.
 
 ::: info Think of two "jump tables"
-The bad-character table tells you how far to jump for a wrong character.  
+The bad-character table tells you how far to jump for a wrong character.
 The good-suffix table tells you where to align a matched suffix next.
 :::
 
