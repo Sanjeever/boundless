@@ -10,6 +10,12 @@ footer: false
 
 介绍我创建或维护的项目。
 
+## Sanjeever/opengauss-mcp
+
+基于 Spring AI MCP Server 的 openGauss 数据库工具服务，支持通过 MCP 客户端以 stdio 方式连接，并调用数据库相关工具完成表结构查看、统计信息查询与 SQL 执行。
+
+- [GitHub](https://github.com/Sanjeever/opengauss-mcp)
+
 ## Sanjeever/dartcode
 
 用 Dart 编写的极简 Claude Code 替代品，是 nanocode 的 Dart 移植版，提供轻量的编码助手与交互式 REPL。

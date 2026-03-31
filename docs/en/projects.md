@@ -10,6 +10,12 @@ footer: false
 
 Projects that I created or maintaining.
 
+## Sanjeever/opengauss-mcp
+
+An openGauss database tooling service built on Spring AI MCP Server. It supports stdio connection via MCP clients and provides database tools for schema inspection, statistics queries, and SQL execution.
+
+- [GitHub](https://github.com/Sanjeever/opengauss-mcp)
+
 ## Sanjeever/dartcode
 
 Minimal Claude Code alternative written in Dart, a Dart port of nanocode with a lightweight coding assistant and interactive REPL.
