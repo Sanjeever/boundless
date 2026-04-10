@@ -8,6 +8,7 @@ import './style.css'
 import Comment from './components/Comment.vue'
 import ImageViewer from './components/ImageViewer.vue'
 import GoBack from './components/GoBack.vue'
+import { startDeployUpdateNotifier } from './utils/deployVersion'
 
 export default {
   ...Theme,
@@ -20,9 +21,10 @@ export default {
     })
   },
 
-  enhanceApp({ app, router }: any) {
+  enhanceApp({ app, siteData }: any) {
     app.component('Comment', Comment)
     app.component('ImageViewer', ImageViewer)
     app.component('GoBack', GoBack)
+    startDeployUpdateNotifier(siteData.value.base)
   },
 }
