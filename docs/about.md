@@ -32,7 +32,7 @@ footer: false
 
 ## 联系我
 
-- 邮箱：[bestoftribe@foxmail.com](mailto://bestoftribe@foxmail.com)
+- 邮箱：[me@sanjeev.top](mailto://me@sanjeev.top)
 - GitHub：[github.com/Sanjeever](https://github.com/Sanjeever)
 
 ## 爱好

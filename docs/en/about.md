@@ -32,7 +32,7 @@ This is my personal blog for documenting learning and life.
 
 ## Contact Me
 
-- Email: [bestoftribe@foxmail.com](mailto://bestoftribe@foxmail.com)
+- Email: [me@sanjeev.top](mailto://me@sanjeev.top)
 - GitHub: [github.com/Sanjeever](https://github.com/Sanjeever)
 
 ## Hobbies
