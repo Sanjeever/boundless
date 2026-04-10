@@ -57,9 +57,10 @@ PATTERN:          EXAMPLE
 :::
 
 ::: details 这两条规则为什么安全
+
 - **坏字符规则**：如果错字母在模式串里最右出现的位置还在当前对齐左侧，那就把它对齐到那一位；如果根本没出现，就整段跳过。
 - **好后缀规则**：右侧已经对上时，下一次要么让这段后缀对齐到模式串里另一次出现的位置，要么对齐到模式串的前缀。
-:::
+  :::
 
 ## 实现：Java 与 JavaScript
 
@@ -141,57 +142,61 @@ public static int boyerMooreSearch(String text, String pattern) {
 
 ```javascript [JavaScript 版本]
 function boyerMooreSearch(text, pattern) {
-  const n = text.length;
-  const m = pattern.length;
-  if (m === 0) return 0;
-  if (m > n) return -1;
+  const n = text.length
+  const m = pattern.length
+  if (m === 0) return 0
+  if (m > n) return -1
 
-  const bmBc = new Array(256).fill(m);
+  const bmBc = new Array(256).fill(m)
   for (let i = 0; i < m - 1; i++) {
-    bmBc[pattern.charCodeAt(i) & 0xff] = m - 1 - i;
+    bmBc[pattern.charCodeAt(i) & 0xff] = m - 1 - i
   }
 
-  const suff = new Array(m);
-  suff[m - 1] = m;
-  let f = 0;
-  let g = m - 1;
+  const suff = new Array(m)
+  suff[m - 1] = m
+  let f = 0
+  let g = m - 1
   for (let i = m - 2; i >= 0; --i) {
     if (i > g && suff[i + m - 1 - f] < i - g) {
-      suff[i] = suff[i + m - 1 - f];
+      suff[i] = suff[i + m - 1 - f]
     } else {
-      if (i < g) g = i;
-      f = i;
-      while (g >= 0 && pattern.charCodeAt(g) === pattern.charCodeAt(g + m - 1 - f)) g--;
-      suff[i] = f - g;
+      if (i < g) g = i
+      f = i
+      while (
+        g >= 0 &&
+        pattern.charCodeAt(g) === pattern.charCodeAt(g + m - 1 - f)
+      )
+        g--
+      suff[i] = f - g
     }
   }
 
-  const bmGs = new Array(m).fill(m);
-  let j = 0;
+  const bmGs = new Array(m).fill(m)
+  let j = 0
   for (let i = m - 1; i >= 0; i--) {
     if (suff[i] === i + 1) {
       for (; j < m - 1 - i; j++) {
-        if (bmGs[j] === m) bmGs[j] = m - 1 - i;
+        if (bmGs[j] === m) bmGs[j] = m - 1 - i
       }
     }
   }
   for (let i = 0; i <= m - 2; i++) {
-    bmGs[m - 1 - suff[i]] = m - 1 - i;
+    bmGs[m - 1 - suff[i]] = m - 1 - i
   }
 
-  let s = 0;
+  let s = 0
   while (s <= n - m) {
-    let i = m - 1;
-    while (i >= 0 && pattern.charCodeAt(i) === text.charCodeAt(s + i)) i--;
+    let i = m - 1
+    while (i >= 0 && pattern.charCodeAt(i) === text.charCodeAt(s + i)) i--
     if (i < 0) {
-      return s;
+      return s
     } else {
-      const bcShift = bmBc[text.charCodeAt(s + i) & 0xff] - m + 1 + i;
-      const gsShift = bmGs[i];
-      s += Math.max(bcShift, gsShift);
+      const bcShift = bmBc[text.charCodeAt(s + i) & 0xff] - m + 1 + i
+      const gsShift = bmGs[i]
+      s += Math.max(bcShift, gsShift)
     }
   }
-  return -1;
+  return -1
 }
 ```
 

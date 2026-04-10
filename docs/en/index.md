@@ -158,4 +158,3 @@ const onCurrentChange: PaginationProps["onCurrentChange"] = (
 	-webkit-text-stroke: 1px var(--vp-c-text-1);
 }
 </style>
-

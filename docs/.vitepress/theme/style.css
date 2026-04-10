@@ -1,20 +1,20 @@
 /** 代码字体 */
 @font-face {
-	font-family: "FiraCode";
-	src: url("/assets/fonts/FiraCode-VF.woff2");
+  font-family: 'FiraCode';
+  src: url('/assets/fonts/FiraCode-VF.woff2');
 }
 /** 正文字体 */
 /** 1. 原始完整字体下载链接：https://github.com/adobe-fonts/source-han-serif/releases  */
 /** 2. 使用 http://font.ssjjss.com/font-subset/ 对字体进行子集化，这里根据我的网站只保留了这些字符：1234567890/SupportMeI'mJustin3go年 */
 @font-face {
-	font-family: "SourceHanSerifCN";
-	src: local("SourceHanSerifCN"), url("/assets/fonts/SourceHanSerifCN-VF.otf");
+  font-family: 'SourceHanSerifCN';
+  src: local('SourceHanSerifCN'), url('/assets/fonts/SourceHanSerifCN-VF.otf');
 }
 /** logo 字体 */
 /** 使用 http://font.ssjjss.com/font-subset/ 对字体(/assets/fonts/Niconne-Regular.ttf)进行子集化，这里根据我的网站只保留了这些字符：Justin3go */
 @font-face {
-	font-family: "Niconne";
-	src: local("Niconne"), url("/assets/fonts/Niconne-Regular-Subset.ttf");
+  font-family: 'Niconne';
+  src: local('Niconne'), url('/assets/fonts/Niconne-Regular-Subset.ttf');
 }
 
 /* 参考 https://github.com/vuejs/vitepress/blob/main/src/client/theme-default/styles/vars.css */
@@ -28,15 +28,15 @@
  * -------------------------------------------------------------------------- */
 
 :root {
-	--vp-c-blue-1: #2949a4;
-	--vp-c-blue-2: #0749ff;
-	--vp-c-blue-3: #7494ec;
-	--vp-c-blue-soft: rgba(110, 156, 190, 0.14);
+  --vp-c-blue-1: #2949a4;
+  --vp-c-blue-2: #0749ff;
+  --vp-c-blue-3: #7494ec;
+  --vp-c-blue-soft: rgba(110, 156, 190, 0.14);
 
-	--vp-c-yellow-1: #aa9100;
-	--vp-c-yellow-2: #d5b811;
-	--vp-c-yellow-3: #ecce23;
-	--vp-c-yellow-soft: rgba(186, 186, 186, 0.14);
+  --vp-c-yellow-1: #aa9100;
+  --vp-c-yellow-2: #d5b811;
+  --vp-c-yellow-3: #ecce23;
+  --vp-c-yellow-soft: rgba(186, 186, 186, 0.14);
 }
 
 /**
@@ -44,17 +44,17 @@
  * -------------------------------------------------------------------------- */
 
 :root {
-	--vp-c-brand-1: var(--vp-c-blue-1);
-	--vp-c-brand-2: var(--vp-c-blue-2);
-	--vp-c-brand-3: var(--vp-c-blue-3);
-	--vp-c-brand-soft: var(--vp-c-blue-soft);
+  --vp-c-brand-1: var(--vp-c-blue-1);
+  --vp-c-brand-2: var(--vp-c-blue-2);
+  --vp-c-brand-3: var(--vp-c-blue-3);
+  --vp-c-brand-soft: var(--vp-c-blue-soft);
 }
 
 .dark {
-	--vp-c-brand-1: var(--vp-c-yellow-1);
-	--vp-c-brand-2: var(--vp-c-yellow-2);
-	--vp-c-brand-3: var(--vp-c-yellow-3);
-	--vp-c-brand-soft: var(--vp-c-yellow-soft);
+  --vp-c-brand-1: var(--vp-c-yellow-1);
+  --vp-c-brand-2: var(--vp-c-yellow-2);
+  --vp-c-brand-3: var(--vp-c-yellow-3);
+  --vp-c-brand-soft: var(--vp-c-yellow-soft);
 }
 
 /**
@@ -62,18 +62,18 @@
  * -------------------------------------------------------------------------- */
 
 :root {
-	/* --vp-font-family-base: "SourceHanSerifCN"; */
-	--vp-font-family-mono: "FiraCode";
+  /* --vp-font-family-base: "SourceHanSerifCN"; */
+  --vp-font-family-mono: 'FiraCode';
 }
 
 :root {
-	--td-border-level-2-color: var(--vp-c-brand-soft) !important;
-	--td-brand-color: var(--vp-c-brand-1) !important;
-	--td-brand-color-light: var(--vp-c-brand-soft) !important;
-	--td-brand-color-hover: var(--vp-c-brand-1) !important;
-	--td-brand-color-active: var(--vp-c-brand-2) !important;
-	/* 字体 family token */
-	/* --td-font-family: SourceHanSerifCN, PingFang SC, Microsoft YaHei,
+  --td-border-level-2-color: var(--vp-c-brand-soft) !important;
+  --td-brand-color: var(--vp-c-brand-1) !important;
+  --td-brand-color-light: var(--vp-c-brand-soft) !important;
+  --td-brand-color-hover: var(--vp-c-brand-1) !important;
+  --td-brand-color-active: var(--vp-c-brand-2) !important;
+  /* 字体 family token */
+  /* --td-font-family: SourceHanSerifCN, PingFang SC, Microsoft YaHei,
 		Arial Regular;
 	--td-font-family-medium: SourceHanSerifCN, PingFang SC, Microsoft YaHei,
 		Arial Medium; */
@@ -85,120 +85,120 @@
 
 /* 宋体字体类 */
 .source-han-serif {
-	font-family: "SourceHanSerifCN", "PingFang SC", "Microsoft YaHei",
-		"Arial Regular";
+  font-family:
+    'SourceHanSerifCN', 'PingFang SC', 'Microsoft YaHei', 'Arial Regular';
 }
 
 /* logo 字体设置 */
 .VPNavBarTitle .title {
-	font-family: "SourceHanSerifCN", "PingFang SC", "Microsoft YaHei",
-		"Arial Regular";
-	font-size: 24px !important;
+  font-family:
+    'SourceHanSerifCN', 'PingFang SC', 'Microsoft YaHei', 'Arial Regular';
+  font-size: 24px !important;
 }
 
 /* 侧边栏标题隐藏单行文本溢出 */
 .VPSidebar .items p {
-	display: inline-block;
-	width: calc(var(--vp-sidebar-width) - 100px);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+  display: inline-block;
+  width: calc(var(--vp-sidebar-width) - 100px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /** 总体类 */
 ::selection {
-	background: var(--vp-c-brand-1);
-	color: var(--vp-c-bg);
+  background: var(--vp-c-brand-1);
+  color: var(--vp-c-bg);
 }
 
 ::-moz-selection {
-	background: var(--vp-c-brand-1);
-	color: var(--vp-c-bg);
+  background: var(--vp-c-brand-1);
+  color: var(--vp-c-bg);
 }
 
 ::-webkit-selection {
-	background: var(--vp-c-brand-1);
-	color: var(--vp-c-bg);
+  background: var(--vp-c-brand-1);
+  color: var(--vp-c-bg);
 }
 
 /** 链接样式 */
 .VPDoc a {
-	text-decoration: none !important;
+  text-decoration: none !important;
 }
 
 .VPDoc a:hover {
-	text-decoration: underline !important;
+  text-decoration: underline !important;
 }
 
 .VPFooter a {
-	text-decoration: none !important;
+  text-decoration: none !important;
 }
 
 .VPFooter a:hover {
-	text-decoration: underline !important;
+  text-decoration: underline !important;
 }
 
 .VPDoc img {
-	border-radius: 4px;
-	cursor: zoom-in;
+  border-radius: 4px;
+  cursor: zoom-in;
 }
 
 /* jupyter 输出代码不换行显示 */
 main > div > div > pre > code {
-	white-space: normal;
+  white-space: normal;
 }
 
 #app {
-	/* 取消移动端点击 div 默认高亮效果 */
-	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  /* 取消移动端点击 div 默认高亮效果 */
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 
 /** 磨砂玻璃效果设置 */
 .VPNavBar {
-	background-color: transparent !important;
+  background-color: transparent !important;
 }
 .VPNav .content .content-body {
-	backdrop-filter: blur(36px);
-	background-color: linear-gradient(
-		to bottom,
-		rgba(var(--vp-nav-bg-color), 0.98),
-		rgba(var(--vp-nav-bg-color), 0.6)
-	) !important;
+  backdrop-filter: blur(36px);
+  background-color: linear-gradient(
+    to bottom,
+    rgba(var(--vp-nav-bg-color), 0.98),
+    rgba(var(--vp-nav-bg-color), 0.6)
+  ) !important;
 }
 
 .VPLocalNav,
 .VPLocalNav .container {
-	backdrop-filter: blur(36px);
-	background-color: linear-gradient(
-		to bottom,
-		rgba(var(--vp-nav-bg-color), 0.6),
-		rgba(var(--vp-nav-bg-color), 0.4)
-	) !important;
+  backdrop-filter: blur(36px);
+  background-color: linear-gradient(
+    to bottom,
+    rgba(var(--vp-nav-bg-color), 0.6),
+    rgba(var(--vp-nav-bg-color), 0.4)
+  ) !important;
 }
 
 .VPLocalNav,
 .has-aside .container {
-	backdrop-filter: none;
-	background-color: none !important;
+  backdrop-filter: none;
+  background-color: none !important;
 }
 
 /** i18n 选项不显示下拉图标 */
 .vpi-chevron-down,
 .text-icon {
-	display: none;
+  display: none;
 }
 
 /** 主题切换按钮样式 */
 .VPSwitchAppearance {
-	width: 22px !important;
+  width: 22px !important;
 }
 
 .VPSwitchAppearance .check {
-	transform: none !important;
+  transform: none !important;
 }
 
 /** 滚动条 */
 * {
-	/* scrollbar-color: rgba(0, 0, 0, 0.12) transparent; */
-	scrollbar-width: thin;
+  /* scrollbar-color: rgba(0, 0, 0, 0.12) transparent; */
+  scrollbar-width: thin;
 }

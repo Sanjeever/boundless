@@ -1,5 +1,5 @@
 ---
-title: "Boyer-Moore: Faster String Search from Right to Left"
+title: 'Boyer-Moore: Faster String Search from Right to Left'
 date: 2026-02-17
 tags:
   - Algorithm
@@ -58,9 +58,10 @@ The good-suffix table tells you where to align a matched suffix next.
 :::
 
 ::: details Why both rules are safe
+
 - **Bad-character rule**: if the wrong character appears in the pattern, align it with its rightmost occurrence; if it never appears, skip the whole pattern length.
 - **Good-suffix rule**: if the right side matches, align that suffix with another occurrence or with a prefix of the pattern.
-:::
+  :::
 
 ## Implementation: Java and JavaScript
 
@@ -142,57 +143,61 @@ public static int boyerMooreSearch(String text, String pattern) {
 
 ```javascript [JavaScript]
 function boyerMooreSearch(text, pattern) {
-  const n = text.length;
-  const m = pattern.length;
-  if (m === 0) return 0;
-  if (m > n) return -1;
+  const n = text.length
+  const m = pattern.length
+  if (m === 0) return 0
+  if (m > n) return -1
 
-  const bmBc = new Array(256).fill(m);
+  const bmBc = new Array(256).fill(m)
   for (let i = 0; i < m - 1; i++) {
-    bmBc[pattern.charCodeAt(i) & 0xff] = m - 1 - i;
+    bmBc[pattern.charCodeAt(i) & 0xff] = m - 1 - i
   }
 
-  const suff = new Array(m);
-  suff[m - 1] = m;
-  let f = 0;
-  let g = m - 1;
+  const suff = new Array(m)
+  suff[m - 1] = m
+  let f = 0
+  let g = m - 1
   for (let i = m - 2; i >= 0; --i) {
     if (i > g && suff[i + m - 1 - f] < i - g) {
-      suff[i] = suff[i + m - 1 - f];
+      suff[i] = suff[i + m - 1 - f]
     } else {
-      if (i < g) g = i;
-      f = i;
-      while (g >= 0 && pattern.charCodeAt(g) === pattern.charCodeAt(g + m - 1 - f)) g--;
-      suff[i] = f - g;
+      if (i < g) g = i
+      f = i
+      while (
+        g >= 0 &&
+        pattern.charCodeAt(g) === pattern.charCodeAt(g + m - 1 - f)
+      )
+        g--
+      suff[i] = f - g
     }
   }
 
-  const bmGs = new Array(m).fill(m);
-  let j = 0;
+  const bmGs = new Array(m).fill(m)
+  let j = 0
   for (let i = m - 1; i >= 0; i--) {
     if (suff[i] === i + 1) {
       for (; j < m - 1 - i; j++) {
-        if (bmGs[j] === m) bmGs[j] = m - 1 - i;
+        if (bmGs[j] === m) bmGs[j] = m - 1 - i
       }
     }
   }
   for (let i = 0; i <= m - 2; i++) {
-    bmGs[m - 1 - suff[i]] = m - 1 - i;
+    bmGs[m - 1 - suff[i]] = m - 1 - i
   }
 
-  let s = 0;
+  let s = 0
   while (s <= n - m) {
-    let i = m - 1;
-    while (i >= 0 && pattern.charCodeAt(i) === text.charCodeAt(s + i)) i--;
+    let i = m - 1
+    while (i >= 0 && pattern.charCodeAt(i) === text.charCodeAt(s + i)) i--
     if (i < 0) {
-      return s;
+      return s
     } else {
-      const bcShift = bmBc[text.charCodeAt(s + i) & 0xff] - m + 1 + i;
-      const gsShift = bmGs[i];
-      s += Math.max(bcShift, gsShift);
+      const bcShift = bmBc[text.charCodeAt(s + i) & 0xff] - m + 1 + i
+      const gsShift = bmGs[i]
+      s += Math.max(bcShift, gsShift)
     }
   }
-  return -1;
+  return -1
 }
 ```
 
