@@ -13,7 +13,7 @@
     "update:deps": "taze -w"
   },
   "keywords": [],
-  "author": "Sanjeev <bestoftribe@foxmail.com>",
+  "author": "Sanjeev <me@sanjeev.top>",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.19.39",

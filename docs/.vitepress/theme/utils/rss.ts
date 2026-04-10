@@ -37,7 +37,7 @@ export async function generateRssZH(): Promise<string> {
       author: [
         {
           name: 'Sanjeev',
-          email: 'bestoftribe@foxmail.com',
+          email: 'me@sanjeev.top',
           link: hostname,
         },
       ],
@@ -85,7 +85,7 @@ export async function generateRssEN(): Promise<string> {
       author: [
         {
           name: 'Sanjeev',
-          email: 'bestoftribe@foxmail.com',
+          email: 'me@sanjeev.top',
           link: hostname,
         },
       ],
