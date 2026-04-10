@@ -8,6 +8,8 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "update:deps": "taze -w"
   },
   "keywords": [],
@@ -17,6 +19,7 @@
     "@types/node": "^20.19.39",
     "feed": "^4.2.2",
     "markdown-it-mathjax3": "^4.3.2",
+    "oxfmt": "^0.44.0",
     "sass": "^1.99.0",
     "taze": "^19.11.0",
     "unplugin-auto-import": "^0.17.8",
