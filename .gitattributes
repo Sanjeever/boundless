@@ -1,1 +1,1 @@
-docs/* linguist-documentation=false
+docs/.vitepress/** linguist-documentation=false
