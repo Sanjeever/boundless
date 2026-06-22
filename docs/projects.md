@@ -10,6 +10,12 @@ footer: false
 
 介绍我创建或维护的项目。
 
+## Sanjeever/codex-quota
+
+非官方的本地 Tauri 菜单栏 / 系统托盘应用，用于从已登录的 ChatGPT WebView 会话中查看 Codex 用量。它不使用 API key，不要求粘贴 cookie、token 或登录凭据，只把 5 小时窗口和周额度状态放到更顺手的位置。
+
+- [GitHub](https://github.com/Sanjeever/codex-quota)
+
 ## Sanjeever/opengauss-mcp
 
 基于 Spring AI MCP Server 的 openGauss 数据库工具服务，支持通过 MCP 客户端以 stdio 方式连接，并调用数据库相关工具完成表结构查看、统计信息查询与 SQL 执行。

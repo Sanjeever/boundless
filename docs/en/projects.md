@@ -10,6 +10,12 @@ footer: false
 
 Projects that I created or maintaining.
 
+## Sanjeever/codex-quota
+
+An unofficial local Tauri menu bar and system tray app for viewing Codex usage from an already authenticated ChatGPT WebView session. It does not use an API key or ask you to paste cookies, tokens, or login credentials; it simply puts the 5-hour and weekly quota state somewhere easier to see.
+
+- [GitHub](https://github.com/Sanjeever/codex-quota)
+
 ## Sanjeever/opengauss-mcp
 
 An openGauss database tooling service built on Spring AI MCP Server. It supports stdio connection via MCP clients and provides database tools for schema inspection, statistics queries, and SQL execution.
