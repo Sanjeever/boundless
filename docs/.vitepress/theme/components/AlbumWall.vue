@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useData } from 'vitepress'
 import albumCollection from '../../data/albums.json'
 
@@ -12,12 +12,16 @@ type Album = {
 
 const albums = albumCollection.albums as Album[]
 const { lang } = useData()
+const coverErrors = ref<Record<string, true>>({})
 const isEnglish = computed(() => lang.value.startsWith('en'))
 const heading = computed(() => (isEnglish.value ? "Albums I've Listened To" : '听过的专辑'))
 const albumSummary = computed(() =>
   isEnglish.value
-    ? `${albums.length} albums and counting`
-    : `${albums.length} 张专辑，仍在继续`,
+    ? `${albums.length} albums listened to, remembered, and counting`
+    : `${albums.length} 张完整听过、愿意记住的专辑`,
+)
+const coverErrorLabel = computed(() =>
+  isEnglish.value ? 'Cover unavailable' : '封面暂不可用',
 )
 
 function getCoverAlt(album: Album) {
@@ -25,12 +29,16 @@ function getCoverAlt(album: Album) {
     ? `${album.artist} - ${album.title} album cover`
     : `${album.artist}《${album.title}》专辑封面`
 }
+
+function markCoverError(id: string) {
+  coverErrors.value[id] = true
+}
 </script>
 
 <template>
   <main class="album-wall">
     <header class="wall-header">
-      <h1>{{ heading }}</h1>
+      <h1 :class="{ 'is-english': isEnglish }">{{ heading }}</h1>
       <p>{{ albumSummary }}</p>
     </header>
 
@@ -39,14 +47,27 @@ function getCoverAlt(album: Album) {
         v-for="(album, index) in albums"
         :key="album.id"
         class="album"
-        :style="{ animationDelay: `${Math.min(index * 30, 180)}ms` }"
       >
         <div class="album-cover">
+          <div
+            v-if="coverErrors[album.id]"
+            class="cover-error"
+            role="img"
+            :aria-label="getCoverAlt(album)"
+          >
+            <span class="cover-error-title">{{ album.title }}</span>
+            <span class="cover-error-artist">{{ album.artist }}</span>
+            <span class="cover-error-label">{{ coverErrorLabel }}</span>
+          </div>
           <img
+            v-else
             :src="album.cover"
             :alt="getCoverAlt(album)"
-            loading="lazy"
+            :loading="index < 5 ? 'eager' : 'lazy'"
+            :fetchpriority="index === 0 ? 'high' : undefined"
             decoding="async"
+            draggable="false"
+            @error="markCoverError(album.id)"
           />
         </div>
         <figcaption>
@@ -60,12 +81,13 @@ function getCoverAlt(album: Album) {
 
 <style scoped>
 .album-wall {
-  --wall-background: #f5f5f7;
-  --text-primary: #1d1d1f;
-  --text-secondary: #6e6e73;
-  --cover-placeholder: #e8e8ed;
+  --wall-background: var(--vp-c-bg);
+  --text-primary: var(--vp-c-text-1);
+  --text-secondary: var(--vp-c-text-2);
+  --cover-placeholder: var(--vp-c-bg-soft);
   --cover-edge: rgb(0 0 0 / 8%);
-  --cover-shadow: 0 2px 5px rgb(0 0 0 / 6%), 0 12px 28px rgb(0 0 0 / 8%);
+  --cover-shadow: 0 1px 2px rgb(0 0 0 / 8%), 0 8px 24px rgb(0 0 0 / 6%);
+  --cover-hover-shadow: 0 14px 32px rgb(0 0 0 / 14%);
   width: 100%;
   min-height: 100dvh;
   color: var(--text-primary);
@@ -77,12 +99,13 @@ function getCoverAlt(album: Album) {
 }
 
 :global(.dark .album-wall) {
-  --wall-background: #101012;
-  --text-primary: #f5f5f7;
-  --text-secondary: #a1a1a6;
-  --cover-placeholder: #242426;
+  --wall-background: var(--vp-c-bg);
+  --text-primary: var(--vp-c-text-1);
+  --text-secondary: var(--vp-c-text-2);
+  --cover-placeholder: var(--vp-c-bg-soft);
   --cover-edge: rgb(255 255 255 / 10%);
-  --cover-shadow: 0 16px 36px rgb(0 0 0 / 32%);
+  --cover-shadow: 0 1px 2px rgb(0 0 0 / 20%), 0 8px 24px rgb(0 0 0 / 18%);
+  --cover-hover-shadow: 0 14px 32px rgb(0 0 0 / 30%);
   color-scheme: dark;
 }
 
@@ -97,8 +120,8 @@ function getCoverAlt(album: Album) {
   display: grid;
   justify-items: start;
   gap: 12px;
-  padding-top: calc(var(--vp-nav-height) + clamp(48px, 7vw, 88px));
-  padding-bottom: clamp(52px, 6vw, 80px);
+  padding-top: calc(var(--vp-nav-height) + clamp(40px, 5vw, 64px));
+  padding-bottom: clamp(40px, 4vw, 48px);
   animation: header-reveal 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
@@ -106,11 +129,15 @@ function getCoverAlt(album: Album) {
   margin: 0;
   color: var(--text-primary);
   font-family: var(--vp-font-family-base);
-  font-size: clamp(44px, 6vw, 72px);
+  font-size: clamp(42px, 5vw, 64px);
   font-weight: 620;
   line-height: 1;
   letter-spacing: -0.035em;
   font-optical-sizing: auto;
+}
+
+.wall-header h1.is-english {
+  max-width: 14ch;
 }
 
 .wall-header p {
@@ -123,26 +150,28 @@ function getCoverAlt(album: Album) {
 
 .cover-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  column-gap: clamp(24px, 2.5vw, 32px);
-  row-gap: clamp(44px, 5vw, 64px);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  column-gap: clamp(18px, 2vw, 24px);
+  row-gap: clamp(36px, 4vw, 48px);
   padding-bottom: clamp(80px, 10vw, 144px);
 }
 
 .album {
   min-width: 0;
   margin: 0;
-  animation: album-reveal 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .album-cover {
   width: 100%;
   aspect-ratio: 1;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 4px;
   background: var(--cover-placeholder);
   box-shadow: 0 0 0 0.5px var(--cover-edge), var(--cover-shadow);
   transform: translateZ(0);
+  transition:
+    box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .album-cover img {
@@ -151,12 +180,48 @@ function getCoverAlt(album: Album) {
   height: 100%;
   object-fit: cover;
   transform: scale(1.002);
+  user-select: none;
+}
+
+.cover-error {
+  display: grid;
+  align-content: end;
+  width: 100%;
+  height: 100%;
+  padding: clamp(14px, 2vw, 20px);
+  color: var(--text-primary);
+  background: var(--cover-placeholder);
+}
+
+.cover-error-title,
+.cover-error-artist {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cover-error-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cover-error-artist,
+.cover-error-label {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.cover-error-artist {
+  margin-top: 2px;
+}
+
+.cover-error-label {
+  margin-top: 12px;
 }
 
 .album figcaption {
   display: grid;
-  gap: 2px;
-  margin-top: 14px;
+  margin-top: 12px;
   padding-inline: 1px;
 }
 
@@ -168,20 +233,35 @@ function getCoverAlt(album: Album) {
 
 .album-title {
   display: -webkit-box;
-  min-height: 2.6em;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   color: var(--text-primary);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.3;
 }
 
 .album-artist {
+  margin-top: 3px;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.4;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .album:hover .album-cover {
+    box-shadow: 0 0 0 0.5px var(--cover-edge), var(--cover-hover-shadow);
+    transform: translateY(-3px) scale(1.01);
+  }
+
+  .album-title {
+    transition: color 220ms ease;
+  }
+
+  .album:hover .album-title {
+    color: var(--vp-c-brand-1);
+  }
 }
 
 @keyframes header-reveal {
@@ -196,26 +276,19 @@ function getCoverAlt(album: Album) {
   }
 }
 
-@keyframes album-reveal {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 8px, 0);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
+@media (max-width: 1279px) {
+  .cover-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 1199px) {
+@media (max-width: 839px) {
   .cover-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    column-gap: 24px;
   }
 }
 
-@media (max-width: 719px) {
+@media (max-width: 559px) {
   .wall-header,
   .cover-grid {
     padding-inline: 16px;
@@ -224,11 +297,16 @@ function getCoverAlt(album: Album) {
   .wall-header {
     gap: 8px;
     padding-top: calc(var(--vp-nav-height) + 32px);
-    padding-bottom: 40px;
+    padding-bottom: 30px;
   }
 
   .wall-header h1 {
-    font-size: 40px;
+    font-size: 38px;
+  }
+
+  .wall-header h1.is-english {
+    max-width: 12ch;
+    font-size: 34px;
   }
 
   .wall-header p {
@@ -238,12 +316,12 @@ function getCoverAlt(album: Album) {
   .cover-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: 12px;
-    row-gap: 36px;
+    row-gap: 32px;
     padding-bottom: 64px;
   }
 
   .album-cover {
-    border-radius: 10px;
+    border-radius: 4px;
   }
 
   .album figcaption {
@@ -252,11 +330,11 @@ function getCoverAlt(album: Album) {
   }
 
   .album-title {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .album-artist {
-    font-size: 13px;
+    font-size: 12px;
   }
 }
 
@@ -265,9 +343,13 @@ function getCoverAlt(album: Album) {
     transition: none;
   }
 
-  .wall-header,
-  .album {
+  .wall-header {
     animation: none;
+  }
+
+  .album-cover,
+  .album-title {
+    transition: none;
   }
 }
 </style>
