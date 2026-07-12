@@ -42,6 +42,144 @@
       "title": "让我想一想",
       "artist": "陈绮贞",
       "cover": "https://coverartarchive.org/release-group/2ce80082-c8f0-36ba-bd30-d6a3021a2bc9/front-500"
+    },
+    {
+      "id": "my-life-will",
+      "title": "My Life Will",
+      "artist": "张悬",
+      "cover": "https://coverartarchive.org/release-group/bbed9dea-b5df-3337-82b9-b380b98dc458/front-500"
+    },
+    {
+      "id": "dear-i-still-dont-know",
+      "title": "亲爱的…我还不知道",
+      "artist": "张悬",
+      "cover": "https://coverartarchive.org/release-group/bd025f4b-ef9c-38a9-8beb-db8bd69d35bc/front-500"
+    },
+    {
+      "id": "ruye",
+      "title": "如也",
+      "artist": "陈粒",
+      "cover": "https://coverartarchive.org/release-group/ad635c99-bcaa-49af-b115-9577a2575338/front-500"
+    },
+    {
+      "id": "reams-of-dream",
+      "title": "小梦大半",
+      "artist": "陈粒",
+      "cover": "https://coverartarchive.org/release-group/2b69724c-d2b8-4f8b-9930-205eb9ab0a8c/front-500"
+    },
+    {
+      "id": "zero",
+      "title": "0",
+      "artist": "林忆莲",
+      "cover": "https://coverartarchive.org/release-group/143b4262-d726-4fcc-9aec-fd29c4898b33/front-500"
+    },
+    {
+      "id": "gaia",
+      "title": "盖亚",
+      "artist": "林忆莲",
+      "cover": "https://coverartarchive.org/release-group/87ef0dea-df13-49ef-98e7-b2a9ddbdd005/front-500"
+    },
+    {
+      "id": "chun-mei-mei",
+      "title": "纯妹妹",
+      "artist": "单依纯",
+      "cover": "https://coverartarchive.org/release-group/12ca8193-092d-4c77-93e3-8068b077c289/front-500"
+    },
+    {
+      "id": "unlock",
+      "title": "unlock",
+      "artist": "周笔畅",
+      "cover": "https://coverartarchive.org/release-group/87caaec8-e342-49af-af3c-d8ae4a6b7407/front-500"
+    },
+    {
+      "id": "vertical-live-horizontal-love",
+      "title": "垂直活着, 水平留恋着。",
+      "artist": "艾怡良",
+      "cover": "https://coverartarchive.org/release-group/a789976d-5a23-477b-ba60-58b09a6f70da/front-500"
+    },
+    {
+      "id": "soulsense",
+      "title": "神经志",
+      "artist": "丁世光",
+      "cover": "https://coverartarchive.org/release-group/d6f4c441-5102-4518-b1fb-accfcedcaaca/front-500"
+    },
+    {
+      "id": "live-movie",
+      "title": "实况电影",
+      "artist": "丁世光",
+      "cover": "https://coverartarchive.org/release-group/a9f28351-083f-4902-a81b-7cf04bc962c7/front-500"
+    },
+    {
+      "id": "back-of-me",
+      "title": "背面是我",
+      "artist": "丁世光",
+      "cover": "https://coverartarchive.org/release-group/696f056b-2a05-481e-bd2f-05c61ce5148f/front-500"
+    },
+    {
+      "id": "ballads-1",
+      "title": "BALLADS 1",
+      "artist": "Joji",
+      "cover": "https://coverartarchive.org/release-group/f05228f2-7e4a-4623-8cd5-d29bfa42e2e0/front-500"
+    },
+    {
+      "id": "nectar",
+      "title": "Nectar",
+      "artist": "Joji",
+      "cover": "https://coverartarchive.org/release-group/ee1588f0-ff93-429f-8e6a-7c350e02c52b/front-500"
+    },
+    {
+      "id": "channel-orange",
+      "title": "channel ORANGE",
+      "artist": "Frank Ocean",
+      "cover": "https://coverartarchive.org/release-group/f8f4167d-897c-4b25-a171-638374d1dfa4/front-500"
+    },
+    {
+      "id": "blonde",
+      "title": "Blonde",
+      "artist": "Frank Ocean",
+      "cover": "https://coverartarchive.org/release-group/0da340a0-6ad7-4fc2-a272-6f94393a7831/front-500"
+    },
+    {
+      "id": "jesus-is-king",
+      "title": "JESUS IS KING",
+      "artist": "Kanye West",
+      "cover": "https://coverartarchive.org/release-group/ee26718c-2633-4278-8718-f3a45a95f20e/front-500"
+    },
+    {
+      "id": "thank-you-goodnight",
+      "title": "Thank You, Goodnight.",
+      "artist": "AG Club",
+      "cover": "https://coverartarchive.org/release-group/5df4a64d-436c-4ab9-9e5b-2ed5ca4e58b1/front-500"
+    },
+    {
+      "id": "the-bends",
+      "title": "The Bends",
+      "artist": "Radiohead",
+      "cover": "https://coverartarchive.org/release-group/b8048f24-c026-3398-b23a-b5e50716cbc7/front-500"
+    },
+    {
+      "id": "ok-computer",
+      "title": "OK Computer",
+      "artist": "Radiohead",
+      "cover": "https://coverartarchive.org/release-group/b1392450-e666-3926-a536-22c65f834433/front-500"
+    },
+    {
+      "id": "the-dark-side-of-the-moon",
+      "title": "The Dark Side of the Moon",
+      "artist": "Pink Floyd",
+      "cover": "https://coverartarchive.org/release-group/f5093c06-23e3-404f-aeaa-40f72885ee3a/front-500"
+    },
+    {
+      "id": "wish-you-were-here",
+      "title": "Wish You Were Here",
+      "artist": "Pink Floyd",
+      "cover": "https://coverartarchive.org/release-group/1a272023-10d3-38ee-bab3-317b55fcc21d/front-500"
+    },
+    {
+      "id": "the-wall",
+      "title": "The Wall",
+      "artist": "Pink Floyd",
+      "cover": "https://coverartarchive.org/release-group/f2026101-945b-3d05-9ef4-aa718fc3feef/front-500"
     }
   ]
 }
