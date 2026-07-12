@@ -8,34 +8,22 @@ footer: false
 
 # 项目
 
-介绍我创建或维护的项目。
-
-## Sanjeever/codex-quota
-
-非官方的本地 Tauri 菜单栏 / 系统托盘应用，用于从已登录的 ChatGPT WebView 会话中查看 Codex 用量。它不使用 API key，不要求粘贴 cookie、token 或登录凭据，只把 5 小时窗口和周额度状态放到更顺手的位置。
-
-- [GitHub](https://github.com/Sanjeever/codex-quota)
-
-## Sanjeever/opengauss-mcp
-
-基于 Spring AI MCP Server 的 openGauss 数据库工具服务，支持通过 MCP 客户端以 stdio 方式连接，并调用数据库相关工具完成表结构查看、统计信息查询与 SQL 执行。
-
-- [GitHub](https://github.com/Sanjeever/opengauss-mcp)
-
-## Sanjeever/dartcode
-
-用 Dart 编写的极简 Claude Code 替代品，是 nanocode 的 Dart 移植版，提供轻量的编码助手与交互式 REPL。
-
-- [GitHub](https://github.com/Sanjeever/dartcode)
+我创建和维护的一些开源项目。
 
 ## Sanjeever/port_sentinel
 
-Flutter Windows 桌面应用程序，用于监控端口和管理进程。
+一款用于监控端口和管理进程的 Flutter Windows 桌面应用。
 
 - [GitHub](https://github.com/Sanjeever/port_sentinel)
 
-## Sanjeever/maven-template
+## Sanjeever/opengauss-mcp
 
-Maven 模板项目，快速开始 Java 开发。包含了常用依赖库，如日志、测试和代码格式化等，并提供了一个开箱即用的 Maven 项目结构。
+基于 Spring AI MCP Server 的 openGauss 数据库工具服务，支持 MCP 客户端通过 stdio 连接，并调用数据库工具查看表结构、查询统计信息和执行 SQL。
 
-- [GitHub](https://github.com/Sanjeever/maven-template)
+- [GitHub](https://github.com/Sanjeever/opengauss-mcp)
+
+## Sanjeever/ndx-dca-signal
+
+一款运行在本地 macOS 上的定投信号程序，面向 A 股市场中的纳斯达克 100、QQQ 等价 QDII-ETF。
+
+- [GitHub](https://github.com/Sanjeever/ndx-dca-signal)

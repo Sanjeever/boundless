@@ -8,34 +8,22 @@ footer: false
 
 # Projects
 
-Projects that I created or maintaining.
-
-## Sanjeever/codex-quota
-
-An unofficial local Tauri menu bar and system tray app for viewing Codex usage from an already authenticated ChatGPT WebView session. It does not use an API key or ask you to paste cookies, tokens, or login credentials; it simply puts the 5-hour and weekly quota state somewhere easier to see.
-
-- [GitHub](https://github.com/Sanjeever/codex-quota)
-
-## Sanjeever/opengauss-mcp
-
-An openGauss database tooling service built on Spring AI MCP Server. It supports stdio connection via MCP clients and provides database tools for schema inspection, statistics queries, and SQL execution.
-
-- [GitHub](https://github.com/Sanjeever/opengauss-mcp)
-
-## Sanjeever/dartcode
-
-Minimal Claude Code alternative written in Dart, a Dart port of nanocode with a lightweight coding assistant and interactive REPL.
-
-- [GitHub](https://github.com/Sanjeever/dartcode)
+Open-source projects I create and maintain.
 
 ## Sanjeever/port_sentinel
 
-Flutter Windows Desktop application for monitoring ports and managing processes.
+A Flutter Windows desktop application for monitoring ports and managing processes.
 
 - [GitHub](https://github.com/Sanjeever/port_sentinel)
 
-## Sanjeever/maven-template
+## Sanjeever/opengauss-mcp
 
-Maven template project for quick Java development startup. It includes commonly used dependencies such as logging, testing, code formatting, and provides a ready-to-use Maven project structure.
+An openGauss database tooling service built with Spring AI MCP Server. MCP clients can connect over stdio to inspect table schemas, query statistics, and execute SQL.
 
-- [GitHub](https://github.com/Sanjeever/maven-template)
+- [GitHub](https://github.com/Sanjeever/opengauss-mcp)
+
+## Sanjeever/ndx-dca-signal
+
+A local macOS application that generates dollar-cost averaging signals for Nasdaq-100 and QQQ-equivalent QDII ETFs traded on China's A-share market.
+
+- [GitHub](https://github.com/Sanjeever/ndx-dca-signal)
