@@ -2,52 +2,46 @@
   "updatedAt": "2026-07-12",
   "albums": [
     {
-      "id": "the-sun",
+      "id": "sofa-sea",
+      "title": "沙发海",
+      "artist": "陈绮贞",
+      "cover": "https://coverartarchive.org/release-group/c6af3dfb-e48a-4d3f-b184-dbfc1863f384/front-500"
+    },
+    {
+      "id": "song-of-transience",
+      "title": "时间的歌",
+      "artist": "陈绮贞",
+      "cover": "https://coverartarchive.org/release-group/efc90f81-55c8-4556-af4e-a263237c4cbb/front-500"
+    },
+    {
+      "id": "immortal",
       "title": "太阳",
       "artist": "陈绮贞",
-      "cover": "https://picsum.photos/seed/album-sun/900/900"
+      "cover": "https://coverartarchive.org/release-group/c87ef084-3ed8-3301-9f48-a770e3c43e89/front-500"
     },
     {
-      "id": "ruye",
-      "title": "如也",
-      "artist": "陈粒",
-      "cover": "https://picsum.photos/seed/album-ruye/900/900"
+      "id": "adventure",
+      "title": "华丽的冒险",
+      "artist": "陈绮贞",
+      "cover": "https://coverartarchive.org/release-group/fd7fac11-3fd5-383f-b2b2-a70a8f1db2bb/front-500"
     },
     {
-      "id": "1701",
-      "title": "1701",
-      "artist": "李志",
-      "cover": "https://picsum.photos/seed/album-1701/900/900"
+      "id": "groupies",
+      "title": "吉他手",
+      "artist": "陈绮贞",
+      "cover": "https://coverartarchive.org/release-group/5a6ab2b2-952e-3731-a36d-8762c21c2d23/front-500"
     },
     {
-      "id": "nervous",
-      "title": "神经志",
-      "artist": "丁世光",
-      "cover": "https://picsum.photos/seed/album-nervous/900/900"
+      "id": "lonely-without-you",
+      "title": "还是会寂寞",
+      "artist": "陈绮贞",
+      "cover": "https://coverartarchive.org/release-group/3bb73139-76a2-35ff-bbc6-58d2423a9966/front-500"
     },
     {
-      "id": "wish-you-were-here",
-      "title": "Wish You Were Here",
-      "artist": "Pink Floyd",
-      "cover": "https://picsum.photos/seed/album-wish/900/900"
-    },
-    {
-      "id": "vespertine",
-      "title": "Vespertine",
-      "artist": "Björk",
-      "cover": "https://picsum.photos/seed/album-vespertine/900/900"
-    },
-    {
-      "id": "in-rainbows",
-      "title": "In Rainbows",
-      "artist": "Radiohead",
-      "cover": "https://picsum.photos/seed/album-rainbows/900/900"
-    },
-    {
-      "id": "blue",
-      "title": "Blue",
-      "artist": "Joni Mitchell",
-      "cover": "https://picsum.photos/seed/album-blue/900/900"
+      "id": "think-twice",
+      "title": "让我想一想",
+      "artist": "陈绮贞",
+      "cover": "https://coverartarchive.org/release-group/2ce80082-c8f0-36ba-bd30-d6a3021a2bc9/front-500"
     }
   ]
 }
