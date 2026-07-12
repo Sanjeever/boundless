@@ -37,6 +37,28 @@ pnpm docs:build
 - `docs/.vitepress/` 站点配置与主题代码
 - `docs/posts/**` 与 `docs/en/posts/**` 博客文章目录
 
+## 专辑封面维护
+
+专辑数据保存在 `docs/.vitepress/data/albums.json`。其中 `cover` 字段使用 [Cover Art Archive](https://coverartarchive.org) 提供的封面图片，地址格式如下：
+
+```text
+https://coverartarchive.org/release-group/<RELEASE_GROUP_MBID>/front-500
+```
+
+`RELEASE_GROUP_MBID` 需要通过 [MusicBrainz](https://musicbrainz.org) 查询：
+
+1. 在 MusicBrainz 搜索专辑。
+2. 核对歌手、发行年份和专辑类型，确认找到正确的 release group。
+3. 打开 release group 页面，从页面地址中复制 MBID。例如，页面地址为 `https://musicbrainz.org/release-group/c6af3dfb-e48a-4d3f-b184-dbfc1863f384` 时，MBID 即 `c6af3dfb-e48a-4d3f-b184-dbfc1863f384`。
+4. 将 MBID 拼接到 Cover Art Archive 的 `front-500` 地址中。
+5. 把完整地址写入 `docs/.vitepress/data/albums.json` 对应专辑的 `cover` 字段。
+
+```json
+{
+  "cover": "https://coverartarchive.org/release-group/c6af3dfb-e48a-4d3f-b184-dbfc1863f384/front-500"
+}
+```
+
 ## AI 技能
 
 项目已在 `.agents/skills/` 安装以下技能；安装来源与版本校验信息记录在 `skills-lock.json`。可以在向 AI 助手提出任务时直接描述需求，或点名技能名称。
