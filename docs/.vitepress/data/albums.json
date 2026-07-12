@@ -1,0 +1,53 @@
+{
+  "updatedAt": "2026-07-12",
+  "albums": [
+    {
+      "id": "the-sun",
+      "title": "太阳",
+      "artist": "陈绮贞",
+      "cover": "https://picsum.photos/seed/album-sun/900/900"
+    },
+    {
+      "id": "ruye",
+      "title": "如也",
+      "artist": "陈粒",
+      "cover": "https://picsum.photos/seed/album-ruye/900/900"
+    },
+    {
+      "id": "1701",
+      "title": "1701",
+      "artist": "李志",
+      "cover": "https://picsum.photos/seed/album-1701/900/900"
+    },
+    {
+      "id": "nervous",
+      "title": "神经志",
+      "artist": "丁世光",
+      "cover": "https://picsum.photos/seed/album-nervous/900/900"
+    },
+    {
+      "id": "wish-you-were-here",
+      "title": "Wish You Were Here",
+      "artist": "Pink Floyd",
+      "cover": "https://picsum.photos/seed/album-wish/900/900"
+    },
+    {
+      "id": "vespertine",
+      "title": "Vespertine",
+      "artist": "Björk",
+      "cover": "https://picsum.photos/seed/album-vespertine/900/900"
+    },
+    {
+      "id": "in-rainbows",
+      "title": "In Rainbows",
+      "artist": "Radiohead",
+      "cover": "https://picsum.photos/seed/album-rainbows/900/900"
+    },
+    {
+      "id": "blue",
+      "title": "Blue",
+      "artist": "Joni Mitchell",
+      "cover": "https://picsum.photos/seed/album-blue/900/900"
+    }
+  ]
+}

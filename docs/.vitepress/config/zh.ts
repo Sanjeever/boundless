@@ -12,6 +12,7 @@ export default defineConfig({
       { text: '博客', link: '/' },
       { text: '归档', link: '/archive', activeMatch: '/archive' },
       { text: '项目', link: '/projects', activeMatch: '/projects' },
+      { text: '唱片', link: '/albums', activeMatch: '/albums' },
       { text: '关于', link: '/about', activeMatch: '/about' },
     ],
     footer: {

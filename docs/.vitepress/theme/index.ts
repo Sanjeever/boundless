@@ -8,6 +8,7 @@ import './style.css'
 import Comment from './components/Comment.vue'
 import ImageViewer from './components/ImageViewer.vue'
 import GoBack from './components/GoBack.vue'
+import AlbumWall from './components/AlbumWall.vue'
 import { startDeployUpdateNotifier } from './utils/deployVersion'
 
 export default {
@@ -25,6 +26,7 @@ export default {
     app.component('Comment', Comment)
     app.component('ImageViewer', ImageViewer)
     app.component('GoBack', GoBack)
+    app.component('AlbumWall', AlbumWall)
     startDeployUpdateNotifier(siteData.value.base)
   },
 }

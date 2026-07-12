@@ -12,6 +12,7 @@ export default defineConfig({
       { text: 'Blog', link: '/en/' },
       { text: 'Archive', link: '/en/archive/', activeMatch: '/en/archive/' },
       { text: 'Projects', link: '/en/projects', activeMatch: '/en/projects' },
+      { text: 'Albums', link: '/en/albums', activeMatch: '/en/albums' },
       { text: 'About', link: '/en/about', activeMatch: '/en/about' },
     ],
     footer: {
