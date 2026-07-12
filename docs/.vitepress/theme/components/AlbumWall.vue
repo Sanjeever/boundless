@@ -11,7 +11,7 @@ type Album = {
 }
 
 const albums = albumCollection.albums as Album[]
-const { isDark, lang } = useData()
+const { lang } = useData()
 const isEnglish = computed(() => lang.value.startsWith('en'))
 const heading = computed(() => (isEnglish.value ? "Albums I've Listened To" : '听过的专辑'))
 const albumSummary = computed(() =>
@@ -28,7 +28,7 @@ function getCoverAlt(album: Album) {
 </script>
 
 <template>
-  <main class="album-wall" :class="{ 'album-wall--dark': isDark }">
+  <main class="album-wall">
     <header class="wall-header">
       <h1>{{ heading }}</h1>
       <p>{{ albumSummary }}</p>
@@ -66,9 +66,8 @@ function getCoverAlt(album: Album) {
   --cover-placeholder: #e8e8ed;
   --cover-edge: rgb(0 0 0 / 8%);
   --cover-shadow: 0 2px 5px rgb(0 0 0 / 6%), 0 12px 28px rgb(0 0 0 / 8%);
-  width: 100vw;
+  width: 100%;
   min-height: 100dvh;
-  margin-left: calc(50% - 50vw);
   color: var(--text-primary);
   color-scheme: light;
   background: var(--wall-background);
@@ -77,7 +76,7 @@ function getCoverAlt(album: Album) {
     background-color 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.album-wall--dark {
+:global(.dark) .album-wall {
   --wall-background: #101012;
   --text-primary: #f5f5f7;
   --text-secondary: #a1a1a6;
