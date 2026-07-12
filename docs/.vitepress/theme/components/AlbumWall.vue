@@ -76,7 +76,7 @@ function getCoverAlt(album: Album) {
     background-color 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-:global(.dark) .album-wall {
+:global(.dark .album-wall) {
   --wall-background: #101012;
   --text-primary: #f5f5f7;
   --text-secondary: #a1a1a6;
