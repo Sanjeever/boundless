@@ -240,6 +240,54 @@
       "releaseDate": "1979-11-30",
       "url": "https://music.apple.com/us/album/1065975633",
       "cover": "https://coverartarchive.org/release-group/f2026101-945b-3d05-9ef4-aa718fc3feef/front-500"
+    },
+    {
+      "id": "the-explorer",
+      "title": "The Explorer",
+      "artist": "The Half Open Sky Gives Us Hope",
+      "releaseDate": "2010-04-05",
+      "url": "https://thehalfopenskygivesushope.bandcamp.com/album/the-explorer",
+      "cover": "https://f4.bcbits.com/img/a2827317183_5.jpg"
+    },
+    {
+      "id": "17",
+      "title": "17",
+      "artist": "XXXTENTACION",
+      "releaseDate": "2017-08-25",
+      "url": "https://music.apple.com/us/album/1274653476",
+      "cover": "https://coverartarchive.org/release-group/4609ccc4-45e4-49b9-9a1e-a98962a5a923/front-500"
+    },
+    {
+      "id": "beauty-doomina",
+      "title": "Beauty",
+      "artist": "Doomina",
+      "releaseDate": "2013-09-21",
+      "url": "https://doomina.bandcamp.com/album/beauty",
+      "cover": "https://coverartarchive.org/release-group/6e1a47a7-94e1-4bb4-935c-8ceed5c108e4/front-500"
+    },
+    {
+      "id": "illusionary-reality",
+      "title": "Illusionary Reality",
+      "artist": "Liquify",
+      "releaseDate": "2021-01-09",
+      "url": "https://music.apple.com/us/album/1540191111",
+      "cover": "https://coverartarchive.org/release-group/fc7f773f-cab7-41db-9ae8-27fa80b90005/front-500"
+    },
+    {
+      "id": "the-wink-and-the-gun",
+      "title": "The Wink & the Gun",
+      "artist": "L'elan Vital",
+      "releaseDate": "2008-02-05",
+      "url": "https://music.apple.com/us/album/512059463",
+      "cover": "https://coverartarchive.org/release-group/618148ab-9a43-45f3-8193-8549aa52c686/front-500"
+    },
+    {
+      "id": "hospice",
+      "title": "Hospice",
+      "artist": "The Antlers",
+      "releaseDate": "2009-03-03",
+      "url": "https://music.apple.com/us/album/322115067",
+      "cover": "https://coverartarchive.org/release-group/99f7d50f-6b7c-3fd8-aa75-4b97b61970e5/front-500"
     }
   ]
 }
