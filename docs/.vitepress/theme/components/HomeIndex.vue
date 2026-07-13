@@ -154,9 +154,9 @@ function dateTime(timestamp: number) {
 
       <a class="albums-panel" :href="albumsPath">
         <div class="album-covers" aria-hidden="true">
-          <img src="/images/albums/sofa-sea.jpg" alt="" />
-          <img src="/images/albums/soulsense.jpg" alt="" />
-          <img src="/images/albums/ruye.jpg" alt="" />
+          <img src="/images/albums/jesus-is-king.jpg" alt="" />
+          <img src="/images/albums/back-of-me.jpg" alt="" />
+          <img src="/images/albums/groupies.jpg" alt="" />
         </div>
         <div>
           <h2>{{ copy.albums }}</h2>

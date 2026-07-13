@@ -23,9 +23,9 @@ const copy = computed(() =>
         literature: 'Literature',
         writers: 'Wang Xiaobo',
         albumAlt: [
-          'Sofa Sea album cover',
-          'Soul Sense album cover',
-          'Ru Ye album cover',
+          'JESUS IS KING album cover',
+          '背面是我 album cover',
+          '吉他手 album cover',
         ],
       }
     : {
@@ -42,7 +42,11 @@ const copy = computed(() =>
         musicians: '陈绮贞、丁世光、陈粒、李志',
         literature: '文学',
         writers: '王小波',
-        albumAlt: ['沙发海专辑封面', '神经志专辑封面', '如也专辑封面'],
+        albumAlt: [
+          'JESUS IS KING 专辑封面',
+          '背面是我专辑封面',
+          '吉他手专辑封面',
+        ],
       }
 )
 
@@ -120,15 +124,15 @@ const frontend = ['Vue 3, TypeScript', 'Vite', 'Tailwind CSS']
       </div>
       <div class="interest-covers">
         <img
-          src="/images/albums/sofa-sea.jpg"
+          src="/images/albums/jesus-is-king.jpg"
           :alt="copy.albumAlt[0]"
           loading="lazy" />
         <img
-          src="/images/albums/soulsense.jpg"
+          src="/images/albums/back-of-me.jpg"
           :alt="copy.albumAlt[1]"
           loading="lazy" />
         <img
-          src="/images/albums/ruye.jpg"
+          src="/images/albums/groupies.jpg"
           :alt="copy.albumAlt[2]"
           loading="lazy" />
       </div>
