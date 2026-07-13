@@ -1,5 +1,5 @@
 ---
-title: Releasing opengauss-mcp
+title: opengauss-mcp
 date: 2026-03-31
 tags:
   - Open Source
@@ -12,7 +12,7 @@ outline: deep
 aside: true
 ---
 
-# Releasing opengauss-mcp
+# opengauss-mcp
 
 <!-- DESC SEP -->
 

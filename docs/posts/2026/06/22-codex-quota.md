@@ -1,5 +1,5 @@
 ---
-title: Codex Quota：把 Codex 用量放到菜单栏
+title: Codex Quota
 date: 2026-06-22
 tags:
   - 开源
@@ -11,7 +11,7 @@ outline: deep
 aside: true
 ---
 
-# Codex Quota：把 Codex 用量放到菜单栏
+# Codex Quota
 
 <!-- DESC SEP -->
 

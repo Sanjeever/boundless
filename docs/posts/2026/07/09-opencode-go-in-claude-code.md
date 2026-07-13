@@ -1,5 +1,5 @@
 ---
-title: 在 Claude Code 里用 OpenCode Go：两个差点让我放弃的坑
+title: 在 Claude Code 里用 OpenCode Go
 date: 2026-07-09
 tags:
   - Claude Code
@@ -11,7 +11,7 @@ outline: deep
 aside: true
 ---
 
-# 在 Claude Code 里用 OpenCode Go：两个差点让我放弃的坑
+# 在 Claude Code 里用 OpenCode Go
 
 <!-- DESC SEP -->
 

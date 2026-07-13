@@ -1,5 +1,5 @@
 ---
-title: Software Architecture Principles in the AI Era
+title: Software Architecture in the AI Era
 date: 2026-04-02
 tags:
   - Essay
@@ -11,7 +11,7 @@ outline: deep
 aside: true
 ---
 
-# Software Architecture Principles in the AI Era
+# Software Architecture in the AI Era
 
 <!-- DESC SEP -->
 

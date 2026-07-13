@@ -1,5 +1,5 @@
 ---
-title: AI 时代的软件结构原则
+title: AI 时代的软件架构
 date: 2026-04-02
 tags:
   - 随笔
@@ -11,7 +11,7 @@ outline: deep
 aside: true
 ---
 
-# AI 时代的软件结构原则
+# AI 时代的软件架构
 
 <!-- DESC SEP -->
 

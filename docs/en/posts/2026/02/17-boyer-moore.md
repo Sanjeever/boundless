@@ -1,5 +1,5 @@
 ---
-title: 'Boyer-Moore: Faster String Search from Right to Left'
+title: Boyer-Moore String Search
 date: 2026-02-17
 tags:
   - Algorithm
@@ -12,7 +12,7 @@ outline: deep
 aside: true
 ---
 
-# Boyer-Moore: Faster String Search from Right to Left
+# Boyer-Moore String Search
 
 <!-- DESC SEP -->
 

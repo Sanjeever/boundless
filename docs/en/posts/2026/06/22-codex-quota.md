@@ -1,5 +1,5 @@
 ---
-title: 'Codex Quota: Putting Codex Usage in the Menu Bar'
+title: Codex Quota
 date: 2026-06-22
 tags:
   - Open Source
@@ -11,7 +11,7 @@ outline: deep
 aside: true
 ---
 
-# Codex Quota: Putting Codex Usage in the Menu Bar
+# Codex Quota
 
 <!-- DESC SEP -->
 

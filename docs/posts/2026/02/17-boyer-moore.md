@@ -1,5 +1,5 @@
 ---
-title: Boyer-Moore：从右往左更快的字符串匹配
+title: Boyer-Moore 字符串匹配
 date: 2026-02-17
 tags:
   - 算法
@@ -11,7 +11,7 @@ outline: deep
 aside: true
 ---
 
-# Boyer-Moore：从右往左更快的字符串匹配
+# Boyer-Moore 字符串匹配
 
 <!-- DESC SEP -->
 

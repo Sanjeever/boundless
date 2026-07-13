@@ -1,5 +1,5 @@
 ---
-title: 'Using OpenCode Go Inside Claude Code: Two Traps That Nearly Made Me Give Up'
+title: Using OpenCode Go in Claude Code
 date: 2026-07-09
 tags:
   - Claude Code
@@ -11,7 +11,7 @@ outline: deep
 aside: true
 ---
 
-# Using OpenCode Go Inside Claude Code: Two Traps That Nearly Made Me Give Up
+# Using OpenCode Go in Claude Code
 
 <!-- DESC SEP -->
 

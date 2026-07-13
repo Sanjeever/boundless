@@ -1,5 +1,5 @@
 ---
-title: 从 apply_patch 到 Edit/Write：Claude Code 与 Codex 的文件编辑哲学差异
+title: Codex 与 Claude Code 的文件编辑
 date: 2026-06-01
 tags:
   - 随笔
@@ -11,7 +11,7 @@ outline: deep
 aside: true
 ---
 
-# 从 apply_patch 到 Edit/Write：Claude Code 与 Codex 的文件编辑哲学差异
+# Codex 与 Claude Code 的文件编辑
 
 <!-- DESC SEP -->
 

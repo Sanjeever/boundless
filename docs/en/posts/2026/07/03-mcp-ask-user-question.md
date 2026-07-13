@@ -1,5 +1,5 @@
 ---
-title: 'mcp-ask-user-question: Giving Codex the AskUserQuestion Experience'
+title: mcp-ask-user-question
 date: 2026-07-03
 tags:
   - Open Source
@@ -12,7 +12,7 @@ outline: deep
 aside: true
 ---
 
-# mcp-ask-user-question: Giving Codex the AskUserQuestion Experience
+# mcp-ask-user-question
 
 <!-- DESC SEP -->
 

@@ -1,5 +1,5 @@
 ---
-title: mcp-ask-user-question：让 Codex 也拥有 AskUserQuestion 体验
+title: mcp-ask-user-question
 date: 2026-07-03
 tags:
   - 开源
@@ -12,7 +12,7 @@ outline: deep
 aside: true
 ---
 
-# mcp-ask-user-question：让 Codex 也拥有 AskUserQuestion 体验
+# mcp-ask-user-question
 
 <!-- DESC SEP -->
 

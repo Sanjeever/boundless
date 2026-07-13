@@ -1,5 +1,5 @@
 ---
-title: openGauss MCP 工具服务发布
+title: opengauss-mcp
 date: 2026-03-31
 tags:
   - 开源
@@ -12,7 +12,7 @@ outline: deep
 aside: true
 ---
 
-# openGauss MCP 工具服务发布
+# opengauss-mcp
 
 <!-- DESC SEP -->
 

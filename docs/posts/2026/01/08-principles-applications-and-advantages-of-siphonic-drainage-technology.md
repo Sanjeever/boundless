@@ -1,5 +1,5 @@
 ---
-title: 虹吸排水技术的原理、应用与优势
+title: 虹吸排水
 date: 2026-01-08
 tags:
   - 随笔
@@ -8,7 +8,7 @@ outline: deep
 aside: true
 ---
 
-# 虹吸排水技术的原理、应用与优势
+# 虹吸排水
 
 <!-- DESC SEP -->
 

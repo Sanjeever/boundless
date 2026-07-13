@@ -1,5 +1,5 @@
 ---
-title: Principles, Applications, and Advantages of Siphonic Drainage Technology
+title: Siphonic Drainage
 date: 2026-01-08
 tags:
   - Essay
@@ -8,7 +8,7 @@ outline: deep
 aside: true
 ---
 
-# Principles, Applications, and Advantages of Siphonic Drainage Technology
+# Siphonic Drainage
 
 <!-- DESC SEP -->
 

@@ -1,5 +1,5 @@
 ---
-title: From apply_patch to Edit/Write — The Philosophical Divide in How Claude Code and Codex Edit Files
+title: How Codex and Claude Code Edit Files
 date: 2026-06-01
 tags:
   - Essay
@@ -11,7 +11,7 @@ outline: deep
 aside: true
 ---
 
-# From apply_patch to Edit/Write — The Philosophical Divide in How Claude Code and Codex Edit Files
+# How Codex and Claude Code Edit Files
 
 <!-- DESC SEP -->
 
