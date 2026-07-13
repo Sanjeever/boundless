@@ -20,6 +20,13 @@ Tired of typing answers to Agent questions in Codex, I built a portable AskUserQ
 
 <!-- DESC SEP -->
 
+> [!IMPORTANT]
+> **Update, July 13, 2026:** Codex now has experimental support for the native
+> `request_user_input` tool outside Plan mode. Enable it with
+> `codex features enable default_mode_request_user_input`. As a result,
+> `mcp-ask-user-question` has been archived and is no longer maintained. This
+> post remains available as background and an implementation record.
+
 ## The Motivation, Up Front
 
 Over the last stretch, I have gravitated toward developing with **grill-me / grilling**.
@@ -127,7 +134,17 @@ Multi-question calls are all-or-nothing — if a later question is cancelled or 
 
 ## Using It Inside Codex
 
-Run it directly with `npx`:
+The recommended approach is now to enable Codex's native experimental feature;
+no MCP server is required:
+
+```bash
+codex features enable default_mode_request_user_input
+```
+
+This makes the `request_user_input` tool available outside Plan mode. The MCP
+setup below is retained for historical reference only.
+
+Run the legacy server directly with `npx`:
 
 ```bash
 npx -y mcp-ask-user-question
@@ -198,4 +215,5 @@ For me, that is extending the grilling route from "only in Claude Code / OpenCod
 
 - **GitHub Repository**: [Sanjeever/mcp-ask-user-question](https://github.com/Sanjeever/mcp-ask-user-question)
 
-If you also use Codex day to day and want the Agent to learn "ask first, then write", give it a try.
+If you also use Codex day to day and want the Agent to learn "ask first, then
+write", you can now enable `default_mode_request_user_input` directly.
