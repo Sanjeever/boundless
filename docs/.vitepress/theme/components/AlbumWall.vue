@@ -21,6 +21,16 @@ const { lang } = useData()
 const coverErrors = ref<Record<string, true>>({})
 const isEnglish = computed(() => lang.value.startsWith('en'))
 const heading = computed(() => (isEnglish.value ? "Albums I've Listened To" : '听过的专辑'))
+const releaseYears = computed(() =>
+  albums.value.map((album) => album.releaseDate.slice(0, 4)),
+)
+const archiveLabel = computed(() => {
+  const range = `${releaseYears.value.at(-1)}—${releaseYears.value[0]}`
+
+  return isEnglish.value
+    ? `Listening archive · ${range}`
+    : `个人聆听档案 · ${range}`
+})
 const albumSummary = computed(() =>
   isEnglish.value
     ? `${albums.value.length} albums listened to, remembered, and counting`
@@ -29,12 +39,9 @@ const albumSummary = computed(() =>
 const coverErrorLabel = computed(() =>
   isEnglish.value ? 'Cover unavailable' : '封面暂不可用',
 )
-
-function getCoverAlt(album: Album) {
-  return isEnglish.value
-    ? `${album.artist} - ${album.title} album cover`
-    : `${album.artist}《${album.title}》专辑封面`
-}
+const externalLinkLabel = computed(() =>
+  isEnglish.value ? 'Opens in a new window' : '在新窗口打开',
+)
 
 function markCoverError(id: string) {
   coverErrors.value[id] = true
@@ -44,8 +51,9 @@ function markCoverError(id: string) {
 <template>
   <main class="album-wall">
     <header class="wall-header">
+      <p class="archive-label">{{ archiveLabel }}</p>
       <h1 :class="{ 'is-english': isEnglish }">{{ heading }}</h1>
-      <p>{{ albumSummary }}</p>
+      <p class="album-summary">{{ albumSummary }}</p>
     </header>
 
     <section class="cover-grid" :aria-label="heading">
@@ -62,8 +70,7 @@ function markCoverError(id: string) {
             <div
               v-if="coverErrors[album.id]"
               class="cover-error"
-              role="img"
-              :aria-label="getCoverAlt(album)"
+              aria-hidden="true"
             >
               <span class="cover-error-title">{{ album.title }}</span>
               <span class="cover-error-artist">{{ album.artist }}</span>
@@ -72,7 +79,7 @@ function markCoverError(id: string) {
             <img
               v-else
               :src="album.cover"
-              :alt="getCoverAlt(album)"
+              alt=""
               :loading="index < 5 ? 'eager' : 'lazy'"
               :fetchpriority="index === 0 ? 'high' : undefined"
               decoding="async"
@@ -81,8 +88,15 @@ function markCoverError(id: string) {
             />
           </div>
           <figcaption>
-            <span class="album-title">{{ album.title }}</span>
-            <span class="album-artist">{{ album.artist }}</span>
+            <span class="album-title-row">
+              <span class="album-title">{{ album.title }}</span>
+              <span class="external-mark" aria-hidden="true">↗</span>
+            </span>
+            <span class="album-meta">
+              <span class="album-artist">{{ album.artist }}</span>
+              <span class="album-year">{{ album.releaseDate.slice(0, 4) }}</span>
+            </span>
+            <span class="visually-hidden">{{ externalLinkLabel }}</span>
           </figcaption>
         </figure>
       </a>
@@ -130,10 +144,20 @@ function markCoverError(id: string) {
 .wall-header {
   display: grid;
   justify-items: start;
-  gap: 12px;
+  gap: 10px;
   padding-top: calc(var(--vp-nav-height) + clamp(40px, 5vw, 64px));
   padding-bottom: clamp(40px, 4vw, 48px);
   animation: header-reveal 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.archive-label {
+  margin: 0 0 2px;
+  color: var(--vp-c-brand-1);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+  text-transform: uppercase;
 }
 
 .wall-header h1 {
@@ -151,7 +175,7 @@ function markCoverError(id: string) {
   max-width: 14ch;
 }
 
-.wall-header p {
+.album-summary {
   margin: 0;
   color: var(--text-secondary);
   font-size: 15px;
@@ -161,7 +185,10 @@ function markCoverError(id: string) {
 
 .cover-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(200px, calc(50% - 6px)), 1fr)
+  );
   column-gap: clamp(18px, 2vw, 24px);
   row-gap: clamp(36px, 4vw, 48px);
   padding-bottom: clamp(80px, 10vw, 144px);
@@ -172,6 +199,18 @@ function markCoverError(id: string) {
   min-width: 0;
   margin: 0;
   text-decoration: none;
+}
+
+.album:focus-visible {
+  outline: none;
+}
+
+.album:focus-visible .album-cover {
+  box-shadow:
+    0 0 0 2px var(--wall-background),
+    0 0 0 4px var(--vp-c-brand-1),
+    var(--cover-hover-shadow);
+  transform: translateY(-2px);
 }
 
 .album figure {
@@ -242,7 +281,26 @@ function markCoverError(id: string) {
   padding-inline: 1px;
 }
 
+.album-title-row,
+.album-meta {
+  display: flex;
+  min-width: 0;
+}
+
+.album-title-row {
+  align-items: flex-start;
+}
+
+.album-meta {
+  align-items: baseline;
+  margin-top: 3px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 .album-artist {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -250,6 +308,8 @@ function markCoverError(id: string) {
 
 .album-title {
   display: -webkit-box;
+  min-width: 0;
+  min-height: 2.6em;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -259,25 +319,67 @@ function markCoverError(id: string) {
   line-height: 1.3;
 }
 
-.album-artist {
-  margin-top: 3px;
+.album-year {
+  flex: none;
+}
+
+.album-year::before {
+  margin-inline: 0.45em;
+  content: '·';
+}
+
+.external-mark {
+  flex: none;
+  margin: 0.05em 0 0 0.4em;
   color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 0.9em;
+  opacity: 0.48;
+  transform: translate3d(-2px, 2px, 0);
+  transition:
+    color 220ms ease,
+    opacity 220ms ease,
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.album-title {
+  transition: color 220ms ease;
+}
+
+.album:focus-visible .album-title,
+.album:focus-visible .external-mark {
+  color: var(--vp-c-brand-1);
+}
+
+.album:focus-visible .external-mark {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .album:hover .album-cover {
+  .album:hover:not(:focus-visible) .album-cover {
     box-shadow: 0 0 0 0.5px var(--cover-edge), var(--cover-hover-shadow);
-    transform: translateY(-3px) scale(1.01);
+    transform: translateY(-2px) scale(1.005);
   }
 
-  .album-title {
-    transition: color 220ms ease;
-  }
-
-  .album:hover .album-title {
+  .album:hover .album-title,
+  .album:hover .external-mark {
     color: var(--vp-c-brand-1);
+  }
+
+  .album:hover .external-mark {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
 }
 
@@ -290,18 +392,6 @@ function markCoverError(id: string) {
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0);
-  }
-}
-
-@media (max-width: 1279px) {
-  .cover-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 839px) {
-  .cover-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -326,12 +416,11 @@ function markCoverError(id: string) {
     font-size: 34px;
   }
 
-  .wall-header p {
+  .album-summary {
     font-size: 14px;
   }
 
   .cover-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: 12px;
     row-gap: 32px;
     padding-bottom: 64px;
@@ -350,7 +439,7 @@ function markCoverError(id: string) {
     font-size: 13px;
   }
 
-  .album-artist {
+  .album-meta {
     font-size: 12px;
   }
 }
@@ -365,8 +454,16 @@ function markCoverError(id: string) {
   }
 
   .album-cover,
-  .album-title {
+  .album-title,
+  .external-mark {
     transition: none;
+  }
+
+  .album:hover .album-cover,
+  .album:focus-visible .album-cover,
+  .album:hover .external-mark,
+  .album:focus-visible .external-mark {
+    transform: none;
   }
 }
 </style>
