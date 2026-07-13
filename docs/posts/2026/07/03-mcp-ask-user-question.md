@@ -21,7 +21,7 @@ aside: true
 <!-- DESC SEP -->
 
 > [!IMPORTANT]
-> **2026-07-13 更新：**Codex 现已实验性支持在非 Plan 模式使用原生
+> 2026-07-13 更新：Codex 现已实验性支持在非 Plan 模式使用原生
 > `request_user_input` 工具。运行
 > `codex features enable default_mode_request_user_input` 即可启用，因此
 > `mcp-ask-user-question` 已归档，不再维护。本文保留为项目背景和实现记录。

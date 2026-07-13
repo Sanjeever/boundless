@@ -21,7 +21,7 @@ Tired of typing answers to Agent questions in Codex, I built a portable AskUserQ
 <!-- DESC SEP -->
 
 > [!IMPORTANT]
-> **Update, July 13, 2026:** Codex now has experimental support for the native
+> Update, July 13, 2026: Codex now has experimental support for the native
 > `request_user_input` tool outside Plan mode. Enable it with
 > `codex features enable default_mode_request_user_input`. As a result,
 > `mcp-ask-user-question` has been archived and is no longer maintained. This
