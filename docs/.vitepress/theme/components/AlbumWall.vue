@@ -78,7 +78,7 @@ function markCoverError(id: string) {
             </div>
             <img
               v-else
-              :src="album.cover"
+              :src="`/images/albums/${album.id}.jpg`"
               alt=""
               :loading="index < 5 ? 'eager' : 'lazy'"
               :fetchpriority="index === 0 ? 'high' : undefined"

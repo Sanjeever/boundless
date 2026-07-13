@@ -21,8 +21,11 @@ Boundless（无垠）是 Sanjeev 的中英双语个人博客，线上地址为
 - `docs/.vitepress/theme/`：默认主题扩展、全局样式、Vue 组件、文章数据加载、RSS
   与页面元数据逻辑。
 - `docs/.vitepress/data/albums.json`：唱片墙的唯一数据源，中英文页面共用。
+- `docs/public/images/albums/`：唱片墙的本地封面，文件名与专辑 ID 保持一致，并随
+  Cloudflare 静态资源部署。
 - `docs/public/`：不经过打包转换、按站点根路径访问的静态资源。
 - `docs/assets/`：由 VitePress 处理的字体等源码资源。
+- `scripts/sync-album-covers.mjs`：根据 `albums.json` 同步缺失或需要刷新的本地封面。
 - `.agents/skills/`：项目安装的 AI 技能；来源和版本记录在 `skills-lock.json`。
 - `wrangler.toml`：Cloudflare 静态资源部署配置，产物目录为
   `docs/.vitepress/dist`。
@@ -38,6 +41,7 @@ pnpm docs:build
 pnpm docs:preview
 pnpm format
 pnpm format:check
+pnpm sync:album-covers
 pnpm update:deps
 ```
 
@@ -87,12 +91,18 @@ aside: true
 
 ### 唱片数据
 
-- `albums.json` 中每项保持 `id`、`title`、`artist`、`cover` 四个字段，并同步更新顶层
-  `updatedAt`。
+- `albums.json` 中每项保持 `id`、`title`、`artist`、`releaseDate`、`url`、`cover`
+  六个字段，并同步更新顶层 `updatedAt`。
 - `id` 使用稳定、唯一的 kebab-case 标识；不要因展示文案调整而随意更改已有 ID。
 - 封面使用 Cover Art Archive 的 release-group 地址：
   `https://coverartarchive.org/release-group/<MBID>/front-500`。先在 MusicBrainz 核对
   歌手、发行年份和 release group，避免只凭同名专辑猜测 MBID。
+- 页面不直接请求 `cover` 中的第三方地址，而是加载
+  `docs/public/images/albums/<id>.jpg`。新增专辑或删除本地封面后运行
+  `pnpm sync:album-covers`；需要覆盖全部已有封面时运行
+  `pnpm sync:album-covers -- --force`。
+- 本地封面属于需要提交的站点静态资源。不要改成在构建阶段从第三方下载，以免部署
+  重新依赖封面源的可用性。
 
 ## 代码约定
 

@@ -10,6 +10,7 @@
     "docs:preview": "vitepress preview docs",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
+    "sync:album-covers": "node scripts/sync-album-covers.mjs",
     "update:deps": "taze -w"
   },
   "keywords": [],

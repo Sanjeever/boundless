@@ -59,6 +59,25 @@ https://coverartarchive.org/release-group/<RELEASE_GROUP_MBID>/front-500
 }
 ```
 
+页面不会直接请求 `cover` 中的第三方地址。封面会以
+`docs/public/images/albums/<id>.jpg` 的形式随站点部署，并由 Cloudflare 的静态资源网络
+分发；`cover` 字段继续作为原始来源记录。
+
+新增专辑或删除本地封面后，运行以下命令同步缺失文件：
+
+```bash
+pnpm sync:album-covers
+```
+
+命令默认跳过已有文件。如果修改了已有专辑的封面来源，可以先删除对应的本地文件再
+运行同步命令，或覆盖刷新全部封面：
+
+```bash
+pnpm sync:album-covers -- --force
+```
+
+同步生成的本地封面需要提交到仓库，不要将下载步骤放入站点构建流程。
+
 ## AI 技能
 
 项目已在 `.agents/skills/` 安装以下技能；安装来源与版本校验信息记录在 `skills-lock.json`。可以在向 AI 助手提出任务时直接描述需求，或点名技能名称。
