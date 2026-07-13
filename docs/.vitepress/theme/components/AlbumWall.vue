@@ -7,18 +7,24 @@ type Album = {
   id: string
   title: string
   artist: string
+  releaseDate: string
+  url: string
   cover: string
 }
 
-const albums = albumCollection.albums as Album[]
+const albums = computed(() =>
+  (albumCollection.albums as Album[])
+    .slice()
+    .sort((a, b) => b.releaseDate.localeCompare(a.releaseDate)),
+)
 const { lang } = useData()
 const coverErrors = ref<Record<string, true>>({})
 const isEnglish = computed(() => lang.value.startsWith('en'))
 const heading = computed(() => (isEnglish.value ? "Albums I've Listened To" : '听过的专辑'))
 const albumSummary = computed(() =>
   isEnglish.value
-    ? `${albums.length} albums listened to, remembered, and counting`
-    : `${albums.length} 张完整听过、愿意记住的专辑`,
+    ? `${albums.value.length} albums listened to, remembered, and counting`
+    : `${albums.value.length} 张完整听过、愿意记住的专辑`,
 )
 const coverErrorLabel = computed(() =>
   isEnglish.value ? 'Cover unavailable' : '封面暂不可用',
@@ -43,38 +49,43 @@ function markCoverError(id: string) {
     </header>
 
     <section class="cover-grid" :aria-label="heading">
-      <figure
+      <a
         v-for="(album, index) in albums"
         :key="album.id"
         class="album"
+        :href="album.url"
+        target="_blank"
+        rel="noopener noreferrer"
       >
-        <div class="album-cover">
-          <div
-            v-if="coverErrors[album.id]"
-            class="cover-error"
-            role="img"
-            :aria-label="getCoverAlt(album)"
-          >
-            <span class="cover-error-title">{{ album.title }}</span>
-            <span class="cover-error-artist">{{ album.artist }}</span>
-            <span class="cover-error-label">{{ coverErrorLabel }}</span>
+        <figure>
+          <div class="album-cover">
+            <div
+              v-if="coverErrors[album.id]"
+              class="cover-error"
+              role="img"
+              :aria-label="getCoverAlt(album)"
+            >
+              <span class="cover-error-title">{{ album.title }}</span>
+              <span class="cover-error-artist">{{ album.artist }}</span>
+              <span class="cover-error-label">{{ coverErrorLabel }}</span>
+            </div>
+            <img
+              v-else
+              :src="album.cover"
+              :alt="getCoverAlt(album)"
+              :loading="index < 5 ? 'eager' : 'lazy'"
+              :fetchpriority="index === 0 ? 'high' : undefined"
+              decoding="async"
+              draggable="false"
+              @error="markCoverError(album.id)"
+            />
           </div>
-          <img
-            v-else
-            :src="album.cover"
-            :alt="getCoverAlt(album)"
-            :loading="index < 5 ? 'eager' : 'lazy'"
-            :fetchpriority="index === 0 ? 'high' : undefined"
-            decoding="async"
-            draggable="false"
-            @error="markCoverError(album.id)"
-          />
-        </div>
-        <figcaption>
-          <span class="album-title">{{ album.title }}</span>
-          <span class="album-artist">{{ album.artist }}</span>
-        </figcaption>
-      </figure>
+          <figcaption>
+            <span class="album-title">{{ album.title }}</span>
+            <span class="album-artist">{{ album.artist }}</span>
+          </figcaption>
+        </figure>
+      </a>
     </section>
   </main>
 </template>
@@ -157,7 +168,13 @@ function markCoverError(id: string) {
 }
 
 .album {
+  display: block;
   min-width: 0;
+  margin: 0;
+  text-decoration: none;
+}
+
+.album figure {
   margin: 0;
 }
 
