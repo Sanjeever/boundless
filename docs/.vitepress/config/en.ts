@@ -8,6 +8,7 @@ export default defineConfig({
 
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
+    logo: '/logo.png',
     nav: [
       { text: 'Blog', link: '/en/' },
       { text: 'Archive', link: '/en/archive/', activeMatch: '/en/archive/' },
@@ -19,6 +20,7 @@ export default defineConfig({
       message:
         'Copyright © 2025-present <a href="https://sanjeev.top/en/about">Sanjeev</a>.',
     },
+    outlineTitle: 'Contents',
 
     // sidebar: sideBarConfig,
 

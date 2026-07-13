@@ -57,21 +57,9 @@ export function addBase(relativePath: string) {
 }
 
 export function handleFontsPreload({ assets }: TransformContext) {
-  const SourceHanSerifCN = assets.find(file => /SourceHanSerifCN-VF\.\w+\.otf/)
   const FiraCode = assets.find(file => /FiraCode-VF\.\w+\.woff2/)
-  const Niconne = assets.find(file => /Niconne-Regular\.\w+\.ttf/)
 
   return [
-    SourceHanSerifCN && [
-      'link',
-      {
-        rel: 'preload',
-        href: SourceHanSerifCN,
-        as: 'font',
-        type: 'font/otf',
-        crossorigin: '',
-      },
-    ],
     FiraCode && [
       'link',
       {
@@ -79,16 +67,6 @@ export function handleFontsPreload({ assets }: TransformContext) {
         href: FiraCode,
         as: 'font',
         type: 'font/woff2',
-        crossorigin: '',
-      },
-    ],
-    Niconne && [
-      'link',
-      {
-        rel: 'preload',
-        href: Niconne,
-        as: 'font',
-        type: 'font/ttf',
         crossorigin: '',
       },
     ],

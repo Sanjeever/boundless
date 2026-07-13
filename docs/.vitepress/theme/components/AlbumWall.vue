@@ -25,7 +25,7 @@ const releaseYears = computed(() =>
   albums.value.map((album) => album.releaseDate.slice(0, 4)),
 )
 const archiveLabel = computed(() => {
-  const range = `${releaseYears.value.at(-1)}—${releaseYears.value[0]}`
+  const range = `${releaseYears.value.at(-1)}-${releaseYears.value[0]}`
 
   return isEnglish.value
     ? `Listening archive · ${range}`
@@ -221,7 +221,7 @@ function markCoverError(id: string) {
   width: 100%;
   aspect-ratio: 1;
   overflow: hidden;
-  border-radius: 4px;
+  border-radius: var(--boundless-radius);
   background: var(--cover-placeholder);
   box-shadow: 0 0 0 0.5px var(--cover-edge), var(--cover-shadow);
   transform: translateZ(0);
@@ -234,6 +234,7 @@ function markCoverError(id: string) {
   display: block;
   width: 100%;
   height: 100%;
+  pointer-events: none;
   object-fit: cover;
   transform: scale(1.002);
   user-select: none;
@@ -427,7 +428,7 @@ function markCoverError(id: string) {
   }
 
   .album-cover {
-    border-radius: 4px;
+    border-radius: var(--boundless-radius);
   }
 
   .album figcaption {

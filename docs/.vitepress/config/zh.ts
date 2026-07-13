@@ -8,6 +8,7 @@ export default defineConfig({
 
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
+    logo: '/logo.png',
     nav: [
       { text: '博客', link: '/' },
       { text: '归档', link: '/archive', activeMatch: '/archive' },
@@ -23,7 +24,7 @@ export default defineConfig({
       prev: '上一篇',
       next: '下一篇',
     },
-    outlineTitle: '当前页面',
+    outlineTitle: '本文目录',
     lastUpdatedText: '最近更新时间',
 
     // sidebar: sideBarConfig,
