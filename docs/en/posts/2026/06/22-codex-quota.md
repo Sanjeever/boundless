@@ -6,7 +6,7 @@ tags:
   - Codex
   - Tauri
   - Tools
-description: I open-sourced Codex Quota, a small local menu bar and system tray app for viewing Codex usage.
+description: Codex Quota is archived and no longer maintained. This post remains as a project record; CodexBar is now recommended instead.
 outline: deep
 aside: true
 ---
@@ -15,9 +15,19 @@ aside: true
 
 <!-- DESC SEP -->
 
-I open-sourced Codex Quota, a small local menu bar and system tray app for viewing Codex usage.
+Codex Quota is archived and no longer maintained. This post remains as a project record; CodexBar is now recommended instead.
 
 <!-- DESC SEP -->
+
+> [!IMPORTANT]
+> Update, July 14, 2026: Codex Quota has been archived and is no longer
+> maintained. [CodexBar](https://github.com/steipete/codexbar) is now the
+> recommended alternative. This post remains available as project background
+> and an implementation record.
+
+## The Current Answer First
+
+As of July 14, 2026, development of Codex Quota has ended. The rest of this post preserves the project’s original motivation, design, and implementation choices for reference; it is no longer a current tool recommendation. If you want Codex usage in your menu bar today, use [CodexBar](https://github.com/steipete/codexbar).
 
 ## Why Build This?
 
@@ -160,15 +170,15 @@ They cover the places where this project is most likely to fail: data parsing, s
 
 Small tools are easy to write as "good enough if it runs." But the closer a tool sits to your daily workflow, the less room there is for ambiguity. It can have few features, but the key path should be reliable. The UI can be simple, but error states should be explicit. It can depend on an internal endpoint, but it should not pretend everything is fine when that endpoint changes.
 
-## Open Source
+## Archive and Alternative
 
-The project is open source on GitHub:
+The source remains on GitHub as a historical record:
 
 - **GitHub Repository**: [Sanjeever/codex-quota](https://github.com/Sanjeever/codex-quota)
 
-It is not an official OpenAI or Codex project, and it does not use official OpenAI or Codex logos. Before using it, consult the repository source, Releases, and project notes, and decide whether you accept the maintenance risk of depending on an internal interface.
+Codex Quota is archived and no longer maintained. It is not an official OpenAI or Codex project, and it does not use official OpenAI or Codex logos. This post remains only as project background and an implementation record.
 
-If you use Codex frequently and want to put quota state somewhere easier to see, you can give it a try.
+If you need a similar tool today, use [CodexBar](https://github.com/steipete/codexbar).
 
 For me, Codex Quota has always had a simple goal: turn a state that previously required repeatedly opening a web page into information visible at a glance on the desktop.
 
