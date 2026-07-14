@@ -1,0 +1,4 @@
+interface:
+  display_name: "无垠博客写作"
+  short_description: "依据无垠中英文既有语料起草、续写、改写与润色博客文章。"
+  default_prompt: "使用 $boundless-blog-writing 为我起草一篇符合本站风格的中英文博客文章。"
