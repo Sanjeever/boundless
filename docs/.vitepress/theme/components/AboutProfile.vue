@@ -96,9 +96,9 @@ const frontend = ['Vue 3, TypeScript', 'Vite', 'Tailwind CSS']
     <section class="contact-section">
       <h2>{{ copy.contact }}</h2>
       <div class="contact-links">
-        <a href="mailto:me@sanjeev.top">
+        <a href="mailto:hi@sanjeev.top">
           <span>{{ copy.email }}</span>
-          <strong>me@sanjeev.top</strong>
+          <strong>hi@sanjeev.top</strong>
         </a>
         <a
           href="https://github.com/Sanjeever"
