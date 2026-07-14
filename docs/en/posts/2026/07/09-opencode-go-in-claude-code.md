@@ -6,7 +6,7 @@ tags:
   - OpenCode
   - OpenCode Go
   - Troubleshooting
-description: Notes from connecting OpenCode Go to Claude Code v2.1.205 on July 9, 2026: the `/v1` in BASE_URL and the authentication header.
+description: 'Notes from connecting OpenCode Go to Claude Code v2.1.205 on July 9, 2026: the `/v1` in BASE_URL and the authentication header.'
 outline: deep
 aside: true
 ---

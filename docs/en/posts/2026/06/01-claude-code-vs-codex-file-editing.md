@@ -6,7 +6,7 @@ tags:
   - AI
   - Programming
   - Tools
-description: An observation of Claude Code’s text replacement and Codex’s patch editing: tools change, but minimal changes and reviewability should not.
+description: 'An observation of Claude Code’s text replacement and Codex’s patch editing: tools change, but minimal changes and reviewability should not.'
 outline: deep
 aside: true
 ---
