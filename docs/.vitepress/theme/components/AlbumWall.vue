@@ -15,7 +15,7 @@ type Album = {
 const albums = computed(() =>
   (albumCollection.albums as Album[])
     .slice()
-    .sort((a, b) => b.releaseDate.localeCompare(a.releaseDate)),
+    .sort((a, b) => a.releaseDate.localeCompare(b.releaseDate)),
 )
 const { lang } = useData()
 const coverErrors = ref<Record<string, true>>({})
@@ -25,7 +25,7 @@ const releaseYears = computed(() =>
   albums.value.map((album) => album.releaseDate.slice(0, 4)),
 )
 const archiveLabel = computed(() => {
-  const range = `${releaseYears.value.at(-1)}-${releaseYears.value[0]}`
+  const range = `${releaseYears.value[0]}-${releaseYears.value.at(-1)}`
 
   return isEnglish.value
     ? `Listening archive · ${range}`
