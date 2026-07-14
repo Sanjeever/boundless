@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-13",
+  "updatedAt": "2026-07-14",
   "albums": [
     {
       "id": "sofa-sea",
@@ -288,6 +288,14 @@
       "releaseDate": "2009-03-03",
       "url": "https://music.apple.com/us/album/322115067",
       "cover": "https://coverartarchive.org/release-group/99f7d50f-6b7c-3fd8-aa75-4b97b61970e5/front-500"
+    },
+    {
+      "id": "stop-making-sense",
+      "title": "Stop Making Sense (Live) [Special New Edition]",
+      "artist": "Talking Heads",
+      "releaseDate": "1984-09-12",
+      "url": "https://music.apple.com/us/album/290073030",
+      "cover": "https://coverartarchive.org/release-group/2b85ba4e-53bf-4473-87f5-59d0b53020ad/front-500"
     }
   ]
 }
