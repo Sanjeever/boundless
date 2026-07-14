@@ -67,7 +67,7 @@ Codex Quota does not ask for an API key. It does not ask you to paste cookies, b
 
 In other words, it reuses the ChatGPT session inside your local WebView instead of asking you to hand credentials to the app.
 
-There is an important boundary here: the access token is only used inside the current WebView page runtime for the current request. It is not returned to Rust, not written to local storage, not shown in the Debug window, and not logged.
+There is an important boundary here: the access token is only used inside the current WebView page runtime for the current request. It is not returned to Rust, not written to local storage, not shown in the Debug window, and not logged. That does not mean a WebView login state is risk-free; before installing or running any local application that can access a logged-in page, inspect its source and release artifact.
 
 I want this tool to be transparent and restrained.
 
@@ -98,7 +98,7 @@ Do not guess. Do not silently pretend.
 
 Codex Quota uses an internal ChatGPT web endpoint.
 
-That comes with an obvious limitation: the endpoint may change.
+That comes with two obvious limitations: the endpoint may change, and it is not an official or guaranteed way to read usage.
 
 So I did not make the app scrape text from the page when parsing fails, and I did not add a pile of clever-looking fallback logic. If the endpoint returns an error, the JSON schema changes, the login session expires, or the network goes offline, the app enters a clear error state, such as:
 
@@ -166,7 +166,7 @@ The project is open source on GitHub:
 
 - **GitHub Repository**: [Sanjeever/codex-quota](https://github.com/Sanjeever/codex-quota)
 
-It is not an official OpenAI or Codex project, and it does not use official OpenAI or Codex logos.
+It is not an official OpenAI or Codex project, and it does not use official OpenAI or Codex logos. Before using it, consult the repository source, Releases, and project notes, and decide whether you accept the maintenance risk of depending on an internal interface.
 
 If you use Codex frequently and want to put quota state somewhere easier to see, you can give it a try.
 

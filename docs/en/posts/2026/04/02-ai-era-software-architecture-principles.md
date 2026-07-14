@@ -27,12 +27,9 @@ These approaches absolutely have value at certain team scales, but their side ef
 To change one field, you first have to pass through controller, service, assembler, domain, repository, dto, mapper, converter, and facade.
 Each layer “looks reasonable,” but once you connect them, the actual modification path gets longer and longer, and information loss increases.
 
-What AI fears most is not hard problems, but an overly long understanding chain.
+Different models, context windows, retrieval tools, and task types behave differently, so AI should not be treated as a fixed personality. In practical collaboration, however, one rule is useful: a change with clear boundaries and relevant context that can close within one task is easier for both people and Agents to complete correctly.
 
-AI does not work like a senior architect who spends days building a complete global model before delivering stable output.
-It behaves more like an intense local problem solver: within clear boundaries and closed context, it can quickly analyze, modify, complete, and refactor; once a system adds abstraction for abstraction’s sake or layering for layering’s sake, efficiency drops noticeably.
-
-So in the AI era, the first architecture principle is not “scalability first,” but “understandability first”; not “abstraction capability first,” but “shortest modification path first.”
+“Understanding first” does not declare scalability obsolete. It asks every layer of abstraction to reduce a real comprehension or change cost. A short modification path does not mean putting all code in one file; it means readers can find boundaries, verify outcomes, and understand impact without guessing their way across irrelevant layers.
 
 ## Four Evaluation Criteria
 
@@ -41,7 +38,7 @@ So in the AI era, the first architecture principle is not “scalability first,�
 For any requirement, can AI complete the whole loop of understanding, modification, and verification within a small set of files?
 If every change must span more than a dozen files and multiple conceptual layers, that structure will naturally slow down AI and humans alike.
 
-A truly efficient architecture is not “full layering,” but “reachable paths.”
+A truly efficient architecture is not “complete layering,” but paths that are reachable, testable, and explainable.
 
 ### 2) Do Directories and Module Names Express Business Meaning Directly?
 
@@ -60,8 +57,7 @@ If it cannot answer that, the layer probably should not exist.
 
 ### 4) Does the Structure Allow Safe Changes After Local Understanding?
 
-If a module is highly self-consistent, has clear inputs and outputs, and has few implicit conventions, AI can work stably.
-Conversely, if any change can affect the whole system through hidden rules, AI becomes conservative and fragile, and incorrect edits become more likely.
+If a module is highly self-consistent, has clear inputs and outputs, and has few implicit conventions, both people and AI can work more reliably. Conversely, when any change can affect the whole system through hidden rules, every collaborator must become conservative and is more likely to make an incorrect edit.
 
 In the AI era, what we call “maintainability” largely means “local verifiability.”
 
@@ -89,6 +85,8 @@ For every architecture decision, ask three questions first:
 - Can this boundary let AI complete tasks stably within a local scope?
 
 If all answers are no, it is likely formalism rather than engineering capability.
+
+You can also apply those questions to one real requirement: which files must be read, which files must change, which tests prove the change has not crossed a boundary, and where to look when it fails. Record a few of these journeys and the project will tell you whether the problem is too many layers, vague names, or boundaries and tests that never close.
 
 ## Closing
 

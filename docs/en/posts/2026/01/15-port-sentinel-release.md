@@ -64,6 +64,8 @@ Port Sentinel is open source on GitHub.
 
 - **GitHub Repository**: [Sanjeever/port_sentinel](https://github.com/Sanjeever/port_sentinel)
 
-The current released version is v1.0.2, and the basic functions are stable. If you encounter bugs during use or have suggestions for new features, Issues and PRs are welcome.
+See the repository’s Releases page for installers, the current version, and known issues. This tool terminates local processes, so confirm that the PID, process name, and port really belong to the service you intend to stop; do not free a port by accidentally killing a database, editor, or another important task.
 
-I hope this little tool can save you a little bit of time typing commands.
+If you encounter bugs during use or have suggestions for new features, Issues and PRs are welcome.
+
+It does not replace `netstat`, PowerShell, or Task Manager. It puts “find the port, inspect the process, decide whether to stop it” in an interface that is easier to scan. I hope it saves a little command typing—and prevents one mistaken kill.

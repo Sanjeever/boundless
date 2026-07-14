@@ -7,7 +7,7 @@ tags:
   - Codex
   - Claude Code
   - Tools
-description: Tired of typing answers to Agent questions in Codex, I built a portable AskUserQuestion-compatible MCP server.
+description: This is an archived MCP implementation record. In Codex today, prefer the native request_user_input tool rather than installing this server for new work.
 outline: deep
 aside: true
 ---
@@ -16,7 +16,7 @@ aside: true
 
 <!-- DESC SEP -->
 
-Tired of typing answers to Agent questions in Codex, I built a portable AskUserQuestion-compatible MCP server.
+This post records an archived MCP implementation that once added AskUserQuestion-compatible interaction to Codex. For new work, prefer the native `request_user_input` tool; do not install this server for a new project.
 
 <!-- DESC SEP -->
 
@@ -27,7 +27,11 @@ Tired of typing answers to Agent questions in Codex, I built a portable AskUserQ
 > `mcp-ask-user-question` has been archived and is no longer maintained. This
 > post remains available as background and an implementation record.
 
-## The Motivation, Up Front
+## The Current Answer First
+
+As of July 13, 2026, Codex has experimental support for native `request_user_input` outside Plan mode. For new work, enable the native capability directly. The rest of this post preserves the project’s original motivation, interface, and compatibility choices for reference; it is not a new installation guide.
+
+## The Motivation at the Time
 
 Over the last stretch, I have gravitated toward developing with **grill-me / grilling**.
 
@@ -42,13 +46,13 @@ The SKILL.md is deliberately sparse, but a few requirements hit exactly what mat
 
 The value of this flow is that it eliminates disagreement before mistakes happen. The Agent stops "writing from its own guess" and starts "showing its understanding for a check" first. That is much cheaper than rebuilding after the fact.
 
-## But Codex Has No AskUserQuestion
+## At the Time, Codex Had No AskUserQuestion
 
 The experience of this flow varies wildly across tools.
 
 In **Claude Code** and **OpenCode**, the Agent has a built-in `AskUserQuestion` tool. It can pop up a structured question — with a header, options, a recommended choice — and I just click once to reply. The round trip is fast and barely breaks my train of thought.
 
-In **Codex**, that tool does not exist.
+In **Codex** at the time, that tool did not exist.
 
 When the Agent wants to ask me, it can only print the question as a text dump in the conversation, and I have to type the answer back. For a grilling-style flow that lives on "one targeted follow-up after another", the experience is broken:
 
@@ -132,7 +136,7 @@ The return value is structured, not a text dump:
 
 Multi-question calls are all-or-nothing — if a later question is cancelled or declined, earlier answered ones are not returned either. That is deliberate: do not let the Agent guess on partial residue.
 
-## Using It Inside Codex
+## Historical Installation (Not Recommended for New Setups)
 
 The recommended approach is now to enable Codex's native experimental feature;
 no MCP server is required:
@@ -142,7 +146,9 @@ codex features enable default_mode_request_user_input
 ```
 
 This makes the `request_user_input` tool available outside Plan mode. The MCP
-setup below is retained for historical reference only.
+setup below is retained for historical reference only; its approval settings and
+CLI behavior may change with Codex versions, so check the current official docs
+before using it.
 
 Run the legacy server directly with `npx`:
 
@@ -207,13 +213,14 @@ That matches what I held firm on in the Codex Quota post: when something is wron
 
 It really is small — a few lines of config and it runs.
 
-But it sits exactly on the point I have been caring about most lately: **before the Agent acts, does it come ask me first.** grilling settles what to ask and at what pace. AskUserQuestion settles the shape and friction of asking. mcp-ask-user-question settles "bringing this capability back inside the Codex client".
+At the time, it sat exactly on the point I cared about most: **before the Agent acts, does it come ask me first?** grilling settles what to ask and at what pace. AskUserQuestion settles the shape and friction of asking. mcp-ask-user-question brought that capability into the Codex client of the time.
 
 These three pieces together are what make development feel continuous: the Agent actively follows up, the follow-up has structure, and regardless of which CLI I use, I get asked the same way and answer with the same motion.
 
-For me, that is extending the grilling route from "only in Claude Code / OpenCode" to "Codex too".
+For me, it once extended the grilling approach from “only in Claude Code / OpenCode” to Codex. Once native support appeared, the project had completed its historical job.
 
 - **GitHub Repository**: [Sanjeever/mcp-ask-user-question](https://github.com/Sanjeever/mcp-ask-user-question)
 
-If you also use Codex day to day and want the Agent to learn "ask first, then
-write", you can now enable `default_mode_request_user_input` directly.
+If you also use Codex day to day and want the Agent to learn “ask first, then
+write,” enable `default_mode_request_user_input` directly and follow the current
+official documentation.

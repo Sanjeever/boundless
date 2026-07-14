@@ -3,7 +3,7 @@ title: Hello, Boundless
 date: 2025-12-30
 tags:
   - Essay
-description: Welcome to Boundless, a new blog powered by VitePress.
+description: Boundless is a bilingual personal blog about technical practice, writing, and everyday thinking.
 outline: deep
 aside: true
 ---
@@ -12,108 +12,26 @@ aside: true
 
 <!-- DESC SEP -->
 
-This is my new blog. Here I record learning, writing, and thinking.
+Boundless is my new blog. It is where I keep notes on technical work I have done, things I have read, and questions I have not figured out yet.
 
 <!-- DESC SEP -->
 
-## Getting Started
+## What I Want to Write
 
-::: tip Tip
-This site is powered by VitePress and enhanced by a custom theme to improve the reading experience.
-:::
+I will not package every experiment as an achievement. If a small tool solves one
+of my own annoyances, I will say what it solves and what it does not. If an essay
+is only a provisional judgment, it should remain a provisional judgment.
 
-::: info Info
-The following showcases common interactions and Markdown enhancements available within an article.
-:::
+Technical posts will try to leave behind reproducible commands, configuration,
+failure paths, and boundaries. Essays should begin with a concrete situation,
+not an unnecessarily grand conclusion.
 
-::: warning Warning
-Some features depend on site configuration and plugins; refer to the actual build result.
-:::
+## Why “Boundless”
 
-## Image Preview
+“Boundless” is not an attempt to make things sound large. It is a reminder that
+there is always code I have not read, people I have not met, and questions I have
+not thought through. Writing them down is more interesting than pretending to
+already have the answers.
 
-![Green Hair Water Monster](/public/2025/12/GreenHairWaterMonster.jpg)
-
-## Code Groups
-
-::: code-group
-
-```bash [npm]
-npm run docs:dev
-```
-
-```bash [pnpm]
-pnpm docs:dev
-```
-
-```bash [yarn]
-yarn docs:dev
-```
-
-:::
-
-## Code Highlighting and Line Annotations
-
-```ts {1,3}
-export function hello(name: string) {
-  // [!code highlight]
-  return `Hello, ${name}!`
-}
-```
-
-```ts
-export function sum(a: number, b: number) {
-  if (Number.isNaN(a) || Number.isNaN(b)) {
-    // [!code warning] Input must be numeric
-    return 0
-  }
-  return a + b
-}
-```
-
-## Colored Diffs in Code Blocks
-
-```js
-export default {
-  data () {
-    return {
-      msg: 'Removed' // [!code --]
-      msg: 'Added' // [!code ++]
-    }
-  }
-}
-```
-
-## Math Formulas
-
-Inline formula example: $E = mc^2$
-
-Block formula example:
-
-$$
-\mathrm{P}(X=k) = \binom{n}{k}\, p^k (1-p)^{n-k}
-$$
-
-## Built-in Components and Interactions
-
-<Badge type="tip" text="New" />
-
-<script setup>
-import { ref } from 'vue'
-const count = ref(0)
-</script>
-
-<div style="margin: 8px 0;">
-  <button
-    style="padding:6px 10px;border:1px solid var(--vp-c-divider);border-radius:6px;background:var(--vp-c-bg-soft);"
-    @click="count++"
-  >
-    Click count: {{ count }}
-  </button>
-</div>
-
-## Collapsible Details
-
-::: details Expand to view
-This is collapsible content for supplemental notes, citations, and further reading links.
-:::
+If these notes help someone avoid one pitfall, or pause to think a little longer,
+that is enough.

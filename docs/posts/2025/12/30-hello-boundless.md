@@ -3,7 +3,7 @@ title: 你好，无垠
 date: 2025-12-30
 tags:
   - 随笔
-description: 欢迎来到无垠（Boundless），这是一个基于 VitePress 的新博客。
+description: 无垠是一个记录技术实践、写作与日常思考的双语个人博客。
 outline: deep
 aside: true
 ---
@@ -12,108 +12,22 @@ aside: true
 
 <!-- DESC SEP -->
 
-这是我的新博客。这里记录学习、写作与思考。
+无垠是我的新博客。这里记录做过的技术实践、读到的东西，以及一些还没有想明白的事。
 
 <!-- DESC SEP -->
 
-## 起步
+## 想写什么
 
-::: tip 提示
-本站由 VitePress 驱动，并通过自定义主题增强文章体验。
-:::
+这里不会把每一次折腾都包装成成果。一个小工具如果只解决了自己的一个麻烦，
+那就如实写它解决了什么、没有解决什么；一篇随笔如果只是暂时的判断，也把它当作
+暂时的判断。
 
-::: info 说明
-以下内容展示文章内可用的常见交互与 Markdown 增强能力。
-:::
+技术文章会尽量留下能复现的命令、配置、失败路径和边界。写作则希望从一个具体的
+场景出发，而不是从一个过分响亮的结论出发。
 
-::: warning 注意
-部分能力依赖站点配置与插件，请以实际构建结果为准。
-:::
+## 为什么叫“无垠”
 
-## 图片预览
+“无垠”不是要把话说得很大。它更像一个提醒：世界里总有还没读过的代码、还没见过
+的人和还没想清楚的问题。把它们记下来，比假装已经有了答案有意思得多。
 
-![Green Hair Water Monster](/public/2025/12/GreenHairWaterMonster.jpg)
-
-## 代码分组
-
-::: code-group
-
-```bash [npm]
-npm run docs:dev
-```
-
-```bash [pnpm]
-pnpm docs:dev
-```
-
-```bash [yarn]
-yarn docs:dev
-```
-
-:::
-
-## 代码高亮与行标注
-
-```ts {1,3}
-export function hello(name: string) {
-  // [!code highlight]
-  return `你好，${name}！`
-}
-```
-
-```ts
-export function sum(a: number, b: number) {
-  if (Number.isNaN(a) || Number.isNaN(b)) {
-    // [!code warning] 输入必须为数字
-    return 0
-  }
-  return a + b
-}
-```
-
-## 代码块中的颜色差异
-
-```js
-export default {
-  data () {
-    return {
-      msg: 'Removed' // [!code --]
-      msg: 'Added' // [!code ++]
-    }
-  }
-}
-```
-
-## 数学公式
-
-行内公式示例：$E = mc^2$
-
-块级公式示例：
-
-$$
-\mathrm{P}(X=k) = \binom{n}{k}\, p^k (1-p)^{n-k}
-$$
-
-## 内置组件与交互
-
-<Badge type="tip" text="新" />
-
-<script setup>
-import { ref } from 'vue'
-const count = ref(0)
-</script>
-
-<div style="margin: 8px 0;">
-  <button
-    style="padding:6px 10px;border:1px solid var(--vp-c-divider);border-radius:6px;background:var(--vp-c-bg-soft);"
-    @click="count++"
-  >
-    点击计数：{{ count }}
-  </button>
-</div>
-
-## 可折叠详情
-
-::: details 展开查看
-这是折叠内容，可用于放置补充说明、引用与扩展阅读链接。
-:::
+如果这些记录恰好帮你少踩一个坑，或者多想一会儿，那就很好。

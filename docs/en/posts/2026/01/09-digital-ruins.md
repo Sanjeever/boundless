@@ -20,13 +20,13 @@ The digital world is not eternal; code and data also "weather" and "rot" just li
 
 ## Code Archaeology
 
-When we open a project that hasn't been maintained for five years, the stale air that hits us is no different from an archaeologist pushing open the stone door of a dusty ancient tomb.
+When we open a project that has not been maintained for five years, what hits us may not be age but a series of concrete questions: who can still run it, where its dependencies come from, whether its data is readable, and whether anyone still knows what an error means.
 
 The cursor blinking on the screen is like a flashlight in hand, illuminating corners forgotten by time. You will see vestiges of the era remaining in variable names—`isIE6Compatible`, like a weathered inscription, telling of the cruelty and absurdity of the browser wars era. You will see comments written `// TODO: Refactor this later (2018)`, the person who promised to refactor has long left the company, perhaps even left the industry, leaving only this line of code like an unfinished last word, suspended in the void of logic.
 
 This is "Legacy Code". They are not cold characters; they are fossils of thought.
 
-In this digital stratum composed of 0s and 1s, we excavate carefully. A piece of obscure bitwise operation logic might be a "lost art" used to squeeze out a bit of performance under the limit of dozens of KB of memory back then; a strange `if (true)` wrapper might be a scar left to bypass a bug in a specific version of the compiler at that time. We gaze at these codes, trying to see through the dust of time and reconstruct the thought path of the programmer typing on the keyboard late at night back then.
+An obscure bitwise operation may be performance bought under an old memory constraint; a strange `if (true)` wrapper may be a scar from working around a particular compiler bug. They may not be elegant, but they do not deserve easy ridicule either. The first step in reading legacy code is not rewriting it. It is recovering its old constraints: what business it served, what failure it avoided, and why it was never removed.
 
 At that moment, what we feel is not whether the technology is advanced or not, but a lonely resonance across time and space.
 
@@ -36,17 +36,29 @@ If code itself is the main body of the building, then dependencies are the found
 
 When you try to run that five-year-old project in a brand new environment, the red error messages spewing from the terminal are like the roar of a collapsing building. `npm install` becomes a gamble, and slight differences in version numbers can trigger an avalanche.
 
-An inconspicuous underlying library stops being maintained because the author is tired or missing; it is like a brick in the temple foundation suddenly shattering. Immediately after, the upper-layer frameworks that depend on it start to report errors, and the upper-layer business logic is then paralyzed. This is "Dependency Hell". Huge digital edifices are often built on teetering quicksand.
+An obscure low-level library becoming unmaintained does not necessarily paralyze a business immediately. The danger is a team not knowing it depends on that library, having no pinned version or alternative, and lacking instructions for rebuilding the old environment. “Dependency hell” is often not too many dependencies, but invisible dependencies and responsibility boundaries.
 
-We are used to using words like "cloud" and "permanent storage" to hypnotize ourselves, thinking that digital assets can live forever. But the reality is that the expiration of a domain name, the failure of a CDN node, the change of an open source license, or even just an upgrade of the runtime environment, are enough to make a once glorious digital empire vanish instantly.
+Words such as “cloud” and “permanent storage” make it easy to believe preservation is finished. In reality, domains, object storage, CDNs, runtimes, and licenses can all change. Keeping digital assets alive takes backups, migration, and regular recovery drills—not a reassuring label.
 
-Technological obsolescence is another form of rot. Architecture patterns that were once regarded as the golden rule now seem clumsy; UI styles that were once popular now look full of cheap plastic feeling. These digital creations have no physical entities, yet they still cannot escape the erosion of time.
+Technological obsolescence is another form of rot. Architecture patterns that were once treated as gospel can later feel clumsy; UI styles that were once fashionable can age badly. These digital creations have no physical body, yet they still cannot escape time.
+
+## Keeping More Than Ruins
+
+Legacy systems need not be romanticized, nor merely mourned. At minimum, we can leave later maintainers a few things they can actually use:
+
+- pin dependency and runtime versions, and explain how to build from zero;
+- keep verifiable backups of databases, object files, and critical configuration;
+- record ownership and renewal procedures for external services, domains, and certificates;
+- before deleting apparently unused code, record the problem it once solved;
+- periodically restore on a new machine instead of assuming a backup “should work.”
+
+None of this is romantic, but it lets the next maintainer do a little less archaeology.
 
 ## Gaze upon the Ruins
 
 Standing on these digital ruins, a sense of tragedy originating from ancient Greece arises spontaneously.
 
-We are like Odysseus in "The Odyssey", drifting in the ocean of bits, trying to find an eternal home, but finding that all the islands are slowly sinking. We try to build eternal systems, try to write code that is "write once, run anywhere", and try to use Docker containers to seal slices of time. But essentially, this is still a Sisyphus-style futility.
+We do try to use containers, images, and archives to seal a slice of time. But they are not vaults of eternity; they only hand maintenance from “now” to “later.” Container images age, registries move, and documentation goes stale. No longer maintaining something does not mean it can be forgotten.
 
 As Wu Hung said in "A Story of Ruins", ruins show "the presence of absence". The ruins of code are also like this. The system that once ran perfectly is gone, but its wreckage—those broken interfaces, those dead links, those functions no longer called—is still present, silently watching the latecomers.
 
@@ -62,4 +74,4 @@ In those codes that can no longer run, there still remains a kind of thrilling b
 
 Code will weather, data will be lost, and systems will crash. But in the moment it was created, in the instant the logic loop was completed, a kind of pure order beauty not attached to matter truly existed in this universe.
 
-This may be our fate and glory as programmers: building castles on shifting sands, knowing the tide is coming, yet still intoxicated by the piling of every grain of sand. Because at that moment, logic defeated chaos, and reason illuminated the void.
+Programmers’ work does not lose its value because it expires. Explaining constraints, making a system understandable, and leaving a recovery path for the next person—this brief, clear-eyed order is part of the beauty of code.

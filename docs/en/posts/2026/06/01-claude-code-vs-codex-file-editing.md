@@ -6,7 +6,7 @@ tags:
   - AI
   - Programming
   - Tools
-description: Claude Code uses Edit/Write for precise string replacement, while Codex uses apply_patch to express patch diffs — two file-editing philosophies and the engineering orientations and editing disciplines behind them.
+description: An observation of Claude Code’s text replacement and Codex’s patch editing: tools change, but minimal changes and reviewability should not.
 outline: deep
 aside: true
 ---
@@ -19,7 +19,7 @@ After AI coding assistants truly entered everyday development, an easily overloo
 
 <!-- DESC SEP -->
 
-On the surface, both Claude Code and Codex can "read code, modify code, run commands, fix problems." But if you look closely at how they edit files, you'll find the underlying operational models are not the same. Codex behaves more like a developer familiar with Git diffs, describing changes through patches; Claude Code behaves more like a cautious text editor, performing precise string replacements or full-file writes after reading the file.
+On the surface, both Claude Code and Codex can “read code, modify code, run commands, fix problems.” In the tool shapes observed when this post was written, however, they express edits differently: Codex describes changes as patches, while Claude Code uses precise text replacement or whole-file writes. Clients evolve, so this is a discussion of two editing models—not a permanent promise about any version.
 
 This difference not only affects tool invocation patterns, but also the controllability of changes, the clarity of diffs, the troubleshooting path when things go wrong, and the trust developers place in AI modifications.
 
@@ -54,7 +54,7 @@ Claude Code's file-editing approach draws a clearer distinction between two kind
 
 It primarily uses two tools: `Edit` and `Write`.
 
-`Edit` performs precise string replacement. It requires a file path, the original string, and the new string. The most important rule here is: before calling `Edit`, you must have `Read` the file first; and `old_string` must match the file content exactly — including indentation, whitespace, and line endings.
+`Edit` performs precise string replacement: it takes a file path, the original string, and the replacement. In a sound workflow, read the file first and make `old_string` exactly match it, including indentation, spaces, and line breaks. Versions may enforce “read before edit” differently, but it remains a discipline worth following.
 
 This means Claude Code's partial editing is not based on "patch hunks" but on "exact text matching." It reads the file first, confirms the original text, then replaces one complete block of old text with a block of new text.
 
@@ -62,7 +62,7 @@ The advantage of this approach is that it's intuitive, strict, and controllable.
 
 But the constraints are equally apparent: the original string must match exactly. If the file contains multiple identical fragments, you need to ensure uniqueness or explicitly use `replace_all`. If indentation, line endings, tabs, or special characters aren't handled properly, the replacement will fail. For complex files, Claude Code may need `cat -A`, PowerShell scripts, or other commands to verify invisible characters and precise formatting.
 
-`Write`, on the other hand, is used for creating new files or completely overwriting existing ones. Creating a new file is straightforward; but to overwrite an existing file, you must also read the original content first. This reflects a core principle of Claude Code: read before you write.
+`Write`, on the other hand, is used for creating new files or completely overwriting existing ones. Creating a new file is straightforward; before overwriting an existing file, read it first, because whole-file writes are especially likely to create large diffs or overwrite user work.
 
 From a tool-selection standpoint, Claude Code's logic is very clear: modify a few lines with `Edit`, create new files with `Write`, and rewrite an entire file also with `Write` — but only after `Read`. For replacing multiple identical strings, use `Edit` with `replace_all`.
 
@@ -96,7 +96,7 @@ For rewriting an entire file, Claude Code's `Write` is more direct but also dema
 
 Although their tool models differ, Claude Code and Codex share many principles when it comes to editing.
 
-Both emphasize understanding context before modifying files. Both lean toward minimal diffs — no unsolicited refactoring, no arbitrary reformatting of unrelated code. Both should avoid destructive commands, such as executing `git reset --hard` or rolling back the user's existing changes without explicit authorization. Both must respect the user's in-progress work in the workspace, treating existing modifications as the user's assets rather than disposable temporary state.
+Whether or not a tool enforces it, both should follow the same editing discipline: understand context first, make the smallest relevant change, avoid unrelated refactors or formatting, never run destructive commands such as `git reset --hard` without explicit authorization, and treat existing worktree changes as user assets rather than temporary content to overwrite.
 
 This points to an important insight: the reliability of an AI coding assistant depends not only on model capability, but also on its editing discipline.
 
@@ -112,4 +112,4 @@ The former emphasizes diff expression; the latter emphasizes precise matching af
 
 But regardless of the approach, what truly determines the experience is not the tool's name, but the principles behind it: read before you write, minimal changes, avoid unrelated formatting, respect user modifications, and execute commands with care.
 
-When evaluating an AI coding assistant, perhaps we should ask less often "can it modify code?" and more often "how does it modify code?" The latter often reveals more about whether it truly belongs in a real engineering workflow.
+When evaluating an AI coding assistant, ask less “Can it modify code?” and more: “For the same change, can it state its assumptions, produce a reviewable diff, and expose failures clearly?” That says more than a tool name about whether it belongs in a real engineering workflow.

@@ -47,7 +47,9 @@ TEXT:    HERE IS A SIMPLE EXAMPLE
 PATTERN:          EXAMPLE
 ```
 
-We compare from the right and hit a mismatch. Two facts help us jump:
+On the first alignment, the pattern’s final `E` is compared with the `P` in the text and fails immediately. `P` does not occur in `EXAMPLE`, so the bad-character rule lets us shift the whole pattern seven positions; we do not need to move it only one position and repeat comparisons that cannot succeed.
+
+When a suffix on the right has already matched and failure occurs further left, the good-suffix rule comes into play. Two facts then help us jump:
 
 - The mismatching character tells us how far we can safely move the pattern.
 - If the right side already matched, we try to align that suffix with another place in the pattern.
@@ -210,15 +212,15 @@ function boyerMooreSearch(text, pattern) {
 :::
 
 ::: warning Character set note
-The bad-character table uses a size-256 array, which is fine for ASCII. For wider Unicode text, use a larger table or a map.
+These Java and JavaScript implementations use a size-256 bad-character table and index it with the low 8 bits, so they are only suitable for ASCII text. This is not merely a performance issue with Unicode: distinct characters can be incorrectly treated as the same table entry. To support general Unicode, iterate by code point and rewrite preprocessing with a `Map` or another complete character table.
 :::
 
 ## Complexity and when to use it
 
-- Preprocessing is $O(m)$ and searching is close to $O(n)$ on average.
-- Worst case can be $O(nm)$, but it is usually fast on real-world text.
-- It shines when the pattern is longer and the text is large.
+- In this implementation, preprocessing is $O(m)$; search makes useful jumps in much natural-language text, but the complexity claim depends on the chosen variant and character model.
+- With only the bad-character rule, the worst case can fall back to $O(nm)$. Even for full Boyer-Moore with the good-suffix rule, the exact bound should name the variant and proof rather than hide behind “usually fast.”
+- It is worth learning when patterns are long, texts are large, and you want to understand the mechanism. In product code, prefer the language’s standard string search unless measurement shows a custom implementation is necessary.
 
 ## Summary
 
-Boyer-Moore feels "backwards" because it starts from the right, but that is exactly why it can skip so much. Remember: compare from the right and jump on mismatches.
+Boyer-Moore feels “backwards” because it starts from the right, but that is exactly why it can safely skip so much. Try the code with `HERE IS A SIMPLE EXAMPLE` and `EXAMPLE`, and confirm the returned first-match index. Being able to explain why each shift is safe is the real understanding.

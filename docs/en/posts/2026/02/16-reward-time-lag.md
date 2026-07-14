@@ -24,21 +24,19 @@ We put a few minutes into something, see no return, and start doubting its value
 
 The problem isn't insufficient effort, but a misread of the time scale of feedback. Many things worth doing pay out late. Writing, learning, training, building a business, maintaining relationships almost all come with a silent phase: you put in the energy and see no result.
 
-And the things with the richest instant feedback are often the least valuable. Short videos give you immediate pleasure without growth. News feeds give you immediate satisfaction without accumulation. We treat "response" as "reward" and mistake "no response" for "no meaning".
+Instant feedback is not automatically low-value, and slow feedback is not automatically worth waiting for. The problem is that we often treat “response” as “reward,” and “no response yet” as “no meaning,” without setting criteria for either.
 
-## Dopamine's Trick
+## Do Not Turn Waiting into a Faith
 
-The brain is built to chase short-term rewards. It doesn't care about future compounding, only the spark of now. So after a short session of real work, you drift toward something with "feedback", even if it's just a like, a red dot, a new notification.
+When a task offers no visible progress for a long time, opening a feed or chasing a red notification is plainly easier than facing the blank space. That need not be framed as a willpower failure. The practical issue is that the original task has no usable feedback and no point for review.
 
-This isn't a willpower issue but a reward-system design issue. When feedback is too slow, your brain looks for faster compensation. Over time, we lose the ability to persist in silence.
-
-To overcome this, you don't need "more effort", but "more accurate feedback". Break big goals into tangible micro-returns, and convert invisible growth into recordable progress.
+The answer is not to shout “try harder,” but to give a large goal observable process signals. Writers can record completed paragraphs and specific feedback; learners can test whether they can explain a concept without notes; trainees can record frequency and movement quality. Finishing a task is not the same as final success, but it does test whether the direction is still alive.
 
 ## The Silence of Compounding
 
 Real growth often follows an "invisible curve". For a long stretch, it hugs the ground. You start to suspect you're just spinning in place.
 
-But compounding doesn't care about your emotions. It only cares whether you keep betting. Once the threshold hits, the curve turns. People call it a "talent explosion", but it was just you enduring the long quiet.
+Some accumulation does show up after a quiet stretch, but “keep betting” must not become an excuse to refuse to stop. If the hypothesis remains untested, process signals keep deteriorating, or the cost is eroding health and relationships, the method should change—or end.
 
 You feel restless because you measure yearly things in minutes. You judge long-term change by immediate sensation. When the time scale is wrong, the conclusion must be wrong.
 
@@ -50,8 +48,12 @@ Fixed time, fixed flow, fixed entry. You don't need to ask yourself every day wh
 
 Let "starting" be the smallest win. Open the document and do five minutes. Put on the shoes and walk out the door. As you lower friction, you also build feedback: completion is the reward.
 
+## Give the Wait a Review Date
+
+Delayed reward is not a way of outsourcing judgment to the future forever. Before starting, write down three things: the result you expect, the process signal that shows you are not standing still, and the date by which you must review. Then waiting is not blind endurance, and changing direction is not a momentary mood.
+
 ## Epilogue
 
 The reward lag is real. You jump between tasks not because you lack persistence, but because you mistake feedback for value.
 
-Stretch the time scale. Build visible progress so your brain doesn't lose faith in the blank phase. Many things don't lack rewards. They just haven't arrived yet.
+Stretch the time scale and build visible progress, but keep the right to review and leave. Many things do not lack rewards; they have simply not arrived yet. Others require us to admit that they do not lead where we thought they would.

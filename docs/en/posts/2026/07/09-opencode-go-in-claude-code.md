@@ -6,7 +6,7 @@ tags:
   - OpenCode
   - OpenCode Go
   - Troubleshooting
-description: OpenCode Go can serve as a backend for Claude Code, but two config traps — the /v1 on BASE_URL and the auth header — will only ever surface as "model does not exist".
+description: Notes from connecting OpenCode Go to Claude Code v2.1.205 on July 9, 2026: the `/v1` in BASE_URL and the authentication header.
 outline: deep
 aside: true
 ---
@@ -15,7 +15,7 @@ aside: true
 
 <!-- DESC SEP -->
 
-OpenCode Go can serve as a backend for Claude Code, but two config traps — the /v1 on BASE_URL and the auth header — will only ever surface as "model does not exist".
+This post records two traps I hit while connecting OpenCode Go to Claude Code v2.1.205 on July 9, 2026: the `/v1` in BASE_URL and the authentication header. Models, prices, endpoints, and client behavior may change, so check the official docs before you start.
 
 <!-- DESC SEP -->
 
@@ -27,7 +27,7 @@ Inside OpenCode's own TUI it is a first-class citizen: run `/connect`, pick `Ope
 
 But my daily driver CLI is still Claude Code. The problem: Claude Code natively only speaks Anthropic's Messages API, while most models on Go expose an OpenAI-compatible `chat/completions` endpoint. The two protocols are not interchangeable.
 
-The good news is that **6 models on Go also expose an Anthropic-format `/v1/messages` endpoint**:
+In the OpenCode Go model list at the time, **6 models also exposed an Anthropic-format `/v1/messages` endpoint**:
 
 | Model | Model ID | Endpoint |
 |---|---|---|
@@ -38,7 +38,7 @@ The good news is that **6 models on Go also expose an Anthropic-format `/v1/mess
 | Qwen3.7 Plus | qwen3.7-plus | `https://opencode.ai/zen/go/v1/messages` |
 | Qwen3.6 Plus | qwen3.6-plus | `https://opencode.ai/zen/go/v1/messages` |
 
-Only these 6 can be fed directly to Claude Code. The others (GLM, Kimi, DeepSeek, MiMo) only expose `chat/completions`, which Claude Code cannot consume natively. Bridging them means standing up a protocol-translation layer in between, which is out of scope here.
+This post only verified those six models. For the availability of other models and whether they still expose only `chat/completions`, consult the current OpenCode docs. If the protocol is incompatible, a translation layer is needed in between; that is out of scope here.
 
 What this post records is: **even for the 6 models that should just work, I hit two config traps — and the error messages lied to me the whole way through.**
 
@@ -186,7 +186,7 @@ Looking back, both traps produced untrustworthy messages:
 - Trap one was a 404, but the prompt said "model does not exist or no access";
 - Trap two only sent `Authorization`, but the prompt said "Missing API key" — the gateway wants a different kind of key, so "missing" is not strictly wrong, but it points the user in the wrong direction.
 
-The root cause is that **Claude Code funnels every non-200 response into one generic line**, without distinguishing 404 from 401, or JSON from HTML. That is fine against the native Anthropic backend, where errors are already structured JSON. But against a third-party gateway whose 404 is an HTML page, this error-translation layer disguises "wrong path" as "wrong model".
+In the combination of Claude Code v2.1.205 and this gateway response that I tested, 404 and 401 ended up as very similar generic messages, and the HTML 404 was not surfaced clearly. When using a third-party gateway, do not trust the UI message alone: capture the real request. Other client versions and gateway implementations may handle errors differently.
 
 There is nothing for me to fix here — collapsing errors into one message is the client's design choice. But for the user it means **the first reaction to this kind of prompt should not be swapping models — it should be capturing the actual request.**
 

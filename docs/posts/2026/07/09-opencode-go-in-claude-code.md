@@ -6,7 +6,7 @@ tags:
   - OpenCode
   - OpenCode Go
   - 踩坑
-description: OpenCode Go 能当 Claude Code 的后端，但配置里有两个坑——BASE_URL 的 /v1 和鉴权头——不对就只会报"模型不存在"。
+description: 记录 2026-07-09 在 Claude Code v2.1.205 接入 OpenCode Go 时遇到的两个坑：BASE_URL 的 /v1 与鉴权头。
 outline: deep
 aside: true
 ---
@@ -15,7 +15,7 @@ aside: true
 
 <!-- DESC SEP -->
 
-OpenCode Go 能当 Claude Code 的后端，但配置里有两个坑——BASE_URL 的 /v1 和鉴权头——不对就只会报"模型不存在"。
+本文记录我在 2026-07-09、Claude Code v2.1.205 中接入 OpenCode Go 时遇到的两个坑：BASE_URL 的 `/v1` 和鉴权头。模型、价格、端点与客户端行为都可能变化；动手前请先核对官方文档。
 
 <!-- DESC SEP -->
 
@@ -27,7 +27,7 @@ OpenCode Go 能当 Claude Code 的后端，但配置里有两个坑——BASE_UR
 
 但我日常主用的 CLI 还是 Claude Code。问题来了：Claude Code 原生只认 Anthropic 的 Messages API，而 OpenCode Go 的模型列表里大部分走的是 OpenAI 兼容的 `chat/completions`。这两套协议不通用。
 
-好消息是，Go 里有 **6 个模型同时提供 Anthropic 格式的 `/v1/messages` 端点**：
+在当时的 OpenCode Go 模型列表中，有 **6 个模型同时提供 Anthropic 格式的 `/v1/messages` 端点**：
 
 | 模型 | 模型 ID | 端点 |
 |---|---|---|
@@ -38,7 +38,7 @@ OpenCode Go 能当 Claude Code 的后端，但配置里有两个坑——BASE_UR
 | Qwen3.7 Plus | qwen3.7-plus | `https://opencode.ai/zen/go/v1/messages` |
 | Qwen3.6 Plus | qwen3.6-plus | `https://opencode.ai/zen/go/v1/messages` |
 
-只有这 6 个能直接喂给 Claude Code，其它几个（GLM、Kimi、DeepSeek、MiMo）只能走 `chat/completions`，Claude Code 原生吃不下。要硬接得在中途架一层协议转换，不在本文范围。
+按当时的列表，本文只验证这 6 个模型。其它模型是否可用、是否仍只提供 `chat/completions`，请以当前 OpenCode 文档为准；若协议不兼容，需要在中途增加转换层，本文不覆盖。
 
 本文要记的是：**就这 6 个能用的模型，我在配置时也踩了两个坑，而且报错信息全程在骗我。**
 
@@ -186,7 +186,7 @@ curl -s -o -w "HTTP %{http_code}\n" \
 - 坑一明明是 404，但提示是"模型不存在或无权限"；
 - 坑二明明只发了 `Authorization`，但提示是"Missing API key"——网关要的是另一种 key，说"missing"也不能算错，但对用户来说它把方向带偏了。
 
-根本原因是 **Claude Code 把所有非 200 响应都收进一句通用文案里**，不区分 404/401/网关返回的是 JSON 还是 HTML。这对原生 Anthropic 后端没问题，因为 Anthropic 的错误本来就是结构化的 JSON。但接到第三方网关上，一旦网关的 404 是一个网站 HTML 页，这套错误翻译就会把"路径错"伪装成"模型错"。
+在我测试的 Claude Code v2.1.205 与该网关响应组合里，404/401 最终呈现为很接近的通用文案，且没有把 HTML 404 清楚地暴露出来。因此，接第三方网关时不应只相信界面提示，应该抓真实请求。不同客户端版本和网关实现的错误处理可能不同。
 
 这件事我没什么好改的——前端客户端统一错误文案，是它自己的设计取舍。但对用户来说，**遇到这种报错的第一反应不应该是换模型，而是抓真实请求。**
 

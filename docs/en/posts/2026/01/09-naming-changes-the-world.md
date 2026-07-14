@@ -58,23 +58,17 @@ How many relationships are forced to end because they cannot be classified by th
 
 Looking inward, our naming of our own feelings is equally concealing.
 
-The popularization of modern psychology and psychiatry has given us a rich vocabulary for emotions. This is progress: it helps us express pain more precisely. But the other side of the coin is that we begin to over-rely on these labels, using them to explain every complex life experience.
+Modern psychology and psychiatry have given us words for describing emotions and getting help. That is meaningful progress: diagnoses can open access to treatment, support, and reasonable rest. But when these words are overused, they can also become a hasty explanation for every complex experience.
 
 In the past, someone might feel hollow, cry at sunsets, find farming meaningless, and want to go far away. This is a complex state mixed with existential nihilism, physical fatigue, dissatisfaction with the status quo, and a metaphysical longing.
 
-Now, we give it a name: "depression".
+Now we may quickly call it “depression,” “anxiety,” or “burnout.” A name can be an entry point to professional help and should not be casually dismissed, but it does not automatically explain a person’s whole situation.
 
-Or: "anxiety".
+When we say “I am anxious,” it is worth asking at the same time: how long has it lasted, is it affecting sleep and daily life, is professional support needed, and are there parts of one’s routines, work environment, or relationships that can change? Medical and situational explanations can both be true; neither replaces the other.
 
-Or: "burnout".
+**The second cost of naming: it can make us stop asking too soon.**
 
-When we say "I have an anxiety disorder", we do gain relief from having an explanation. But the name also objectifies the problem. It implies: this is an illness; it's a dopamine or serotonin issue; it's a malfunction that needs to be "fixed".
-
-The second cost of naming: it reduces existential predicament to a technical malfunction.
-
-If it is a "disease", the solution becomes medication, rest, or CBT. We stop asking: is my lifestyle itself broken? Is the environment I'm in systematically draining my life force? Am I pursuing something I don't truly want?
-
-The name is like a lid over an abyss. We think we have grasped the root cause, but we have only grabbed a convenient excuse. We use "social anxiety" to hide indifference toward others, and "procrastination" to hide a deep aversion to work. Every name is an opportunity to dodge the truth.
+The problem is not using diagnostic or psychological vocabulary. It is using it as a universal lid. Treating “social anxiety” or “procrastination” as throwaway labels can hide more specific difficulties too. A good name should help someone see a problem and get help, not excuse everyone else from understanding it.
 
 ## Magic Words at Work
 
@@ -94,7 +88,7 @@ When a company decides to lay people off, it rarely says: "We will fire these th
 
 "Firing" is brutal; it involves real families, mortgages, and tears. "Optimization" is neutral, mathematical, even positive. It suggests removing redundancy and improving efficiency.
 
-Through naming, brutal reality becomes abstract. When decision makers sign documents, what they process in their minds is "data", not "people".
+Through naming, brutal reality can become abstract. Decision makers signing documents process “data,” while the people affected must deal with rent, care work, and finding the next job. That distance between two languages is what needs to be seen.
 
 The third cost of naming: it strips things of moral qualities and emotional weight, allowing us to accept absurdity with a clear conscience.
 
@@ -128,6 +122,6 @@ Next time you are eager to name a feeling, define a relationship, or write those
 
 Try to stare at the thing itself.
 
-Feel the trembling that is not called "anxiety"; embrace the gaze that is not called "ambiguity"; examine the action that is not called "empowerment".
+Feel the trembling called “anxiety,” and take seriously whether it needs help; understand the gaze called “ambiguity”; examine the action called “empowerment.”
 
 After stripping away the name, can you still recognize it?
