@@ -84,9 +84,12 @@ pnpm sync:album-covers -- --force
 
 ### 博客写作
 
+来源：项目自定义；[Panmax/wangxiaobo-skill](https://github.com/Panmax/wangxiaobo-skill)
+
 | 技能 | 用途 | 用例 |
 | --- | --- | --- |
 | `boundless-blog-writing` | 按本站既有的中英文语料起草、续写、改写或润色博客文章。它会区分技术实践、项目发布、技术观点、随笔和教程等体裁，要求内容具体、可核实并说明适用边界；中英文稿保持事实一致，但英文不逐句翻译。 | “使用 `boundless-blog-writing` 写一篇关于给 CLI 工具增加结构化交互的中英文文章：说明真实痛点、实现取舍、已知限制和可运行的配置。” |
+| `wangxiaobo-perspective` | 以理性、独立思考与黑色幽默的视角写中文短评、随笔、杂文或寓言；通过日常类比和反讽讨论社会、文化与生活议题，同时避免说教、鸡汤和攻击弱者。 | “使用 `wangxiaobo-perspective` 写一篇关于会议文化的短评：指出其中的荒诞，但不要居高临下。” |
 
 ### 营销文案
 

@@ -72,6 +72,12 @@
       "sourceType": "github",
       "skillPath": "skills/review-animations/SKILL.md",
       "computedHash": "c92905bff59c3007d07c2638a2a83d5d71c901feef108cce1da0bf3c7cafd579"
+    },
+    "wangxiaobo-perspective": {
+      "source": "Panmax/wangxiaobo-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "39316633ef5d8aa1d6353889b8564172751d5a53ec7408760255c80e62225f87"
     }
   }
 }
