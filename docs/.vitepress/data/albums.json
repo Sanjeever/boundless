@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-14",
+  "updatedAt": "2026-07-15",
   "albums": [
     {
       "id": "sofa-sea",
@@ -216,6 +216,14 @@
       "releaseDate": "1997-05-21",
       "url": "https://music.apple.com/us/album/1097861387",
       "cover": "https://coverartarchive.org/release-group/b1392450-e666-3926-a536-22c65f834433/front-500"
+    },
+    {
+      "id": "in-the-court-of-the-crimson-king",
+      "title": "In the Court of the Crimson King",
+      "artist": "King Crimson",
+      "releaseDate": "1969-10-10",
+      "url": "https://music.apple.com/us/album/in-the-court-of-the-crimson-king-expanded-edition/918534711",
+      "cover": "https://coverartarchive.org/release-group/a50636b5-5233-3329-a7f3-dba3d0e00ef7/front-500"
     },
     {
       "id": "the-dark-side-of-the-moon",
