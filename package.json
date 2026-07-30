@@ -14,15 +14,15 @@
     "update:deps": "taze -w"
   },
   "keywords": [],
-  "author": "Sanjeev <me@sanjeev.top>",
+  "author": "Sanjeev <hi@sanjeev.top>",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^20.19.39",
+    "@types/node": "^20.19.43",
     "feed": "^4.2.2",
     "markdown-it-mathjax3": "^4.3.2",
     "oxfmt": "^0.44.0",
-    "sass": "^1.99.0",
-    "taze": "^19.11.0",
+    "sass": "^1.102.0",
+    "taze": "^19.16.0",
     "unplugin-auto-import": "^0.17.8",
     "unplugin-vue-components": "^0.27.5",
     "vitepress": "2.0.0-alpha.2"
@@ -30,7 +30,7 @@
   "dependencies": {
     "@giscus/vue": "^3.1.1",
     "tdesign-icons-vue-next": "^0.2.6",
-    "tdesign-vue-next": "^1.18.6",
+    "tdesign-vue-next": "^1.20.5",
     "vue": "^3.5.32"
   }
 }
