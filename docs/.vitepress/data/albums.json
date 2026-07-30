@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-15",
+  "updatedAt": "2026-07-30",
   "albums": [
     {
       "id": "sofa-sea",
@@ -72,6 +72,14 @@
       "releaseDate": "2007-07-12",
       "url": "https://music.apple.com/tw/album/312524587",
       "cover": "https://coverartarchive.org/release-group/bd025f4b-ef9c-38a9-8beb-db8bd69d35bc/front-500"
+    },
+    {
+      "id": "nothing-is-under-control",
+      "title": "Nothing Is under Control",
+      "artist": "岑宁儿",
+      "releaseDate": "2018-11-16",
+      "url": "https://music.apple.com/tw/album/1442487021",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music128/v4/c2/34/e6/c234e668-6a8e-6a04-9629-76c629b9354c/193017005424.jpg/500x500bb.jpg"
     },
     {
       "id": "ruye",
