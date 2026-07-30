@@ -31,11 +31,11 @@ const copy = computed(() =>
             url: 'https://github.com/Sanjeever/opengauss-mcp',
           },
           {
-            name: 'ndx-dca-signal',
+            name: 'v2ex-tui',
             description:
-              "A local macOS application that generates dollar-cost averaging signals for Nasdaq-100 and QQQ-equivalent QDII ETFs traded on China's A-share market.",
-            stack: ['macOS', 'Local-first', 'Investment'],
-            url: 'https://github.com/Sanjeever/ndx-dca-signal',
+              'A read-only V2EX client for browsing topics, nodes, and member profiles in the terminal.',
+            stack: ['Vue 3', 'TypeScript', 'TUI'],
+            url: 'https://github.com/Sanjeever/v2ex-tui',
           },
         ],
       }
@@ -62,11 +62,11 @@ const copy = computed(() =>
             url: 'https://github.com/Sanjeever/opengauss-mcp',
           },
           {
-            name: 'ndx-dca-signal',
+            name: 'v2ex-tui',
             description:
-              '一款运行在本地 macOS 上的定投信号程序，面向 A 股市场中的纳斯达克 100、QQQ 等价 QDII-ETF。',
-            stack: ['macOS', '本地优先', '投资'],
-            url: 'https://github.com/Sanjeever/ndx-dca-signal',
+              '一款只读 V2EX 终端客户端，可在终端中浏览主题、节点和会员公开资料。',
+            stack: ['Vue 3', 'TypeScript', 'TUI'],
+            url: 'https://github.com/Sanjeever/v2ex-tui',
           },
         ],
       }
