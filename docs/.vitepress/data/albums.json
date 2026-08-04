@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-30",
+  "updatedAt": "2026-08-04",
   "albums": [
     {
       "id": "sofa-sea",
@@ -96,6 +96,14 @@
       "releaseDate": "2016-07-26",
       "url": "https://music.apple.com/tw/album/1421692907",
       "cover": "https://coverartarchive.org/release-group/2b69724c-d2b8-4f8b-9930-205eb9ab0a8c/front-500"
+    },
+    {
+      "id": "long-vacation",
+      "title": "悠长假期",
+      "artist": "陈粒",
+      "releaseDate": "2021-08-17",
+      "url": "https://music.apple.com/cn/album/悠長假期/1598890252",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/bb/2f/9a/bb2f9ae7-ce8d-c3f2-556d-c4e83aaaffbf/cover.jpg/600x600bb.jpg"
     },
     {
       "id": "zero",
