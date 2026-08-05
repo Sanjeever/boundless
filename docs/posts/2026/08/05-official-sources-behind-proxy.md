@@ -20,7 +20,7 @@ aside: true
 
 <!-- DESC SEP -->
 
-用过一段时间镜像源后，我遇到的不是"连不上"这种一次性问题，而是慢性的：某个源的镜像更新慢半拍、另一个偶发返回旧版本，不同工具各指各的镜像，排查时还得先回忆它指向哪。后来我换了个思路——工具保持官方源，网络请求统一走 FlClash 的混合代理。这篇记录这套配置，覆盖 npm、pnpm、uv、Maven、Go、Cargo、Dart/Flutter，以及 Git 的 HTTP 与 SSH、Homebrew 和 Docker Desktop。遇到问题先看文末的「排查思路」。
+用过一段时间镜像源后，我遇到的不是"连不上"这种一次性问题，而是慢性的：某个源的镜像更新慢半拍、另一个偶发返回旧版本，不同工具各指各的镜像，排查时还得先回忆它指向哪。后来我换了个思路——工具保持官方源，网络请求统一走 FlClash 的混合代理。这篇记录这套配置，覆盖 npm、pnpm、uv、pip、Maven、Go、Cargo、Dart/Flutter，以及 Git 的 HTTP 与 SSH、Homebrew 和 Docker Desktop。遇到问题先看文末的「排查思路」。
 
 ## 镜像源和代理是两回事
 
@@ -35,7 +35,7 @@ aside: true
 
 ## 公共代理变量
 
-FlClash 是我使用的代理客户端，默认在 `7897` 端口暴露混合代理（同时支持 HTTP 与 SOCKS）。下面这些工具都直接读取标准代理环境变量，网络层不用单独配置：**uv、Go、Dart/Flutter、Homebrew**。先在系统里固定这两个变量：
+FlClash 是我使用的代理客户端，默认在 `7897` 端口暴露混合代理（同时支持 HTTP 与 SOCKS）。下面这些工具都直接读取标准代理环境变量，网络层不用单独配置：**uv、pip、Go、Dart/Flutter、Homebrew**。先在系统里固定这两个变量：
 
 Windows（PowerShell，写入用户级变量）：
 
@@ -104,6 +104,25 @@ uvx --refresh --verbose ruff --version
 ```
 
 `uvx` 能打印出 ruff 的版本号，说明 PyPI 与网络都通。
+
+### pip
+
+pip 和 uv 一样使用 PyPI 作为默认索引。恢复官方源就是显式设置 `global.index-url`；网络走公共代理变量。
+
+Windows 与 macOS 相同：
+
+```bash
+pip config set global.index-url https://pypi.org/simple
+```
+
+pip 的用户级配置文件分别位于 Windows 的 `%APPDATA%\pip\pip.ini` 和 macOS 的 `~/.config/pip/pip.conf`。验证：
+
+```bash
+pip config list
+pip index versions pip
+```
+
+`pip index versions pip` 能列出版本，说明 PyPI 与网络都通。
 
 ### Go
 

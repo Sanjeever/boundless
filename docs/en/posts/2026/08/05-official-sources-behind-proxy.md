@@ -20,7 +20,7 @@ I used to give every tool its own mirror registry and could never remember which
 
 <!-- DESC SEP -->
 
-After a while with mirrors, the problem wasn't a one-time "can't connect" — it was chronic. One mirror lagged a version behind, another occasionally served stale packages, and every tool pointed at a different registry, so debugging meant first recalling which one each pointed to. So I flipped the approach: tools keep their official sources, and all network traffic goes through one FlClash mixed proxy. This post records the setup, covering npm, pnpm, uv, Maven, Go, Cargo, Dart/Flutter, Git over HTTP and SSH, Homebrew, and Docker Desktop. If something won't connect, start with the troubleshooting notes at the end.
+After a while with mirrors, the problem wasn't a one-time "can't connect" — it was chronic. One mirror lagged a version behind, another occasionally served stale packages, and every tool pointed at a different registry, so debugging meant first recalling which one each pointed to. So I flipped the approach: tools keep their official sources, and all network traffic goes through one FlClash mixed proxy. This post records the setup, covering npm, pnpm, uv, pip, Maven, Go, Cargo, Dart/Flutter, Git over HTTP and SSH, Homebrew, and Docker Desktop. If something won't connect, start with the troubleshooting notes at the end.
 
 ## Mirror sources and proxies are two different things
 
@@ -35,7 +35,7 @@ So the configuration below only does two things: **reset the source/registry/ind
 
 ## Shared proxy environment variables
 
-FlClash is the proxy client I use; by default it exposes a mixed proxy on port `7897` (both HTTP and SOCKS). The following tools read the standard proxy environment variables directly, so their network layer needs no extra configuration: **uv, Go, Dart/Flutter, Homebrew**. Pin these two variables down first.
+FlClash is the proxy client I use; by default it exposes a mixed proxy on port `7897` (both HTTP and SOCKS). The following tools read the standard proxy environment variables directly, so their network layer needs no extra configuration: **uv, pip, Go, Dart/Flutter, Homebrew**. Pin these two variables down first.
 
 Windows (PowerShell, sets user-level variables):
 
@@ -104,6 +104,25 @@ uvx --refresh --verbose ruff --version
 ```
 
 If `uvx` prints the ruff version, PyPI and the network both work.
+
+### pip
+
+pip uses PyPI as its default index, just like uv. Restoring the official source means setting `global.index-url` explicitly; the network goes through the shared proxy variables.
+
+Same on Windows and macOS:
+
+```bash
+pip config set global.index-url https://pypi.org/simple
+```
+
+pip's user-level config file lives at `%APPDATA%\pip\pip.ini` on Windows and `~/.config/pip/pip.conf` on macOS. Verify:
+
+```bash
+pip config list
+pip index versions pip
+```
+
+If `pip index versions pip` lists versions, PyPI and the network both work.
 
 ### Go
 
