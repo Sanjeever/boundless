@@ -20,7 +20,7 @@ I got an image named `zbql7.6_v5u9.iso` and, after installing it in VMware, foun
 
 <!-- DESC SEP -->
 
-I got a system image named `zbql7.6_v5u9.iso` and installed it in VMware. I knew neither the pre-provisioned user's password nor root's, and after logging in there was no network. This post records how I restored access through GRUB, got networking back, and then worked through SSH to unpack the distribution's identity, its RPM build differences, and the NKUC/Spacewalk centralized-management mechanism. I'll keep the technical judgments measured and distinguish clearly between what I actually observed and what I inferred from it.
+I got a system image named `zbql7.6_v5u9.iso` and installed it in VMware. I knew neither the pre-provisioned user's password nor root's, and after logging in there was no network. This post records how I restored access through GRUB, got networking back, and then worked through SSH to unpack the distribution's identity, its RPM build differences, and the NKUC/Spacewalk centralized-management mechanism.
 
 ## Two problems after getting the image
 
@@ -82,7 +82,7 @@ passwd <普通用户名>
 
 If it warns about a weak password, that's only a warning, not a failure. The real success marker is `passwd: all authentication tokens updated successfully.`
 
-After changing the passwords, I did three things before rebooting.
+After changing the passwords, I did a few things before rebooting.
 
 ```bash
 touch /.autorelabel
@@ -91,16 +91,6 @@ sync
 ```
 
 `touch /.autorelabel` makes SELinux re-check file labels at next boot, because I modified files in a single-user environment where labels may be incomplete, and skipping this could leave some services unable to start after reboot. `sync` flushes the cached changes to disk. After the reboot, both root and the ordinary user can log in with the new passwords.
-
-The password-change chain in one diagram.
-
-```text
-passwd command ✅
-  → PAM password handling ✅
-    → write to /etc/shadow
-      → fails when root fs is read-only ❌
-      → succeeds after remount rw ✅
-```
 
 ## Restoring VMware NAT networking
 
@@ -148,7 +138,7 @@ Check routing, and the default gateway is `192.168.182.2`.
 ip route
 ```
 
-Then three connectivity tests.
+Then a few connectivity tests.
 
 ```bash
 ping -c 4 192.168.182.2
@@ -156,17 +146,7 @@ ping -c 4 223.5.5.5
 ping -c 4 www.baidu.com
 ```
 
-All three succeeded, confirming respectively that the VM reaches the VMware NAT gateway, public IPs are reachable, and DNS resolution works. The network came up layer by layer.
-
-```text
-VMware NAT ✅
-  → virtual NIC ens33 ✅
-    → NetworkManager ✅
-      → DHCP address ✅
-        → default route ✅
-          → public access ✅
-            → DNS resolution ✅
-```
+All three succeeded, confirming respectively that the VM reaches the VMware NAT gateway, public IPs are reachable, and DNS resolution works.
 
 There was still a catch. If I'd only connected manually, the network might not survive a reboot. Check the connection's auto-connect flag.
 
@@ -192,8 +172,6 @@ ens33  ens33  yes
 
 Networking now restores on its own after a reboot. With access and the network working, I logged in over SSH to study the system.
 
-Here are the faults so far, summarized.
-
 | Fault | Cause | Fix |
 | --- | --- | --- |
 | `passwd` reports `Authentication token manipulation error` | root filesystem mounted read-only under `init=/bin/bash` | remount `rw` with `mount -n -o remount,rw /`, then set the passwords |
@@ -202,7 +180,7 @@ Here are the faults so far, summarized.
 
 ## Dissecting the system over SSH
 
-With the network and passwords in hand, I logged in over SSH and unpacked the system from several angles, including distribution identity, kernel, RPM builds, customization packages, and virtual hardware.
+With the network and passwords in hand, I logged in over SSH and unpacked the system piece by piece: distribution identity, kernel, RPM builds, customization packages, and virtual hardware.
 
 ### Distribution identity
 
@@ -226,7 +204,7 @@ PRETTY_NAME="NeoKylin Linux Advanced Server V7Update6 (Chromium)"
 Red Hat Enterprise Linux Server release 7.6 (Maipo)
 ```
 
-This confirms that the product name is NeoKylin Linux Advanced Server, version V7Update6, codename Chromium, and that the system keeps the RHEL 7.6 compatibility identifier. More precisely, judging from these identifiers, it appears highly based on or compatible with RHEL 7.6, inheriting the Enterprise Linux 7 stack represented by RPM, YUM, systemd, and SELinux.
+This confirms that the product name is NeoKylin Linux Advanced Server, version V7Update6, codename Chromium, and that the system keeps the RHEL 7.6 compatibility identifier. Judging from these identifiers, it appears highly based on or compatible with RHEL 7.6, inheriting the Enterprise Linux 7 stack represented by RPM, YUM, systemd, and SELinux.
 
 ### Kernel
 
@@ -270,7 +248,7 @@ At the top is NeoKylin's own build entry.
 Modify for: neokylin-rpm-config
 ```
 
-Below it, the bulk of the records are Red Hat's kernel patch history, including CVE fixes and hardware-support updates. That indicates the patch history is mostly inherited from Red Hat, and NeoKylin did its own build, signing, and release. I should be careful. This changelog alone can't prove that all source differences are limited to this one entry, since it records build-level activity, not every source-level change.
+Below it, the bulk of the records are Red Hat's kernel patch history, including CVE fixes and hardware-support updates. That indicates the patch history is mostly inherited from Red Hat, and NeoKylin did its own build, signing, and release. This changelog alone can't prove that all source differences are limited to this one entry, since it records build-level activity, not every source-level change.
 
 ### The RPM rebuild
 
@@ -291,13 +269,7 @@ Packager : NeoKylin Linux
 
 Including kernel, glibc, bash, systemd, yum, rpm, GNOME, NetworkManager, SELinux, OpenSSH, libvirt, Xorg, and open-vm-tools. That indicates NeoKylin builds, signs, and ships a broad set of Enterprise Linux packages uniformly.
 
-But here's the distinction. The `Vendor` and `Packager` fields only prove the package was built or repackaged by NeoKylin, and they can't, on their own, prove how much of the source actually changed.
-
-```text
-Vendor/Packager fields
-  → prove NeoKylin built or packaged it ✅
-    → can't alone prove how much source changed ❌
-```
+But the `Vendor` and `Packager` fields only prove the package was built or repackaged by NeoKylin; on their own they can't prove how much of the source actually changed.
 
 ### NeoKylin's own customization packages
 
@@ -400,15 +372,7 @@ Here are the key files.
 /usr/sbin/nkucsd
 ```
 
-It uses the traditional SysV init script, hosted by systemd's compatibility mechanism.
-
-```text
-/etc/rc.d/init.d/nkucsd
-  → systemd-sysv-generator
-    → nkucsd.service
-```
-
-Here's the check interval.
+It uses the traditional SysV init script, hosted by systemd's compatibility mechanism. Here's the check interval.
 
 ```bash
 cat /etc/sysconfig/rhn/nkucsd
@@ -457,14 +421,6 @@ Spacewalk Services Daemon starting up, check in interval 240 minutes.
 
 The current state is that `nkucsd` runs, `systemid` is absent, and `serverURL` is still a placeholder, so it can't reach a real NKUC platform and won't fetch or execute remote actions.
 
-```text
-nkucsd running ✅
-  → systemid missing ❌
-    → serverURL still a placeholder ❌
-      → can't reach a real NKUC platform
-        → won't fetch or run remote actions ✅
-```
-
 ### nkuc_check (the script that actually connects)
 
 Inspect both programs' file type and dependencies.
@@ -484,27 +440,7 @@ file /usr/sbin/nkuc_check
 Python script, ASCII text executable
 ```
 
-`nkuc_check` is a Python script. Combined with the man pages, the division of labor is clear. `nkucsd` is only the scheduling daemon and doesn't connect to the network itself. When its check interval arrives it invokes the external program `nkuc_check`, which is the one that contacts the Spacewalk server. The unregistered flow today is the following.
-
-```text
-nkucsd wakes on schedule
-  → runs nkuc_check ✅
-    → checks the process lock ✅
-      → checks the disabled flag ✅
-        → reads systemid
-          → currently missing, exits ❌
-```
-
-The full logic once registered is the following.
-
-```text
-nkuc_check
-  → reads up2date config
-    → opens an XML-RPC connection
-      → fetches the server action queue
-        → runs local whitelisted actions
-          → reports results back to the server
-```
+`nkuc_check` is a Python script. Combined with the man pages, the division of labor is clear. `nkucsd` is only the scheduling daemon and doesn't connect to the network itself. When its check interval arrives it invokes the external program `nkuc_check`, which is the one that contacts the Spacewalk server.
 
 ### The remote-action whitelist
 
@@ -519,10 +455,10 @@ The mapping chain is as follows.
 
 ```text
 Spacewalk returns method + params
-  → validate method name ✅
-    → locate the /usr/share/rhn/actions module ✅
-      → check the __rhnexport__ whitelist ✅
-        → call the local Python function ✅
+  → validate method name
+    → locate the /usr/share/rhn/actions module
+      → check the __rhnexport__ whitelist
+        → call the local Python function
 ```
 
 The actually exported actions include the following.
@@ -551,7 +487,7 @@ up2date_config.rpmmacros
 up2date_config.get
 ```
 
-That covers installing, updating, and removing packages; full system update; package rollback; package verification; uploading the installed-package list; uploading hardware info; changing update-client config; adjusting the check interval; disabling the client identity; and remote reboot. To be clear, this is not a general-purpose remote shell, but these actions run as root, so it is a centralized-ops client with fairly high system privileges. That whitelist is the boundary that defines what a central manager can and can't do on a client. Either it can't touch the client at all, or it can only run these preset action types, so the client is not a freely operable machine.
+That covers installing, updating, and removing packages; full system update; package rollback; package verification; uploading the installed-package list; uploading hardware info; changing update-client config; adjusting the check interval; disabling the client identity; and remote reboot. This is not a general-purpose remote shell, but these actions run as root, so it is a centralized-ops client with fairly high system privileges. The whitelist defines what a central manager can and can't do on a client. Either it can't touch the client at all, or it can only run these preset action types, so the client is not a freely operable machine.
 
 ### Remote reboot and package management
 
@@ -567,12 +503,12 @@ It schedules a reboot 3 minutes after receiving the action. The config `noReboot
 
 ```text
 server sends a package action
-  → nkuc_check parses the XML-RPC ✅
-    → packages.py builds a YUM transaction ✅
-      → dependency resolution and transaction test ✅
-        → GPG signature check ✅
-          → root executes install/upgrade/remove/rollback ✅
-            → result reported back to the server ✅
+  → nkuc_check parses the XML-RPC
+    → packages.py builds a YUM transaction
+      → dependency resolution and transaction test
+        → GPG signature check
+          → root executes install/upgrade/remove/rollback
+            → result reported back to the server
 ```
 
 `packages.refresh_list()` collects the local RPM package list and uploads it to the central management server, and `packages.verify()` checks whether specified packages are missing or files are anomalous.
@@ -600,8 +536,6 @@ gpgcheck=0
 
 So there are no usable YUM sources right now. No online repository is enabled, the only repo points at `/mnt` and is itself disabled, and the installation ISO was removed from the VM, so `/mnt` has nothing mounted. I won't guess at NeoKylin's official repository addresses, nor invent a working mirror. For a freshly installed system that means installing software requires first mounting installation media or configuring a trusted repository yourself, since there's no out-of-the-box source.
 
-Here's the main set of components I unpacked and where they come from or what they do.
-
 | Component | Origin or role |
 | --- | --- |
 | `neokylin-release-server` | distro name/version identity, RHEL compatibility identifier, RPM macros, GPG public key, default repo config, systemd presets |
@@ -613,13 +547,13 @@ Here's the main set of components I unpacked and where they come from or what th
 
 ## Summary
 
-- **Password recovery** Boot GRUB with `init=/bin/bash` to reach a root shell; the read-only root filesystem stopped `passwd` from writing `/etc/shadow`; after `mount -n -o remount,rw /`, the reset worked, and `/.autorelabel` had SELinux relabel.
-- **Network recovery** The stopped NetworkManager was the cause; `enable --now` plus manually connecting `ens33` got DHCP addressing, routing, and DNS working layer by layer, and `autoconnect yes` keeps it working after reboot.
-- **RHEL 7.6 compatibility base** Officially NeoKylin Linux Advanced Server V7Update6 (Chromium), kernel `3.10.0-957.el7`, using the Enterprise Linux 7 stack of RPM, YUM, systemd, SELinux, GNOME, NetworkManager, XFS, and LVM.
-- **NeoKylin rebuild and customization layer** A broad set of base packages is rebuilt and signed by CS2C/NeoKylin; `Vendor`/`Packager` proves the build's origin but not the extent of source changes. On top of the base, NeoKylin adds branding and release identity, GPG signing, the NKUC client, a Spacewalk/RHN-compatible system, and licensing and admin components.
-- **NKUC centralized management** `nkucsd` schedules, `nkuc_check` does the network work, and remote methods are mapped to local functions through the `__rhnexport__` whitelist, giving root-level abilities to install/upgrade/remove/rollback packages, report assets, adjust config, and reboot remotely. This build is not registered (no `systemid`, placeholder `serverURL`, YUM plugin disabled), so it performs no real remote actions.
+Boot to a root shell through GRUB with `init=/bin/bash` and the root filesystem is read-only, so `passwd` can't write `/etc/shadow`; remounting it `rw` lets the reset go through, and `/.autorelabel` has SELinux relabel. The network problem came down to a stopped NetworkManager: `enable --now`, connect `ens33` by hand, and DHCP, routing, and DNS come up in turn, then `autoconnect yes` keeps it working after reboot.
 
-This system's software baseline dates mostly from 2018—2019. It suits historical compatibility testing, research on domestic OSes, learning Enterprise Linux 7 administration, or validating legacy commercial software. If you plan to use it on a new networked production system, you must first confirm vendor support status, the source of security updates, repository availability, vulnerability-fix status, and business-application compatibility, and it needs a full evaluation and ongoing security updates, not a simple yes or no.
+Officially NeoKylin Linux Advanced Server V7Update6 (Chromium) on kernel `3.10.0-957.el7`, it runs the Enterprise Linux 7 stack of RPM, YUM, systemd, SELinux, GNOME, NetworkManager, XFS, and LVM. A broad set of base packages is rebuilt and signed by CS2C/NeoKylin, but `Vendor`/`Packager` proves the build's origin, not the extent of source changes; on top of the base, NeoKylin adds branding and release identity, GPG signing, the NKUC client, a Spacewalk/RHN-compatible system, and licensing and admin components.
+
+In NKUC's centralized management, `nkucsd` schedules, `nkuc_check` does the network work, and remote methods are mapped to local functions through the `__rhnexport__` whitelist, giving root-level abilities to install/upgrade/remove/rollback packages, report assets, adjust config, and reboot remotely. This build is not registered (no `systemid`, placeholder `serverURL`, YUM plugin disabled), so it performs no real remote actions.
+
+This system's software baseline dates mostly from 2018—2019, which suits historical compatibility testing, research on domestic OSes, learning Enterprise Linux 7 administration, or validating legacy commercial software. To use it on a new networked production system, confirm vendor support, a sustained source of security updates, and repository availability before weighing the business applications' compatibility requirements.
 
 ## A note on security
 
