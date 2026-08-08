@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-04",
+  "updatedAt": "2026-08-08",
   "albums": [
     {
       "id": "sofa-sea",
@@ -320,6 +320,62 @@
       "releaseDate": "1984-09-12",
       "url": "https://music.apple.com/us/album/290073030",
       "cover": "https://coverartarchive.org/release-group/2b85ba4e-53bf-4473-87f5-59d0b53020ad/front-500"
+    },
+    {
+      "id": "lala-debut",
+      "title": "徐佳莹LaLa首张创作专辑",
+      "artist": "徐佳莹",
+      "releaseDate": "2009-05-29",
+      "url": "https://music.apple.com/tw/album/672648486",
+      "cover": "https://coverartarchive.org/release-group/1a5ed261-5e3f-4ecc-923e-5f578440a978/front-500"
+    },
+    {
+      "id": "david-tao",
+      "title": "陶喆同名专辑",
+      "artist": "陶喆",
+      "releaseDate": "1997-12-06",
+      "url": "https://music.apple.com/tw/album/1416149926",
+      "cover": "https://coverartarchive.org/release-group/0266bc3c-2456-44be-99d2-c779fce923ff/front-500"
+    },
+    {
+      "id": "im-ok",
+      "title": "I'm O.K.",
+      "artist": "陶喆",
+      "releaseDate": "1999-12-10",
+      "url": "https://music.apple.com/tw/album/905206471",
+      "cover": "https://coverartarchive.org/release-group/923495e2-e110-3ee0-afee-7d3719fd26f5/front-500"
+    },
+    {
+      "id": "black-tangerine",
+      "title": "黑色柳丁",
+      "artist": "陶喆",
+      "releaseDate": "2002-08-06",
+      "url": "https://music.apple.com/tw/album/914664926",
+      "cover": "https://coverartarchive.org/release-group/ada64ee0-8bd4-3f23-acc0-a3e937431bf0/front-500"
+    },
+    {
+      "id": "the-great-leap-2005",
+      "title": "太平盛世",
+      "artist": "陶喆",
+      "releaseDate": "2005-01-21",
+      "url": "https://music.apple.com/tw/album/905206649",
+      "cover": "https://coverartarchive.org/release-group/50e835ee-3c0b-3fba-a888-5e8f5d441c34/front-500"
+    },
+    {
+      "id": "opus-69",
+      "title": "六九乐章",
+      "artist": "陶喆",
+      "releaseDate": "2009-08-21",
+      "url": "https://music.apple.com/tw/album/1551676965",
+      "cover": "https://coverartarchive.org/release-group/a93f1da9-6156-493e-b256-9b0527dce692/front-500"
+    },
+    {
+      "id": "ultrasound-1997-2003",
+      "title": "乐之路",
+      "artist": "陶喆",
+      "releaseDate": "2003-08-08",
+      "url": "https://music.apple.com/tw/album/1372031877",
+      "cover": "https://coverartarchive.org/release-group/4ad72c6e-0909-3d54-a5ba-5f0309305d43/front-500"
     }
   ]
 }
