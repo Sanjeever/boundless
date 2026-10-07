@@ -6,8 +6,8 @@ tags:
   - Urbanization
   - Family
 description: A short story following three generations of the Chen family as their village becomes a city over forty years, while Chen Musheng still charges one yuan to hem a pair of trousers.
-outline: deep
-aside: true
+outline: false
+aside: false
 ---
 
 # One Yuan
@@ -20,7 +20,7 @@ Rice paddies give way to factories. A village disappears from the map. Three gen
 
 In 1980, the land outside Chen Musheng’s house was still rice paddies.
 
-He was twenty-three and made a living hemming trousers at the entrance to the village. Press the pedal once, the iron wheel turned three times, and one pair of trousers earned him one yuan.
+He was forty-three and made a living hemming trousers at the entrance to the village. Press the pedal once, the iron wheel turned three times, and one pair of trousers earned him one yuan.
 
 That year, his father told him he was good for nothing.
 
@@ -136,40 +136,6 @@ She knew that someone had been murdered in a county she had never visited.
 
 But she did not know the name of the woman who sold breakfast downstairs.
 
-At university, she studied nuclear engineering.
-
-None of her relatives understood what that meant.
-
-Her grandmother asked, “Does that mean you make atomic bombs?”
-
-Chen Yu explained several times.
-
-Eventually, she stopped explaining.
-
-After graduation, she went to work at a nuclear power plant.
-
-Uranium traveled thousands of kilometers before arriving there.
-
-Fuel assemblies entered the reactor.
-
-Water absorbed the heat.
-
-Steam drove the turbines.
-
-Generators sent electricity into the grid.
-
-Where that electricity went after that, Chen Yu did not know.
-
-Perhaps it illuminated an operating room in a hospital.
-
-Perhaps it powered a Bitcoin mining rig.
-
-Perhaps, at two in the morning, it charged the phone of someone who could not sleep.
-
-She was responsible for only one small section of the process.
-
-Everyone was responsible for only one small section.
-
 In 2018, Chen Hao became rich.
 
 Not from foreign trade.
@@ -178,19 +144,33 @@ From the redevelopment of the old urban village.
 
 Suddenly, he had more money than he had ever imagined.
 
-That same year, an old classmate who had approved construction projects was arrested.
+Only a few days after the money arrived, Chen Hao came to take his father out for dinner. The old man was still at the sewing machine. Chen Hao pulled up a stool and sat down. One of its legs wobbled.
 
-As children, the two of them had once stolen watermelons together.
+“Dad, close the shop. Your eyesight’s getting worse, and you’re still working for so little.”
 
-Later, one spent his life thinking about how to build towers a little higher.
+Chen Musheng stopped the machine, turned the trouser hem over, and held it close to the lamp.
 
-The other spent his thinking about whether he could get promoted one more rank before retirement.
+“Someone’s coming for these tomorrow.”
 
-The news said the amount involved in the corruption case was 170 million yuan.
+“Then close it after that. I can afford to look after you.”
 
-Chen Hao stared at the number for a long time.
+The old man glanced up at him, then reached under the table for a plastic bag.
 
-He could no longer remember how many watermelons they had stolen.
+“That pair you left here. They’re ready.”
+
+Chen Hao took the bag. He had bought the trousers on a business trip, worn them once, and found them too long. He had left them at his father’s shop without giving them much thought.
+
+“I don’t wear these anymore.”
+
+“Nothing wrong with them.”
+
+Chen Hao unfolded the trousers. Both hems had been pressed flat. The old crease lines were still there. He folded them again and laid them across his knees.
+
+His phone rang. Someone from home wanted to know when they would arrive.
+
+“Go ahead and order. I’ll be a little late.”
+
+Chen Musheng began working the pedal again. Chen Hao sat beside him, one hand steadying himself on the edge of the stool. He said nothing more about closing the shop.
 
 In 2020, pork rose to more than thirty yuan a jin.
 
