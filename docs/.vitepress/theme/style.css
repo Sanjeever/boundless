@@ -239,12 +239,28 @@ body {
   letter-spacing: -0.015em;
 }
 
-.vp-doc h1 + p {
-  margin-top: 0;
-  margin-bottom: 46px;
+.vp-doc .article-summary {
+  margin: 0 0 48px;
   color: var(--vp-c-text-2);
-  font-size: 18px;
-  line-height: 1.75;
+  font-size: 22px;
+  line-height: 1.65;
+}
+
+.vp-doc h1:has(+ .article-summary) {
+  margin-bottom: 24px;
+}
+
+.vp-doc .article-summary p,
+.vp-doc .article-summary li {
+  line-height: inherit;
+}
+
+.vp-doc .article-summary > :first-child {
+  margin-top: 0;
+}
+
+.vp-doc .article-summary > :last-child {
+  margin-bottom: 0;
 }
 
 .vp-doc p,
@@ -404,8 +420,9 @@ main > div > div > pre > code {
     font-size: 25px;
   }
 
-  .vp-doc h1 + p {
-    font-size: 17px;
+  .vp-doc .article-summary {
+    margin-bottom: 40px;
+    font-size: 18px;
   }
 }
 

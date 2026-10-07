@@ -75,6 +75,23 @@ export default defineConfig({
 
   markdown: {
     math: true,
+    config(md) {
+      md.core.ruler.after('block', 'article-summary', state => {
+        let inSummary = false
+
+        for (const token of state.tokens) {
+          if (
+            token.type === 'html_block' &&
+            token.content.trim() === '<!-- DESC SEP -->'
+          ) {
+            token.content = inSummary
+              ? '</div>\n'
+              : '<div class="article-summary">\n'
+            inSummary = !inSummary
+          }
+        }
+      })
+    },
   },
 
   vite: {
