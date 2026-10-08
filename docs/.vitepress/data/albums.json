@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-30",
+  "updatedAt": "2026-10-08",
   "albums": [
     {
       "id": "sofa-sea",
@@ -344,6 +344,14 @@
       "releaseDate": "2019-12-06",
       "url": "https://open.spotify.com/album/15FjDCRuVnJFVHiTFuj0Fp",
       "cover": "https://coverartarchive.org/release-group/9452b670-1ade-4e88-82dc-f2c8042e38f4/front-500"
+    },
+    {
+      "id": "cai-hua-huan-tao-hua",
+      "title": "才华换桃花",
+      "artist": "JOYCE 就以斯",
+      "releaseDate": "2025-12-12",
+      "url": "https://music.apple.com/cn/album/1857898572",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/42/3e/93/423e9385-4d69-15d1-8d35-35322f9a2ddb/25UM2IM00528.rgb.jpg/500x500bb.jpg"
     }
   ]
 }
