@@ -1,7 +1,21 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  TransitionGroup,
+  watch,
+} from 'vue'
 import { useData } from 'vitepress'
 import albumCollection from '../../data/albums.json'
+import {
+  type CloudPositions,
+  createAlbumMotion,
+  prepareAlbumLeave,
+  resetAlbumLeave,
+} from '../utils/albumMotion'
 
 type Album = {
   id: string
@@ -21,7 +35,13 @@ const { lang } = useData()
 const coverErrors = ref<Record<string, true>>({})
 const selectedArtists = ref(new Set<string>())
 const artistsExpanded = ref(false)
+const wallElement = ref<HTMLElement>()
 const cloudElement = ref<HTMLDivElement>()
+const preparingMotion = ref(false)
+const motionReady = ref(false)
+const motionEnabled = ref(false)
+let motion: ReturnType<typeof createAlbumMotion> | undefined
+let cloudBefore: CloudPositions | undefined
 const isNarrow = ref(false)
 const cloudPositions = ref<Record<string, { left: string; top: string }>>({})
 const cloudHeight = ref(240)
@@ -104,14 +124,16 @@ function layoutCloud() {
   if (!element) return
 
   const width = element.clientWidth
+  const visibleNames = new Set(visibleArtists.value.map(artist => artist.name))
   const words = Array.from(
     element.querySelectorAll<HTMLButtonElement>('.artist')
   )
-    .map((button, index) => ({
-      name: visibleArtists.value[index]!.name,
-      count: visibleArtists.value[index]!.count,
-      width: button.getBoundingClientRect().width,
-      height: button.getBoundingClientRect().height,
+    .filter(button => visibleNames.has(button.dataset.artist!))
+    .map(button => ({
+      name: button.dataset.artist!,
+      count: Number(button.dataset.count),
+      width: button.offsetWidth,
+      height: button.offsetHeight,
     }))
     .sort((a, b) => b.count - a.count)
   type Box = { x: number; y: number; width: number; height: number }
@@ -164,6 +186,13 @@ function layoutCloud() {
     if (placed.length === words.length) {
       cloudPositions.value = positions
       cloudHeight.value = height
+      const before = cloudBefore
+      cloudBefore = undefined
+      if (before) {
+        void nextTick(() => {
+          if (wallElement.value) motion?.moveCloud(wallElement.value, before)
+        })
+      }
       return
     }
 
@@ -180,15 +209,28 @@ function scheduleCloudLayout() {
   layoutFrame = requestAnimationFrame(layoutCloud)
 }
 
+watch(filteredAlbums, async () => {
+  if (!motionReady.value) return
+  const before = motion!.captureAlbums(wallElement.value!)
+  await nextTick()
+  if (wallElement.value) motion?.moveAlbums(wallElement.value, before)
+})
+
 watch(
   () => visibleArtists.value.map(artist => artist.name).join('\n'),
   async () => {
+    if (motionReady.value)
+      cloudBefore = motion?.captureCloud(wallElement.value!)
     await nextTick()
     scheduleCloudLayout()
   }
 )
 
 onMounted(() => {
+  preparingMotion.value = true
+  motion = createAlbumMotion(enabled => {
+    motionEnabled.value = enabled
+  })
   isNarrow.value = window.matchMedia('(max-width: 559px)').matches
   let cloudWidth = 0
   cloudObserver = new ResizeObserver(entries => {
@@ -199,17 +241,30 @@ onMounted(() => {
     scheduleCloudLayout()
   })
   cloudObserver.observe(cloudElement.value!)
-  void document.fonts.ready.then(scheduleCloudLayout)
+  void document.fonts.ready.then(async () => {
+    if (!wallElement.value) return
+    cancelAnimationFrame(layoutFrame)
+    layoutCloud()
+    await nextTick()
+    if (!wallElement.value) return
+    preparingMotion.value = false
+    motionReady.value = true
+    motion?.reveal(wallElement.value)
+  })
 })
 
 onUnmounted(() => {
   cloudObserver?.disconnect()
   cancelAnimationFrame(layoutFrame)
+  motion?.stop()
 })
 </script>
 
 <template>
-  <main class="album-wall">
+  <main
+    ref="wallElement"
+    class="album-wall"
+    :class="{ 'is-preparing': preparingMotion }">
     <h1 class="visually-hidden">{{ heading }}</h1>
     <div class="artist-filter">
       <div
@@ -220,23 +275,28 @@ onUnmounted(() => {
         :style="{ '--cloud-height': `${cloudHeight}px` }"
         role="group"
         :aria-label="artistGroupLabel">
-        <button
-          v-for="artist in visibleArtists"
-          :key="artist.name"
-          type="button"
-          class="artist"
-          :class="[
-            `artist-weight-${Math.min(artist.count, 4)}`,
-            {
-              'is-selected': selectedArtists.has(artist.name),
-            },
-          ]"
-          :style="cloudPositions[artist.name]"
-          :aria-label="artistLabel(artist.name, artist.count)"
-          :aria-pressed="selectedArtists.has(artist.name)"
-          @click="toggleArtist(artist.name)">
-          <span class="artist-name">{{ artist.name }}</span>
-        </button>
+        <TransitionGroup :css="false" @leave="motion?.leaveArtist">
+          <button
+            v-for="artist in visibleArtists"
+            :key="artist.name"
+            type="button"
+            class="artist"
+            :class="[
+              `artist-weight-${Math.min(artist.count, 4)}`,
+              {
+                'is-selected': selectedArtists.has(artist.name),
+                'artist-pending': !cloudPositions[artist.name],
+              },
+            ]"
+            :style="cloudPositions[artist.name]"
+            :data-artist="artist.name"
+            :data-count="artist.count"
+            :aria-label="artistLabel(artist.name, artist.count)"
+            :aria-pressed="selectedArtists.has(artist.name)"
+            @click="toggleArtist(artist.name)">
+            <span class="artist-name">{{ artist.name }}</span>
+          </button>
+        </TransitionGroup>
       </div>
       <button
         type="button"
@@ -262,48 +322,56 @@ onUnmounted(() => {
     </div>
 
     <section class="cover-grid" :aria-label="heading">
-      <a
-        v-for="(album, index) in filteredAlbums"
-        :key="album.id"
-        class="album"
-        :href="album.url"
-        target="_blank"
-        rel="noopener noreferrer">
-        <figure>
-          <div class="album-cover">
-            <div
-              v-if="coverErrors[album.id]"
-              class="cover-error"
-              aria-hidden="true">
-              <span class="cover-error-title">{{ album.title }}</span>
-              <span class="cover-error-artist">{{ album.artist }}</span>
-              <span class="cover-error-label">{{ coverErrorLabel }}</span>
+      <TransitionGroup
+        name="album"
+        :css="motionEnabled"
+        move-class="motion-static"
+        @before-leave="prepareAlbumLeave"
+        @after-leave="resetAlbumLeave"
+        @leave-cancelled="resetAlbumLeave">
+        <a
+          v-for="(album, index) in filteredAlbums"
+          :key="album.id"
+          class="album"
+          :href="album.url"
+          target="_blank"
+          rel="noopener noreferrer">
+          <figure>
+            <div class="album-cover">
+              <div
+                v-if="coverErrors[album.id]"
+                class="cover-error"
+                aria-hidden="true">
+                <span class="cover-error-title">{{ album.title }}</span>
+                <span class="cover-error-artist">{{ album.artist }}</span>
+                <span class="cover-error-label">{{ coverErrorLabel }}</span>
+              </div>
+              <img
+                v-else
+                :src="`/images/albums/${album.id}.jpg`"
+                alt=""
+                :loading="index < 5 ? 'eager' : 'lazy'"
+                :fetchpriority="index === 0 ? 'high' : undefined"
+                decoding="async"
+                draggable="false"
+                @error="markCoverError(album.id)" />
             </div>
-            <img
-              v-else
-              :src="`/images/albums/${album.id}.jpg`"
-              alt=""
-              :loading="index < 5 ? 'eager' : 'lazy'"
-              :fetchpriority="index === 0 ? 'high' : undefined"
-              decoding="async"
-              draggable="false"
-              @error="markCoverError(album.id)" />
-          </div>
-          <figcaption>
-            <span class="album-title-row">
-              <span class="album-title">{{ album.title }}</span>
-              <span class="external-mark" aria-hidden="true">↗</span>
-            </span>
-            <span class="album-meta">
-              <span class="album-artist">{{ album.artist }}</span>
-              <span class="album-year">
-                {{ album.releaseDate.slice(0, 4) }}
+            <figcaption>
+              <span class="album-title-row">
+                <span class="album-title">{{ album.title }}</span>
+                <span class="external-mark" aria-hidden="true">↗</span>
               </span>
-            </span>
-            <span class="visually-hidden">{{ externalLinkLabel }}</span>
-          </figcaption>
-        </figure>
-      </a>
+              <span class="album-meta">
+                <span class="album-artist">{{ album.artist }}</span>
+                <span class="album-year">
+                  {{ album.releaseDate.slice(0, 4) }}
+                </span>
+              </span>
+              <span class="visually-hidden">{{ externalLinkLabel }}</span>
+            </figcaption>
+          </figure>
+        </a>
+      </TransitionGroup>
     </section>
   </main>
 </template>
@@ -372,6 +440,10 @@ onUnmounted(() => {
   position: absolute;
 }
 
+.artist-cloud.is-positioned .artist-pending {
+  visibility: hidden;
+}
+
 .artist {
   display: inline-flex;
   align-items: center;
@@ -391,6 +463,7 @@ onUnmounted(() => {
 }
 
 .artist-name {
+  display: inline-block;
   text-decoration-thickness: 1px;
   text-underline-offset: 5px;
 }
@@ -460,6 +533,7 @@ onUnmounted(() => {
 }
 
 .cover-grid {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(
     auto-fill,
@@ -477,6 +551,27 @@ onUnmounted(() => {
   text-decoration: none;
 }
 
+.album-enter-active {
+  transition:
+    opacity 200ms ease,
+    transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.album-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.album-leave-active {
+  position: absolute;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.album-leave-to {
+  opacity: 0;
+}
+
 .album:focus-visible {
   outline: none;
 }
@@ -486,7 +581,7 @@ onUnmounted(() => {
     0 0 0 2px var(--wall-background),
     0 0 0 4px var(--vp-c-brand-1),
     var(--cover-hover-shadow);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
 
 .album figure {
@@ -504,8 +599,8 @@ onUnmounted(() => {
     var(--cover-shadow);
   transform: translateZ(0);
   transition:
-    box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .album-cover img {
@@ -664,7 +759,7 @@ onUnmounted(() => {
     box-shadow:
       0 0 0 0.5px var(--cover-edge),
       var(--cover-hover-shadow);
-    transform: translateY(-2px) scale(1.005);
+    transform: translateY(-3px) scale(1.005);
   }
 
   .album:hover .album-title,
@@ -675,6 +770,19 @@ onUnmounted(() => {
   .album:hover .external-mark {
     opacity: 1;
     transform: translate3d(0, 0, 0);
+  }
+}
+
+.album:active .album-cover,
+.album:hover:active .album-cover {
+  transform: scale(0.99);
+  transition-duration: 80ms;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .is-preparing .artist-name,
+  .is-preparing .album figure {
+    opacity: 0;
   }
 }
 
@@ -756,6 +864,12 @@ onUnmounted(() => {
     transition: none;
   }
 
+  .artist-cloud,
+  .artist,
+  .expand-artists,
+  .filter-summary,
+  .cover-grid,
+  .album,
   .album-cover,
   .album-title,
   .external-mark {
@@ -764,6 +878,8 @@ onUnmounted(() => {
 
   .album:hover .album-cover,
   .album:focus-visible .album-cover,
+  .album:active .album-cover,
+  .album:hover:active .album-cover,
   .album:hover .external-mark,
   .album:focus-visible .external-mark {
     transform: none;
