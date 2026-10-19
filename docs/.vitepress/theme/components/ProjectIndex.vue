@@ -2,153 +2,206 @@
 import { computed, ref } from 'vue'
 import { useData } from 'vitepress'
 
+interface Project {
+  id: string
+  name: string
+  repositoryName?: string
+  description: string
+  stack: string[]
+  url: string
+  screenshot?: {
+    src: string
+    alt: string
+    width: number
+    height: number
+  }
+}
+
 const { lang } = useData()
 const isEnglish = computed(() => lang.value.startsWith('en'))
-const screenshotState = ref<'loading' | 'loaded' | 'error'>('loading')
+const screenshotStates = ref<Record<string, 'loaded' | 'error'>>({})
 
 const copy = computed(() =>
   isEnglish.value
     ? {
         title: 'Projects',
-        description: 'Open-source projects I create and maintain.',
-        github: 'View on GitHub',
-        screenshot: 'Port Sentinel application screenshot',
+        technology: 'Platform and technology',
         screenshotLoading: 'Loading project screenshot',
         screenshotError: 'Project screenshot unavailable',
-        projects: [
-          {
-            name: 'port_sentinel',
-            description:
-              'A Flutter Windows desktop application for monitoring ports and managing processes.',
-            stack: ['Flutter', 'Windows', 'Dart'],
-            url: 'https://github.com/Sanjeever/port_sentinel',
-          },
-          {
-            name: 'opengauss-mcp',
-            description:
-              'An openGauss database tooling service built with Spring AI MCP Server. MCP clients connect over stdio to inspect schemas, query statistics, and execute SQL.',
-            stack: ['Java', 'Spring AI', 'MCP'],
-            url: 'https://github.com/Sanjeever/opengauss-mcp',
-          },
-          {
-            name: 'v2ex-tui',
-            description:
-              'A read-only V2EX client for browsing topics, nodes, and member profiles in the terminal.',
-            stack: ['Vue 3', 'TypeScript', 'TUI'],
-            url: 'https://github.com/Sanjeever/v2ex-tui',
-          },
-        ],
+        connectionDiagram:
+          'An MCP client connects through SSH MCP to multiple SSH servers.',
+        client: 'MCP client',
+        server: 'Server',
       }
     : {
         title: '项目',
-        description: '我创建和维护的一些开源项目。',
-        github: '在 GitHub 查看',
-        screenshot: 'Port Sentinel 应用截图',
+        technology: '平台与技术',
         screenshotLoading: '正在加载项目截图',
         screenshotError: '项目截图暂不可用',
-        projects: [
-          {
-            name: 'port_sentinel',
-            description:
-              '一款用于监控端口和管理进程的 Flutter Windows 桌面应用。',
-            stack: ['Flutter', 'Windows', 'Dart'],
-            url: 'https://github.com/Sanjeever/port_sentinel',
-          },
-          {
-            name: 'opengauss-mcp',
-            description:
-              '基于 Spring AI MCP Server 的 openGauss 数据库工具服务，支持 MCP 客户端通过 stdio 连接，并调用数据库工具查看表结构、查询统计信息和执行 SQL。',
-            stack: ['Java', 'Spring AI', 'MCP'],
-            url: 'https://github.com/Sanjeever/opengauss-mcp',
-          },
-          {
-            name: 'v2ex-tui',
-            description:
-              '一款只读 V2EX 终端客户端，可在终端中浏览主题、节点和会员公开资料。',
-            stack: ['Vue 3', 'TypeScript', 'TUI'],
-            url: 'https://github.com/Sanjeever/v2ex-tui',
-          },
-        ],
+        connectionDiagram: 'MCP 客户端通过 SSH MCP 连接多台 SSH 服务器。',
+        client: 'MCP 客户端',
+        server: '服务器',
       }
 )
+
+const projects = computed<Project[]>(() => [
+  {
+    id: 'ssh-mcp',
+    name: 'SSH MCP',
+    description: isEnglish.value
+      ? 'Connect to multiple SSH servers through MCP to run commands and transfer files.'
+      : '通过 MCP 连接多台 SSH 服务器，执行命令并传输文件。',
+    stack: ['MCP', 'SSH', 'TypeScript'],
+    url: 'https://github.com/Sanjeever/ssh-mcp',
+  },
+  {
+    id: 'port-sentinel',
+    name: 'Port Sentinel',
+    description: isEnglish.value
+      ? 'Inspect Windows port usage, find conflicting processes, and stop them.'
+      : '查看 Windows 端口占用，定位并结束冲突进程。',
+    stack: ['Windows', 'Flutter'],
+    url: 'https://github.com/Sanjeever/port_sentinel',
+    screenshot: {
+      src: 'https://raw.githubusercontent.com/Sanjeever/port_sentinel/main/assets/screenshot/home_page.png',
+      alt: isEnglish.value
+        ? 'Port Sentinel showing occupied ports, processes, and process controls'
+        : 'Port Sentinel 的端口占用列表、进程信息与进程操作',
+      width: 1684,
+      height: 992,
+    },
+  },
+  {
+    id: 'codex-deck',
+    name: 'Codex Deck',
+    description: isEnglish.value
+      ? 'Manage Codex CLI accounts and quotas, and browse local sessions.'
+      : '管理 Codex CLI 多账号与额度，浏览本地会话。',
+    stack: [isEnglish.value ? 'Desktop' : '桌面应用', 'Wails', 'React'],
+    url: 'https://github.com/Sanjeever/codex-deck',
+    screenshot: {
+      src: 'https://raw.githubusercontent.com/Sanjeever/codex-deck/main/docs/screenshots/accounts.png',
+      alt: isEnglish.value
+        ? 'Codex Deck account list with 5-hour and weekly quotas'
+        : 'Codex Deck 账号列表与 5 小时、每周剩余额度',
+      width: 2464,
+      height: 1728,
+    },
+  },
+  {
+    id: 'model-confluence',
+    name: isEnglish.value ? 'Model Confluence' : '模汇',
+    repositoryName: 'model-confluence',
+    description: isEnglish.value
+      ? 'A self-hosted AI gateway that converts protocols and tracks API usage.'
+      : '为 AI 客户端提供统一入口，转换协议并记录调用用量。',
+    stack: [isEnglish.value ? 'Self-hosted' : '自部署', 'Go', 'React'],
+    url: 'https://github.com/Sanjeever/model-confluence',
+    screenshot: {
+      src: 'https://raw.githubusercontent.com/Sanjeever/model-confluence/main/docs/screenshots/model-routes.png',
+      alt: isEnglish.value
+        ? 'Model Confluence model routing with ordered providers and supported protocols'
+        : '模汇的模型路由页面，展示有序供应商与支持的协议',
+      width: 1920,
+      height: 913,
+    },
+  },
+])
 </script>
 
 <template>
   <main class="project-index">
     <header class="project-header">
       <h1>{{ copy.title }}</h1>
-      <p>{{ copy.description }}</p>
     </header>
 
     <section class="project-grid" :aria-label="copy.title">
-      <article class="project project-featured">
+      <article
+        v-for="project in projects"
+        :key="project.id"
+        class="project"
+        :aria-labelledby="`project-${project.id}`">
         <div class="project-visual">
-          <p v-if="screenshotState !== 'loaded'" aria-live="polite">
-            {{
-              screenshotState === 'error'
-                ? copy.screenshotError
-                : copy.screenshotLoading
-            }}
-          </p>
-          <img
-            v-if="screenshotState !== 'error'"
-            src="https://raw.githubusercontent.com/Sanjeever/port_sentinel/main/assets/screenshot/home_page.png"
-            :alt="copy.screenshot"
-            width="1684"
-            height="992"
-            decoding="async"
-            fetchpriority="high"
-            @load="screenshotState = 'loaded'"
-            @error="screenshotState = 'error'" />
+          <template v-if="project.screenshot">
+            <p
+              v-if="screenshotStates[project.id] !== 'loaded'"
+              class="screenshot-status"
+              role="status">
+              {{
+                screenshotStates[project.id] === 'error'
+                  ? copy.screenshotError
+                  : copy.screenshotLoading
+              }}
+            </p>
+            <img
+              v-if="screenshotStates[project.id] !== 'error'"
+              :src="project.screenshot.src"
+              :alt="project.screenshot.alt"
+              :width="project.screenshot.width"
+              :height="project.screenshot.height"
+              :loading="project.id === 'port-sentinel' ? 'eager' : 'lazy'"
+              decoding="async"
+              @load="screenshotStates[project.id] = 'loaded'"
+              @error="screenshotStates[project.id] = 'error'" />
+          </template>
+          <svg
+            v-else
+            class="connection-diagram"
+            viewBox="0 0 540 310"
+            role="img"
+            :aria-label="copy.connectionDiagram">
+            <g class="connection-lines" fill="none" stroke-width="1.5">
+              <path d="M148 155H222M338 155H374M374 71V239" />
+              <path d="M374 71H410M374 155H410M374 239H410" />
+            </g>
+            <g class="connection-node">
+              <rect x="26" y="125" width="122" height="60" rx="6" />
+              <rect x="410" y="48" width="104" height="46" rx="6" />
+              <rect x="410" y="132" width="104" height="46" rx="6" />
+              <rect x="410" y="216" width="104" height="46" rx="6" />
+            </g>
+            <rect
+              class="connection-hub"
+              x="222"
+              y="125"
+              width="116"
+              height="60"
+              rx="6" />
+            <g class="connection-label" text-anchor="middle">
+              <text x="87" y="160">{{ copy.client }}</text>
+              <text class="connection-hub-label" x="280" y="160">SSH MCP</text>
+              <text x="462" y="76">{{ copy.server }} 01</text>
+              <text x="462" y="160">{{ copy.server }} 02</text>
+              <text x="462" y="244">{{ copy.server }} 03</text>
+            </g>
+          </svg>
         </div>
+
         <div class="project-copy">
-          <p class="project-owner">Sanjeever</p>
-          <h2>{{ copy.projects[0].name }}</h2>
-          <p class="project-description">{{ copy.projects[0].description }}</p>
+          <h2 :id="`project-${project.id}`">
+            <a :href="project.url" target="_blank" rel="noopener noreferrer">
+              {{ project.name }}
+            </a>
+          </h2>
+          <p v-if="project.repositoryName" class="project-repository">
+            {{ project.repositoryName }}
+          </p>
+          <p class="project-description">{{ project.description }}</p>
           <div class="project-footer">
-            <ul :aria-label="isEnglish ? 'Technology' : '技术'">
-              <li v-for="item in copy.projects[0].stack" :key="item">
-                {{ item }}
-              </li>
+            <ul :aria-label="copy.technology">
+              <li v-for="item in project.stack" :key="item">{{ item }}</li>
             </ul>
             <a
-              :href="copy.projects[0].url"
+              :href="project.url"
+              :aria-label="`${project.name} — GitHub`"
               target="_blank"
               rel="noopener noreferrer">
-              {{ copy.github }}
+              GitHub
+              <span aria-hidden="true">↗</span>
             </a>
           </div>
         </div>
       </article>
-
-      <div class="secondary-projects">
-        <article
-          v-for="(project, index) in copy.projects.slice(1)"
-          :key="project.name"
-          class="project project-secondary"
-          :class="`project-secondary-${index + 1}`">
-          <img
-            v-if="index === 1"
-            class="project-mark"
-            src="/logo.png"
-            alt=""
-            width="400"
-            height="400" />
-          <div class="project-copy">
-            <p class="project-owner">Sanjeever</p>
-            <h2>{{ project.name }}</h2>
-            <p class="project-description">{{ project.description }}</p>
-            <div class="project-footer">
-              <ul :aria-label="isEnglish ? 'Technology' : '技术'">
-                <li v-for="item in project.stack" :key="item">{{ item }}</li>
-              </ul>
-              <a :href="project.url" target="_blank" rel="noopener noreferrer">
-                {{ copy.github }}
-              </a>
-            </div>
-          </div>
-        </article>
-      </div>
     </section>
   </main>
 </template>
@@ -156,122 +209,132 @@ const copy = computed(() =>
 <style scoped>
 .project-index {
   width: min(1180px, 100%);
-  min-height: 100dvh;
   margin-inline: auto;
-  padding: calc(var(--vp-nav-height) + 80px) clamp(24px, 4vw, 48px) 120px;
+  padding: 48px clamp(24px, 4vw, 48px) 100px;
 }
 
 .project-header {
-  max-width: 720px;
-  margin-bottom: 72px;
+  margin-bottom: 40px;
 }
 
 .project-header h1 {
   margin: 0;
   color: var(--vp-c-text-1);
-  font-size: clamp(52px, 7vw, 82px);
+  font-size: clamp(38px, 5vw, 52px);
   font-weight: 640;
-  letter-spacing: -0.055em;
-  line-height: 1;
-}
-
-.project-header p {
-  margin: 24px 0 0;
-  color: var(--vp-c-text-2);
-  font-size: 17px;
-  line-height: 1.7;
+  letter-spacing: -0.045em;
+  line-height: 1.15;
 }
 
 .project-grid {
   display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(330px, 5fr);
-  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 56px 32px;
 }
 
 .project {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--boundless-radius);
-}
-
-.project-featured {
-  display: grid;
-  min-height: 720px;
-  background: var(--vp-c-bg-soft);
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
 }
 
 .project-visual {
   position: relative;
-  display: block;
-  min-height: 360px;
+  display: grid;
+  aspect-ratio: 8 / 5;
   overflow: hidden;
-  background: var(--boundless-surface-strong);
+  place-items: center;
+  border-radius: var(--boundless-radius);
+  background: var(--vp-c-bg-soft);
 }
 
-.project-visual > p {
+.screenshot-status {
   position: absolute;
-  inset: 0;
-  display: grid;
   margin: 0;
-  place-items: center;
-  color: var(--vp-c-text-3);
-  font-family: var(--vp-font-family-mono);
-  font-size: 11px;
+  color: var(--vp-c-text-2);
+  font-size: 12px;
 }
 
 .project-visual img {
   position: relative;
-  z-index: 1;
   display: block;
   width: 100%;
   height: 100%;
-  min-height: 360px;
-  object-fit: cover;
-  object-position: center top;
-  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 0;
+  padding: clamp(12px, 2vw, 20px);
+  object-fit: contain;
 }
 
-.project-visual:hover img {
-  transform: scale(1.015);
+.connection-diagram {
+  width: 100%;
+  height: 100%;
+}
+
+.connection-lines {
+  stroke: var(--vp-c-text-3);
+}
+
+.connection-node {
+  fill: var(--vp-c-bg);
+}
+
+.connection-hub {
+  fill: var(--boundless-accent-soft);
+}
+
+.connection-label {
+  fill: var(--vp-c-text-2);
+  font-family: var(--vp-font-family-mono);
+  font-size: 13px;
+}
+
+.connection-hub-label {
+  fill: var(--vp-c-brand-1);
+  font-weight: 600;
 }
 
 .project-copy {
-  position: relative;
-  z-index: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
-  padding: clamp(28px, 4vw, 46px);
-}
-
-.project-owner {
-  margin: 0 0 14px;
-  color: var(--vp-c-text-3);
-  font-family: var(--vp-font-family-mono);
-  font-size: 11px;
+  padding-top: 24px;
 }
 
 .project h2 {
   margin: 0;
   color: var(--vp-c-text-1);
-  font-size: clamp(26px, 3vw, 38px);
+  font-size: clamp(24px, 2.5vw, 30px);
   font-weight: 620;
   letter-spacing: -0.035em;
-  line-height: 1.15;
+  line-height: 1.2;
+}
+
+.project h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.project-repository {
+  margin: 8px 0 0;
+  color: var(--vp-c-text-2);
+  font-family: var(--vp-font-family-mono);
+  font-size: 12px;
 }
 
 .project-description {
   max-width: 54ch;
-  margin: 20px 0 36px;
+  margin: 14px 0 24px;
   color: var(--vp-c-text-2);
   font-size: 15px;
   line-height: 1.72;
+  text-wrap: pretty;
 }
 
 .project-footer {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 16px;
   margin-top: auto;
 }
 
@@ -281,9 +344,9 @@ const copy = computed(() =>
   gap: 6px 14px;
   margin: 0;
   padding: 0;
-  color: var(--vp-c-text-3);
+  color: var(--vp-c-text-2);
   font-family: var(--vp-font-family-mono);
-  font-size: 10px;
+  font-size: 11px;
   list-style: none;
 }
 
@@ -291,113 +354,38 @@ const copy = computed(() =>
   flex: none;
   color: var(--vp-c-brand-1);
   font-size: 13px;
-  font-weight: 620;
+  font-weight: 600;
   text-decoration: none;
 }
 
-.secondary-projects {
-  display: grid;
-  grid-template-rows: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+.project a:hover {
+  color: var(--vp-c-brand-2);
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
-.project-secondary {
-  min-height: 351px;
-}
-
-.project-secondary .project-copy {
-  height: 100%;
-}
-
-.project-secondary h2 {
-  font-size: clamp(24px, 2.6vw, 32px);
-}
-
-.project-secondary-1 {
-  background: var(--boundless-accent-soft);
-}
-
-.project-secondary-2 {
-  background: var(--boundless-surface-strong);
-}
-
-.project-mark {
-  position: absolute;
-  right: -52px;
-  bottom: -62px;
-  width: 210px;
-  height: auto;
-  opacity: 0.2;
-  transform: rotate(12deg);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .project-header,
-  .project-grid {
-    animation: project-reveal 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  .project-grid {
-    animation-delay: 80ms;
-  }
-}
-
-@keyframes project-reveal {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 10px, 0);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@media (max-width: 899px) {
-  .project-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .project-featured {
-    min-height: 0;
-  }
-
-  .secondary-projects {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: none;
-  }
+.project a:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 4px;
+  border-radius: 2px;
 }
 
 @media (max-width: 767px) {
   .project-index {
-    padding: calc(var(--vp-nav-height) + 52px) 18px 80px;
+    padding: 32px 20px 72px;
   }
 
   .project-header {
-    margin-bottom: 52px;
+    margin-bottom: 32px;
   }
 
-  .project-header h1 {
-    font-size: 52px;
-  }
-
-  .project-visual,
-  .project-visual img {
-    min-height: 240px;
-  }
-
-  .secondary-projects {
+  .project-grid {
     grid-template-columns: 1fr;
+    gap: 40px;
   }
 
-  .project-secondary {
-    min-height: 330px;
-  }
-
-  .project-footer {
-    align-items: flex-start;
-    flex-direction: column;
+  .project-copy {
+    padding-top: 20px;
   }
 }
 </style>
