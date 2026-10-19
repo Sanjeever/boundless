@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useData } from 'vitepress'
 import albumCollection from '../../data/albums.json'
 
@@ -21,6 +21,10 @@ const { lang } = useData()
 const coverErrors = ref<Record<string, true>>({})
 const selectedArtists = ref(new Set<string>())
 const artistsExpanded = ref(false)
+const cloudElement = ref<HTMLDivElement>()
+const isNarrow = ref(false)
+const cloudPositions = ref<Record<string, { left: string; top: string }>>({})
+const cloudHeight = ref(240)
 const artists = computed(() => {
   const counts = new Map<string, number>()
 
@@ -30,6 +34,13 @@ const artists = computed(() => {
 
   return Array.from(counts, ([name, count]) => ({ name, count }))
 })
+const visibleArtists = computed(() =>
+  isNarrow.value && !artistsExpanded.value
+    ? artists.value.filter(
+        artist => artist.count > 1 || selectedArtists.value.has(artist.name)
+      )
+    : artists.value
+)
 const filteredAlbums = computed(() =>
   selectedArtists.value.size
     ? albums.value.filter(album => selectedArtists.value.has(album.artist))
@@ -86,6 +97,115 @@ function artistLabel(name: string, count: number) {
 function markCoverError(id: string) {
   coverErrors.value[id] = true
 }
+
+// 先放置大词，再沿椭圆螺旋填充空隙。
+function layoutCloud() {
+  const element = cloudElement.value
+  if (!element) return
+
+  const width = element.clientWidth
+  const words = Array.from(
+    element.querySelectorAll<HTMLButtonElement>('.artist')
+  )
+    .map((button, index) => ({
+      name: visibleArtists.value[index]!.name,
+      count: visibleArtists.value[index]!.count,
+      width: button.getBoundingClientRect().width,
+      height: button.getBoundingClientRect().height,
+    }))
+    .sort((a, b) => b.count - a.count)
+  type Box = { x: number; y: number; width: number; height: number }
+  let height = isNarrow.value ? 220 : 240
+
+  for (;;) {
+    const placed: Box[] = []
+    const positions: Record<string, { left: string; top: string }> = {}
+
+    for (const word of words) {
+      for (let step = 0; step < 2400; step++) {
+        const angle = step * 0.15
+        const radius = (step / 2400) * (height / 2)
+        const x = Math.cos(angle) * radius * (width / height)
+        const y = Math.sin(angle) * radius
+        const box = {
+          x: x - word.width / 2,
+          y: y - word.height / 2,
+          width: word.width,
+          height: word.height,
+        }
+        const edgeX = (Math.abs(x) + word.width / 2 + 4) / (width / 2)
+        const edgeY = (Math.abs(y) + word.height / 2 + 4) / (height / 2)
+
+        if (edgeX > 1 || edgeY > 1) continue
+        if (!isNarrow.value && edgeX ** 2 + edgeY ** 2 > 1) continue
+        if (
+          placed.some(
+            other =>
+              box.x < other.x + other.width + 6 &&
+              box.x + box.width + 6 > other.x &&
+              box.y < other.y + other.height + 6 &&
+              box.y + box.height + 6 > other.y
+          )
+        ) {
+          continue
+        }
+
+        placed.push(box)
+        positions[word.name] = {
+          left: `${box.x + width / 2}px`,
+          top: `${box.y + height / 2}px`,
+        }
+        break
+      }
+
+      if (!positions[word.name]) break
+    }
+
+    if (placed.length === words.length) {
+      cloudPositions.value = positions
+      cloudHeight.value = height
+      return
+    }
+
+    height += 40
+  }
+}
+
+let cloudObserver: ResizeObserver | undefined
+let layoutFrame = 0
+
+function scheduleCloudLayout() {
+  if (!cloudElement.value) return
+  cancelAnimationFrame(layoutFrame)
+  layoutFrame = requestAnimationFrame(layoutCloud)
+}
+
+watch(
+  () => visibleArtists.value.map(artist => artist.name).join('\n'),
+  async () => {
+    await nextTick()
+    scheduleCloudLayout()
+  }
+)
+
+onMounted(() => {
+  isNarrow.value = window.matchMedia('(max-width: 559px)').matches
+  let cloudWidth = 0
+  cloudObserver = new ResizeObserver(entries => {
+    const width = entries[0]!.contentRect.width
+    if (!width || width === cloudWidth) return
+    cloudWidth = width
+    isNarrow.value = window.matchMedia('(max-width: 559px)').matches
+    scheduleCloudLayout()
+  })
+  cloudObserver.observe(cloudElement.value!)
+  void document.fonts.ready.then(scheduleCloudLayout)
+})
+
+onUnmounted(() => {
+  cloudObserver?.disconnect()
+  cancelAnimationFrame(layoutFrame)
+})
 </script>
 
 <template>
@@ -94,27 +214,28 @@ function markCoverError(id: string) {
     <div class="artist-filter">
       <div
         id="album-artists"
+        ref="cloudElement"
         class="artist-cloud"
-        :class="{ 'is-expanded': artistsExpanded }"
+        :class="{ 'is-positioned': Object.keys(cloudPositions).length > 0 }"
+        :style="{ '--cloud-height': `${cloudHeight}px` }"
         role="group"
         :aria-label="artistGroupLabel">
         <button
-          v-for="artist in artists"
+          v-for="artist in visibleArtists"
           :key="artist.name"
           type="button"
           class="artist"
           :class="[
             `artist-weight-${Math.min(artist.count, 4)}`,
             {
-              'artist-secondary': artist.count === 1,
               'is-selected': selectedArtists.has(artist.name),
             },
           ]"
+          :style="cloudPositions[artist.name]"
           :aria-label="artistLabel(artist.name, artist.count)"
           :aria-pressed="selectedArtists.has(artist.name)"
           @click="toggleArtist(artist.name)">
           <span class="artist-name">{{ artist.name }}</span>
-          <span class="artist-check" aria-hidden="true">✓</span>
         </button>
       </div>
       <button
@@ -226,59 +347,70 @@ function markCoverError(id: string) {
 }
 
 .artist-filter {
-  padding-top: clamp(40px, 5vw, 64px);
-  padding-bottom: clamp(24px, 3vw, 36px);
+  padding-top: clamp(24px, 3vw, 40px);
+  padding-bottom: 16px;
 }
 
 .artist-cloud {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px clamp(12px, 2vw, 24px);
+  align-items: center;
+  justify-content: center;
+  gap: 6px 16px;
+  width: min(1000px, 100%);
+  min-height: 240px;
+  margin-inline: auto;
+}
+
+.artist-cloud.is-positioned {
+  display: block;
+  height: var(--cloud-height);
+}
+
+.artist-cloud.is-positioned .artist {
+  position: absolute;
 }
 
 .artist {
   display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
   max-width: 100%;
-  min-height: 44px;
+  min-height: 32px;
   margin: 0;
-  padding: 4px 0;
+  padding: 4px;
   color: var(--text-secondary);
   font-family: inherit;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 1.5;
-  text-align: left;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.2;
+  white-space: nowrap;
   font-optical-sizing: auto;
   cursor: pointer;
 }
 
 .artist-name {
-  min-width: 0;
-  overflow-wrap: anywhere;
   text-decoration-thickness: 1px;
   text-underline-offset: 5px;
 }
 
 .artist-weight-2 {
-  font-size: 20px;
+  color: color-mix(in srgb, var(--text-primary) 65%, var(--text-secondary));
+  font-size: 24px;
+  font-weight: 500;
 }
 
 .artist-weight-3 {
-  font-size: 24px;
+  color: color-mix(in srgb, var(--text-primary) 85%, var(--text-secondary));
+  font-size: 32px;
+  font-weight: 500;
 }
 
 .artist-weight-4 {
-  font-size: 30px;
-}
-
-.artist-check {
-  flex: none;
-  color: var(--vp-c-brand-1);
-  font-size: 12px;
-  opacity: 0;
+  color: var(--text-primary);
+  font-size: 46px;
+  font-weight: 600;
 }
 
 .artist.is-selected {
@@ -288,10 +420,6 @@ function markCoverError(id: string) {
 .artist.is-selected .artist-name,
 .artist:focus-visible .artist-name {
   text-decoration-line: underline;
-}
-
-.artist.is-selected .artist-check {
-  opacity: 1;
 }
 
 .artist:focus-visible,
@@ -550,6 +678,12 @@ function markCoverError(id: string) {
   }
 }
 
+@media (pointer: coarse) {
+  .artist {
+    min-height: 44px;
+  }
+}
+
 @media (max-width: 559px) {
   .artist-filter,
   .filter-summary,
@@ -563,33 +697,30 @@ function markCoverError(id: string) {
   }
 
   .artist-cloud {
-    gap: 2px 12px;
-  }
-
-  .artist-cloud:not(.is-expanded) .artist-secondary:not(.is-selected) {
-    display: none;
+    min-height: 220px;
   }
 
   .artist {
+    min-height: 44px;
     font-size: 14px;
   }
 
   .artist-weight-2 {
-    font-size: 17px;
-  }
-
-  .artist-weight-3 {
     font-size: 20px;
   }
 
+  .artist-weight-3 {
+    font-size: 26px;
+  }
+
   .artist-weight-4 {
-    font-size: 24px;
+    font-size: 34px;
   }
 
   .expand-artists {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    margin-top: 8px;
+    margin: 8px auto 0;
   }
 
   .filter-summary {
