@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-08",
+  "updatedAt": "2026-10-19",
   "albums": [
     {
       "id": "sofa-sea",
@@ -352,6 +352,14 @@
       "releaseDate": "2025-12-12",
       "url": "https://music.apple.com/cn/album/1857898572",
       "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/42/3e/93/423e9385-4d69-15d1-8d35-35322f9a2ddb/25UM2IM00528.rgb.jpg/500x500bb.jpg"
+    },
+    {
+      "id": "happy-happy-vacation",
+      "title": "如果每天都可以 happy happy 谁想要sad:)) - 一起去度假",
+      "artist": "陈娴静",
+      "releaseDate": "2025-03-07",
+      "url": "https://music.apple.com/cn/album/1799903617",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/1b/2b/d7/1b2bd788-53fb-d910-b662-3258b5aa3f96/4712862000673.jpg/500x500bb.jpg"
     }
   ]
 }
