@@ -15,33 +15,73 @@ type Album = {
 const albums = computed(() =>
   (albumCollection.albums as Album[])
     .slice()
-    .sort((a, b) => a.releaseDate.localeCompare(b.releaseDate)),
+    .sort((a, b) => a.releaseDate.localeCompare(b.releaseDate))
 )
 const { lang } = useData()
 const coverErrors = ref<Record<string, true>>({})
-const isEnglish = computed(() => lang.value.startsWith('en'))
-const heading = computed(() => (isEnglish.value ? "Albums I've Listened To" : '听过的专辑'))
-const releaseYears = computed(() =>
-  albums.value.map((album) => album.releaseDate.slice(0, 4)),
+const selectedArtists = ref(new Set<string>())
+const artistsExpanded = ref(false)
+const artists = computed(() => {
+  const counts = new Map<string, number>()
+
+  for (const album of albumCollection.albums) {
+    counts.set(album.artist, (counts.get(album.artist) ?? 0) + 1)
+  }
+
+  return Array.from(counts, ([name, count]) => ({ name, count }))
+})
+const filteredAlbums = computed(() =>
+  selectedArtists.value.size
+    ? albums.value.filter(album => selectedArtists.value.has(album.artist))
+    : albums.value
 )
-const archiveLabel = computed(() => {
-  const range = `${releaseYears.value[0]}-${releaseYears.value.at(-1)}`
+const isEnglish = computed(() => lang.value.startsWith('en'))
+const heading = computed(() =>
+  isEnglish.value ? "Albums I've Listened To" : '听过的专辑'
+)
+const artistGroupLabel = computed(() =>
+  isEnglish.value
+    ? 'Filter by artist. Multiple artists can be selected.'
+    : '按音乐人筛选，可多选'
+)
+const resultSummary = computed(() => {
+  if (!selectedArtists.value.size) {
+    return isEnglish.value
+      ? `All ${albums.value.length} albums`
+      : `全部 ${albums.value.length} 张`
+  }
 
   return isEnglish.value
-    ? `Listening archive · ${range}`
-    : `个人聆听档案 · ${range}`
+    ? `${filteredAlbums.value.length} / ${albums.value.length} albums`
+    : `显示 ${filteredAlbums.value.length} / ${albums.value.length} 张`
 })
-const albumSummary = computed(() =>
-  isEnglish.value
-    ? `${albums.value.length} albums listened to, remembered, and counting`
-    : `${albums.value.length} 张完整听过、愿意记住的专辑`,
-)
+const expandLabel = computed(() => {
+  if (artistsExpanded.value) return isEnglish.value ? 'Show fewer' : '收起'
+
+  return isEnglish.value
+    ? `Show all ${artists.value.length} artists`
+    : `展开全部 ${artists.value.length} 位`
+})
 const coverErrorLabel = computed(() =>
-  isEnglish.value ? 'Cover unavailable' : '封面暂不可用',
+  isEnglish.value ? 'Cover unavailable' : '封面暂不可用'
 )
 const externalLinkLabel = computed(() =>
-  isEnglish.value ? 'Opens in a new window' : '在新窗口打开',
+  isEnglish.value ? 'Opens in a new window' : '在新窗口打开'
 )
+
+function toggleArtist(name: string) {
+  if (selectedArtists.value.has(name)) {
+    selectedArtists.value.delete(name)
+  } else {
+    selectedArtists.value.add(name)
+  }
+}
+
+function artistLabel(name: string, count: number) {
+  return isEnglish.value
+    ? `${name}, ${count} ${count === 1 ? 'album' : 'albums'}`
+    : `${name}，${count} 张专辑`
+}
 
 function markCoverError(id: string) {
   coverErrors.value[id] = true
@@ -50,28 +90,70 @@ function markCoverError(id: string) {
 
 <template>
   <main class="album-wall">
-    <header class="wall-header">
-      <p class="archive-label">{{ archiveLabel }}</p>
-      <h1 :class="{ 'is-english': isEnglish }">{{ heading }}</h1>
-      <p class="album-summary">{{ albumSummary }}</p>
-    </header>
+    <h1 class="visually-hidden">{{ heading }}</h1>
+    <div class="artist-filter">
+      <div
+        id="album-artists"
+        class="artist-cloud"
+        :class="{ 'is-expanded': artistsExpanded }"
+        role="group"
+        :aria-label="artistGroupLabel">
+        <button
+          v-for="artist in artists"
+          :key="artist.name"
+          type="button"
+          class="artist"
+          :class="[
+            `artist-weight-${Math.min(artist.count, 4)}`,
+            {
+              'artist-secondary': artist.count === 1,
+              'is-selected': selectedArtists.has(artist.name),
+            },
+          ]"
+          :aria-label="artistLabel(artist.name, artist.count)"
+          :aria-pressed="selectedArtists.has(artist.name)"
+          @click="toggleArtist(artist.name)">
+          <span class="artist-name">{{ artist.name }}</span>
+          <span class="artist-check" aria-hidden="true">✓</span>
+        </button>
+      </div>
+      <button
+        type="button"
+        class="expand-artists text-button"
+        :aria-expanded="artistsExpanded"
+        aria-controls="album-artists"
+        @click="artistsExpanded = !artistsExpanded">
+        {{ expandLabel }}
+      </button>
+    </div>
+
+    <div class="filter-summary">
+      <p role="status" aria-live="polite" aria-atomic="true">
+        {{ resultSummary }}
+      </p>
+      <button
+        v-if="selectedArtists.size"
+        type="button"
+        class="text-button"
+        @click="selectedArtists.clear()">
+        {{ isEnglish ? 'Clear filters' : '清除筛选' }}
+      </button>
+    </div>
 
     <section class="cover-grid" :aria-label="heading">
       <a
-        v-for="(album, index) in albums"
+        v-for="(album, index) in filteredAlbums"
         :key="album.id"
         class="album"
         :href="album.url"
         target="_blank"
-        rel="noopener noreferrer"
-      >
+        rel="noopener noreferrer">
         <figure>
           <div class="album-cover">
             <div
               v-if="coverErrors[album.id]"
               class="cover-error"
-              aria-hidden="true"
-            >
+              aria-hidden="true">
               <span class="cover-error-title">{{ album.title }}</span>
               <span class="cover-error-artist">{{ album.artist }}</span>
               <span class="cover-error-label">{{ coverErrorLabel }}</span>
@@ -84,8 +166,7 @@ function markCoverError(id: string) {
               :fetchpriority="index === 0 ? 'high' : undefined"
               decoding="async"
               draggable="false"
-              @error="markCoverError(album.id)"
-            />
+              @error="markCoverError(album.id)" />
           </div>
           <figcaption>
             <span class="album-title-row">
@@ -94,7 +175,9 @@ function markCoverError(id: string) {
             </span>
             <span class="album-meta">
               <span class="album-artist">{{ album.artist }}</span>
-              <span class="album-year">{{ album.releaseDate.slice(0, 4) }}</span>
+              <span class="album-year">
+                {{ album.releaseDate.slice(0, 4) }}
+              </span>
             </span>
             <span class="visually-hidden">{{ externalLinkLabel }}</span>
           </figcaption>
@@ -134,59 +217,124 @@ function markCoverError(id: string) {
   color-scheme: dark;
 }
 
-.wall-header,
+.artist-filter,
+.filter-summary,
 .cover-grid {
   width: min(1280px, 100%);
   margin-inline: auto;
   padding-inline: clamp(24px, 3.5vw, 48px);
 }
 
-.wall-header {
-  display: grid;
-  justify-items: start;
-  gap: 10px;
-  padding-top: calc(var(--vp-nav-height) + clamp(40px, 5vw, 64px));
-  padding-bottom: clamp(40px, 4vw, 48px);
-  animation: header-reveal 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+.artist-filter {
+  padding-top: clamp(40px, 5vw, 64px);
+  padding-bottom: clamp(24px, 3vw, 36px);
 }
 
-.archive-label {
-  margin: 0 0 2px;
-  color: var(--vp-c-brand-1);
-  font-size: 11px;
-  font-weight: 650;
-  letter-spacing: 0.12em;
-  line-height: 1.4;
-  text-transform: uppercase;
+.artist-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px clamp(12px, 2vw, 24px);
 }
 
-.wall-header h1 {
+.artist {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  max-width: 100%;
+  min-height: 44px;
   margin: 0;
-  color: var(--text-primary);
-  font-family: var(--vp-font-family-base);
-  font-size: clamp(42px, 5vw, 64px);
-  font-weight: 620;
-  line-height: 1;
-  letter-spacing: -0.035em;
-  font-optical-sizing: auto;
-}
-
-.wall-header h1.is-english {
-  max-width: 14ch;
-}
-
-.album-summary {
-  margin: 0;
+  padding: 4px 0;
   color: var(--text-secondary);
-  font-size: 15px;
-  font-variant-numeric: tabular-nums;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
   line-height: 1.5;
+  text-align: left;
+  font-optical-sizing: auto;
+  cursor: pointer;
+}
+
+.artist-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+}
+
+.artist-weight-2 {
+  font-size: 20px;
+}
+
+.artist-weight-3 {
+  font-size: 24px;
+}
+
+.artist-weight-4 {
+  font-size: 30px;
+}
+
+.artist-check {
+  flex: none;
+  color: var(--vp-c-brand-1);
+  font-size: 12px;
+  opacity: 0;
+}
+
+.artist.is-selected {
+  color: var(--vp-c-brand-1);
+}
+
+.artist.is-selected .artist-name,
+.artist:focus-visible .artist-name {
+  text-decoration-line: underline;
+}
+
+.artist.is-selected .artist-check {
+  opacity: 1;
+}
+
+.artist:focus-visible,
+.text-button:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 4px;
+}
+
+.expand-artists {
+  display: none;
+}
+
+.filter-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 44px;
+  margin-bottom: 16px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.filter-summary p {
+  margin: 0;
+}
+
+.text-button {
+  min-height: 44px;
+  padding: 0;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.5;
+  cursor: pointer;
 }
 
 .cover-grid {
   display: grid;
   grid-template-columns: repeat(
-    auto-fit,
+    auto-fill,
     minmax(min(200px, calc(50% - 6px)), 1fr)
   );
   column-gap: clamp(18px, 2vw, 24px);
@@ -223,7 +371,9 @@ function markCoverError(id: string) {
   overflow: hidden;
   border-radius: var(--boundless-radius);
   background: var(--cover-placeholder);
-  box-shadow: 0 0 0 0.5px var(--cover-edge), var(--cover-shadow);
+  box-shadow:
+    0 0 0 0.5px var(--cover-edge),
+    var(--cover-shadow);
   transform: translateZ(0);
   transition:
     box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -368,8 +518,24 @@ function markCoverError(id: string) {
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .artist:hover {
+    color: var(--text-primary);
+  }
+
+  .artist.is-selected:hover {
+    color: var(--vp-c-brand-1);
+  }
+
+  .artist:hover .artist-name,
+  .text-button:hover {
+    text-decoration: underline;
+    text-underline-offset: 5px;
+  }
+
   .album:hover:not(:focus-visible) .album-cover {
-    box-shadow: 0 0 0 0.5px var(--cover-edge), var(--cover-hover-shadow);
+    box-shadow:
+      0 0 0 0.5px var(--cover-edge),
+      var(--cover-hover-shadow);
     transform: translateY(-2px) scale(1.005);
   }
 
@@ -384,41 +550,50 @@ function markCoverError(id: string) {
   }
 }
 
-@keyframes header-reveal {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 8px, 0);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
 @media (max-width: 559px) {
-  .wall-header,
+  .artist-filter,
+  .filter-summary,
   .cover-grid {
     padding-inline: 16px;
   }
 
-  .wall-header {
-    gap: 8px;
-    padding-top: calc(var(--vp-nav-height) + 32px);
-    padding-bottom: 30px;
+  .artist-filter {
+    padding-top: 32px;
+    padding-bottom: 16px;
   }
 
-  .wall-header h1 {
-    font-size: 38px;
+  .artist-cloud {
+    gap: 2px 12px;
   }
 
-  .wall-header h1.is-english {
-    max-width: 12ch;
-    font-size: 34px;
+  .artist-cloud:not(.is-expanded) .artist-secondary:not(.is-selected) {
+    display: none;
   }
 
-  .album-summary {
+  .artist {
     font-size: 14px;
+  }
+
+  .artist-weight-2 {
+    font-size: 17px;
+  }
+
+  .artist-weight-3 {
+    font-size: 20px;
+  }
+
+  .artist-weight-4 {
+    font-size: 24px;
+  }
+
+  .expand-artists {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 8px;
+  }
+
+  .filter-summary {
+    margin-bottom: 12px;
   }
 
   .cover-grid {
@@ -448,10 +623,6 @@ function markCoverError(id: string) {
 @media (prefers-reduced-motion: reduce) {
   .album-wall {
     transition: none;
-  }
-
-  .wall-header {
-    animation: none;
   }
 
   .album-cover,
