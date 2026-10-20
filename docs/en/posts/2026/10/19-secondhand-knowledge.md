@@ -1,57 +1,109 @@
 ---
-title: Don't Let Summaries Decide for You
+title: "AI Slop: Don't Let Summaries Decide for You"
 date: 2026-10-19
 tags:
   - Information Access
   - AI
   - Independent Thinking
-description: Technical introductions often leave us with project names, striking numbers, and bold claims. Use AI to return to the sources, check capabilities, conditions, and limits, then form a judgment.
+description: AI makes content easier to produce while leaving readers to check its claims. A look at AI slop, technical reading, and using AI to trace conclusions back to evidence.
 outline: deep
 aside: true
 ---
 
-# Don't Let Summaries Decide for You
+# AI Slop: Don't Let Summaries Decide for You
 
 <!-- DESC SEP -->
 
-After reading a technical article, we might remember a project name, a download size, a GitHub star count, and one bold claim. We may still have little idea where the tool fits, what its limits are, or whether the writer has actually tried it.
+A technical introduction leaves you with a project name, a star count, and a promise to replace everything. When you actually need the tool, you still have to start with the documentation. AI makes this content easier to produce while leaving readers to do the checking. Facing AI slop, we need evidence we can trace.
 
 <!-- DESC SEP -->
 
-“Only 8 MB,” “11,000 stars,” “blazing performance.” These phrases catch our attention. Size and popularity can be useful details, but they cannot establish reliability or tell us whether a tool suits the task at hand. When the headline puts those numbers first and leaves capabilities and limits in the background, reading can take us further from an informed decision.
+“Only 8 MB.” “11,000 stars.” “Blazing performance.”
 
-I use “secondhand knowledge” here to describe information that has been retold, trimmed, and repackaged as knowledge sharing, while its evidence and conditions become hard to trace. Sometimes exaggeration and emotional framing enter the mix.
+You finish reading with a project name in mind and a faint sense of falling behind. What problem does it solve? Which features are missing? When does it fail? The article hasn't told you.
 
-Sharing knowledge depends on explaining what others have written. Translations, textbooks, and technical explanations all help us understand. The question is whether an account preserves the evidence, states the limits, and gives readers enough information to judge for themselves.
+When you actually need it, you start over with the documentation.
 
-A feature may still be experimental. A project may support only some file formats. A performance gain may depend on a particular environment. Once those conditions disappear, “worth trying” can become “a complete replacement,” and “an improvement in one area” can become “crushing the competition.” The prose reads smoothly and spreads quickly, but the conclusion exceeds the evidence.
+The introduction that promised to save you time has left you with the work of figuring out whether its claims hold up.
 
-Take Vitest. Its [official documentation](https://main.vitest.dev/guide/browser/trace-view) marks Trace View as experimental and explains that it records browser interactions through DOM snapshots for step-by-step replay. Calling it “test recording” can give readers an initial idea. To decide whether it will help with debugging, though, we still need to know what it records, how to use it, and under what conditions. Jokes about famous developers and exclamation marks cannot supply that information.
+## Louder Claims, Fewer Conditions
 
-This kind of reading can appear to save time while postponing the cost. We bookmark an article because it might be useful someday. When a real problem arrives, we still have to find the project, read the documentation, and check the limitations. The impressive claims we remember may do little to help with the work in front of us.
+A feature may still be experimental. A project may support only some file formats. A performance gain may depend on a particular environment. After a few rounds of retelling, “worth trying” becomes “a complete replacement,” and “an improvement in one area” becomes “crushing the competition.” The conditions disappear as the language grows more certain.
 
-Repeated exposure can also distort our sense of progress. Every day brings a breakthrough tool. Every week brings an industry about to be overturned. We seem to be falling behind. Attention shifts from “What problem do I need to solve?” to “What news have I missed?” We read more without necessarily gaining a clearer view.
+Take Vitest's Trace View. Its [official documentation](https://main.vitest.dev/guide/browser/trace-view) explains how it reconstructs browser interaction steps through DOM snapshots and describes what those snapshots capture. Images and canvas pixels are not inlined by default, and some external resources still depend on their original URLs. Calling it “test recording” gives readers an easy starting point. But if you need to debug a chart, an image, or a styling problem, those details matter.
 
-Reading original sources has always involved real barriers. Language, terminology, length, and unfamiliar subjects can all make introductory articles useful. AI agents now offer another way in. We can start with a specific question and ask an agent to find the repository, read the official documentation, explain terms, compare versions, and point to the relevant passages.
+A good explanation supplies context. It shows why a capability is useful and under what conditions it works. After reading, we can make a better decision about using it.
 
-This keeps reading connected to an actual need. Instead of asking how impressive a project is, we can ask whether it handles our files, which features exist, which remain planned, and what evidence supports each claim. Specific answers are easier to check. They also make it easier to decide whether to invest more time.
+A poor retelling makes the conclusion easier to spread. You can repeat how impressive the tool is without explaining why it fits your task.
 
-AI also retells information. It can omit conditions or produce errors. If it has not actually accessed a source, or cannot identify the evidence, a fluent answer is another piece of material awaiting verification. When using AI to help read, ask it to distinguish the author's claims, test results, and unknowns, and to provide sources we can check.
+“Secondhand” tells us little about quality. Translations, textbooks, and technical explanations all have value. The useful question is what readers gain, and what they lose, through each retelling.
 
-Original sources have limits too. A project homepage may be promotional. An official demo may use favorable conditions. For real work, we still need issue reports, independent evaluations, and sometimes a trial of our own. Evidence should establish credibility. Labels such as “official,” “open source,” and “highly starred” cannot do that on their own.
+## AI Slop Can Read Smoothly
 
-To discover open-source projects, start with [GitHub Trending](https://github.com/trending), then read the repository's README, releases, and issues to check its purpose, version changes, and reported problems. A ranking can help us find leads. Popularity still needs to be judged separately from quality.
+[Cambridge Dictionary](https://dictionary.cambridge.org/us/dictionary/english/ai-slop?topic=internet-terminology-and-abbreviations) defines AI slop as low-quality digital content created by AI. [Dictionary.com](https://www.dictionary.com/browse/ai-slop) also emphasizes the perception of poor quality and little effort in work produced by large language models and diffusion models, including text and images.
 
-For technical articles and discussion, consider [Hacker News](https://news.ycombinator.com/). Its [submission guidelines](https://news.ycombinator.com/newsguidelines.html) ask people to submit original sources and avoid exaggerated titles. [Show HN](https://news.ycombinator.com/show) gives creators a place to present their work so readers can try it, ask questions, and offer feedback. These entry points can help us find original material and its authors. Comments may also offer counterexamples and practical experience, though specific claims still need checking.
+As [AP reported](https://www.ap.org/news-highlights/spotlights/2025/merriam-websters-2025-word-of-the-year-is-slop/), Merriam-Webster chose **slop** as its 2025 word of the year. Its relevant definition emphasizes low-quality digital content produced with AI, usually in quantity.
 
-[Lobsters](https://lobste.rs/about) focuses more narrowly on computing and uses tags to filter topics. It is useful for finding discussions about programming, systems, and tools. Like Hacker News, it provides leads. When views conflict, we still need to follow them back to the original material and evidence.
+In technical reading, I am especially wary of articles that look complete. The project names are correct. The terminology is familiar. There is a feature list, a set of use cases, and a closing prediction about the future. The prose flows and the structure looks sound, yet there is no account of trying the tool or evidence for the judgments that matter.
 
-To follow research, read papers on [arXiv](https://arxiv.org/), then examine the experimental setup, data, and limitations. arXiv itself does not provide peer review. Inclusion does not mean a paper's conclusions have been validated. [USENIX](https://www.usenix.org/publications/proceedings) provides access to conference papers in areas such as systems and security, making it useful for finding research around a specific problem.
+Such an article can contain plenty of accurate statements. It can rephrase a README, add a few generic scenarios, and arrive at a conclusion that goes well beyond the material. Readers get something that looks like a review without knowing what the writer actually verified.
 
-For engineering practice, follow [Cloudflare Engineering](https://blog.cloudflare.com/tag/engineering/) and [Netflix TechBlog](https://netflixtechblog.com/) to read how the teams describe technical choices and implementation experience. Check their scale, resources, and constraints. One company's adoption of an approach does not establish that it applies everywhere.
+Vague prose and exaggerated claims alone cannot establish that an article was generated by AI. Using AI does not establish poor quality either. Criticism of a particular article needs to identify what is missing: sources, conditions, or an account of testing. Calling something AI slop also requires grounds. It should not become a label we attach on sight.
 
-For web technologies, start with the reference documentation on [MDN](https://developer.mozilla.org/zh-CN/docs/Web), then follow its links to the relevant specifications. For network protocols, use the [RFC Editor](https://www.rfc-editor.org/) to find original RFCs and check their status and subsequent updates. Explanations help us get started. Specifications and version information help establish the boundaries.
+## The Cost of Checking and the Fear of Falling Behind
 
-Tracing information to its source can become a habit. When something catches our interest, find the original link before deciding whether to read further. Let AI help with language and terminology, and spend our attention on the conditions that matter and on practical verification.
+To me, the most troubling consequence of AI slop in technical reading is the gap between the cost of producing a claim and the cost of checking it.
 
-Sharing knowledge should bring readers closer to evidence. If an article leaves us excited, anxious, and vaguely informed, but unable to find the source or check its conclusions, skipping it is a reasonable choice.
+AI can quickly write a project introduction. Checking its claim of being “a complete replacement” may require reading documentation, comparing versions, searching issues, and setting up an environment.
+
+When the publisher skips verification, readers inherit the work. One untested claim can spread to many people, each spending time separately to find out whether it holds up.
+
+We bookmark an article because it might be useful someday. When that day arrives, the bookmark offers little basis for a decision. We still have to find the project and check its limits. Our earlier reading mostly left us with a name and a moment of excitement.
+
+Every day brings a breakthrough tool. Every week brings an industry about to be overturned. After enough of these claims, it is easy to wonder whether everyone else is already using something new and leaving us behind.
+
+We can understand this as one way [FOMO](https://dictionary.cambridge.org/us/dictionary/english/fomo), or Fear of Missing Out, shows up in technical reading. We worry about missing a tool, a breakthrough, or an advantage that supposedly everyone else already has.
+
+“Learn it before it's too late” puts a deadline on reading. Before we know what problem a tool solves, we click, bookmark, and plan to catch up later. As the bookmarks accumulate, so does the sense of homework left undone.
+
+An article with few technical details can still draw us in by making it feel dangerous to remain uninformed for a while. Reading becomes organized around avoiding the feeling of falling behind, while the problem we actually need to solve slips into the background.
+
+If a piece of “knowledge sharing” saves the writer the effort of checking, passes that effort to readers, and leaves them feeling behind, whose time has it saved?
+
+## Use AI to Find the Evidence
+
+There is an obvious question here: if AI can produce poor retellings, why use it to get information?
+
+Putting a question into a chat box does not automatically bring us closer to evidence. If the AI has not accessed the material or checked the version and simply gives us a smooth summary, we still cannot check its answer. Changing who delivers the summary does not solve that problem.
+
+AI can do something more specific. Language, terminology, and sheer length have long made original material difficult to read. We can ask it to translate documentation, explain unfamiliar concepts, locate relevant passages, compare version changes, and put the source text in front of us.
+
+Start with the task at hand:
+
+> Read this project's official documentation, release history, and relevant issues. Assess whether it can handle my task: [specific task]. Identify the relevant versions, prerequisites, and known limits. Distinguish the author's claims, available test results, and unresolved questions. Link to the original material supporting each key conclusion. State clearly when you cannot access a source or find supporting evidence.
+
+Then open the sources that affect your decision and check whether they support the conclusions. The presence of a link does not establish that the citation is accurate.
+
+Original material has a perspective too. A project homepage may be promotional. An official demo may choose favorable conditions. Real work also calls for issue reports, independent experience, and sometimes a trial of our own. Labels such as “official,” “open source,” and “highly starred” cannot stand in for evidence.
+
+## What Can You Check After Reading?
+
+When a project interests you, follow the introduction to its repository, then read the README, releases, and relevant issues. For claims that affect your choice, look for independent experience or run a small trial. Reading around a concrete problem gives you a better chance of building useful judgment than constantly chasing new names.
+
+Keep a few sources handy and visit them when needed. They provide leads; individual claims still need to be traced and checked.
+
+::: details Places to look
+
+- Open-source projects: [GitHub Trending](https://github.com/trending). Follow through to repository documentation, releases, and issues.
+- Technical discussion: [Hacker News](https://news.ycombinator.com/), [Show HN](https://news.ycombinator.com/show), and [Lobsters](https://lobste.rs/about). Look for original material, replies from authors, and practical feedback.
+- Research: [arXiv](https://arxiv.org/) and [USENIX](https://www.usenix.org/publications/proceedings). Examine experimental conditions and limitations. Inclusion on arXiv does not establish peer review.
+- Engineering practice: [Cloudflare Engineering](https://blog.cloudflare.com/tag/engineering/) and [Netflix TechBlog](https://netflixtechblog.com/). Pay attention to each team's scale, resources, and constraints.
+- Web technologies and protocols: [MDN](https://developer.mozilla.org/zh-CN/docs/Web) and [RFC Editor](https://www.rfc-editor.org/). Read alongside specifications, document status, and version information.
+
+:::
+
+A new tool can be worth learning about without needing to interrupt your work today. You can leave it unfamiliar until you have a concrete question to investigate.
+
+The next time you finish an introduction promising to “transform the industry,” pause before bookmarking it. Ask what it has given you that lets you check its conclusion.
+
+If the answer is nothing, closing the page costs you nothing. You have no obligation to do the homework every publisher skipped.
