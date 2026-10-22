@@ -22,7 +22,7 @@ In the AI era, software architecture should prioritize low cognitive load, low c
 ## From “Specification First” to “Understanding First”
 
 Many architecture optimizations in the past were fundamentally designed for large-scale human collaboration: strict layering, early abstraction, standardized template-based decomposition, and complex extension point design.
-These approaches absolutely have value at certain team scales, but their side effects are obvious too: a problem that could have been direct becomes a long-chain comprehension task.
+These approaches have value at certain team scales, but they can also leave a long trail of dependencies to understand before a straightforward change can begin.
 
 To change one field, you first have to pass through controller, service, assembler, domain, repository, dto, mapper, converter, and facade.
 Each layer “looks reasonable,” but once you connect them, the actual modification path gets longer and longer, and information loss increases.
@@ -33,19 +33,19 @@ Different models, context windows, retrieval tools, and task types behave differ
 
 ## Four Evaluation Criteria
 
-### 1) Can a Requirement Be Closed Within a Small Number of Files?
+### 1) How Many Files Must You Understand for One Change?
 
 For any requirement, can AI complete the whole loop of understanding, modification, and verification within a small set of files?
-If every change must span more than a dozen files and multiple conceptual layers, that structure will naturally slow down AI and humans alike.
+File count is a starting point for inspection, not a verdict. A dozen files may represent necessary protocol, authorization, and storage boundaries. If they merely forward the same field through successive layers, understanding and synchronizing those repeated representations becomes extra work.
 
 A truly efficient architecture is not “complete layering,” but paths that are reachable, testable, and explainable.
 
 ### 2) Do Directories and Module Names Express Business Meaning Directly?
 
-Names like `auth`, `order`, `invoice`, and `comment` are highly AI-friendly because they carry dense meaning and low ambiguity.
-Names like `common`, `base`, `shared`, `engine`, `support`, and `ext` usually carry low information density, require extra explanation, and quickly raise comprehension cost.
+Names such as `auth`, `order`, `invoice`, and `comment` at least suggest a business area and a place to start looking.
+With `common`, `base`, `shared`, `engine`, `support`, or `ext`, collaborators need to inspect the responsibilities inside before knowing whether the behavior they need belongs there.
 
-Naming is not an aesthetic issue. It is a retrieval-efficiency issue, and also a change-success-rate issue.
+A name should at least suggest where to look first. `shared` can be useful, but if it also hides order validation, readers must learn a private classification scheme before they can find the behavior.
 
 ### 3) Does the Middle Layer Provide Real Value?
 
@@ -53,13 +53,13 @@ In many projects, the problem is not “too many layers” itself, but too many 
 On architecture diagrams, these layers look neat. For AI, they are almost pure noise.
 
 Every layer should answer the same question: what real complexity did I reduce?
-If it cannot answer that, the layer probably should not exist.
+Isolating an external interface, centralizing authorization, or providing an independent test boundary can justify a layer. A layer that only forwards calls without such a responsibility is a candidate for consolidation.
 
 ### 4) Does the Structure Allow Safe Changes After Local Understanding?
 
 If a module is highly self-consistent, has clear inputs and outputs, and has few implicit conventions, both people and AI can work more reliably. Conversely, when any change can affect the whole system through hidden rules, every collaborator must become conservative and is more likely to make an incorrect edit.
 
-In the AI era, what we call “maintainability” largely means “local verifiability.”
+Local verifiability is the part of maintainability I care about here: the person making a change can assess it through the module's inputs, outputs, and checks, then examine external effects along explicit interfaces.
 
 ## Preventing the Opposite Extreme
 
@@ -84,16 +84,6 @@ For every architecture decision, ask three questions first:
 - Can this abstraction reduce cognitive load instead of creating new terms?
 - Can this boundary let AI complete tasks stably within a local scope?
 
-If all answers are no, it is likely formalism rather than engineering capability.
+If all the answers are no, the design needs another concrete justification, such as the isolation or independent deployment requirements described above.
 
 You can also apply those questions to one real requirement: which files must be read, which files must change, which tests prove the change has not crossed a boundary, and where to look when it fails. Record a few of these journeys and the project will tell you whether the problem is too many layers, vague names, or boundaries and tests that never close.
-
-## Closing
-
-AI will not automatically eliminate complex systems. It only amplifies the consequences of structural design.
-When structure is clear, AI is a multiplier; when structure is chaotic, AI is a noise amplifier.
-
-Future competition in software architecture is no longer only “who designs extension points better,” but “who organizes systems into understandable, modifiable, and verifiable local units.”
-
-This is not a compromise with engineering.
-It is, in fact, higher-level engineering: keep complexity where it belongs, and do not let it spread into every routine change.

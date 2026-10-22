@@ -24,7 +24,7 @@ I open-sourced opengauss-mcp, an openGauss database tooling service built on Spr
 
 While exploring the MCP ecosystem recently, I noticed that “let the model compose SQL and execute it directly” easily conflates two questions: whether the model understands the schema, and whether the account should be allowed to perform the operation. Something running does not mean its boundary is clear.
 
-I wanted to package common openGauss capabilities into structured, composable, and auditable MCP tools, so database tasks can be handled more reliably.
+I wanted to expose common openGauss operations as structured MCP tools, with separate entry points for schema inspection, statistics queries, and SQL execution. This makes it possible to check whether the model obtained the information it needed, then assess authorization for the operation separately.
 
 That is how **opengauss-mcp** came to life.
 
@@ -41,7 +41,7 @@ Current core capabilities include:
 
 ## Technical Approach
 
-The project goal is not to add another thin JDBC wrapper, but to expose database interactions as clear MCP tool interfaces:
+The operations are exposed to clients through MCP, with the following responsibilities:
 
 - Use Spring AI MCP Server to manage tool registration and invocation flows.
 - Use stdio as the MCP transport for convenient local development and desktop client integration.
@@ -55,4 +55,4 @@ The repository is open source now. Issues and PRs are very welcome.
 
 - **GitHub Repository**: [Sanjeever/opengauss-mcp](https://github.com/Sanjeever/opengauss-mcp)
 
-Next, I plan to improve both capabilities and developer experience, including richer metadata queries, clearer error feedback, and configuration and invocation examples that readers can verify from zero.
+Next, I plan to add metadata queries, improve error feedback, and expand the configuration and invocation examples so readers can check the connection, tool discovery, and actual queries step by step.

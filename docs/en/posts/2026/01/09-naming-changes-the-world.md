@@ -5,7 +5,7 @@ tags:
   - Essay
   - Programming
   - Philosophy
-description: Naming is not only definition; it is also a kind of concealment. From code variables to human relationships, we simplify the world through naming—and pay the price for it.
+description: Names help us recognize things, but they also carry assumptions. In code, relationships, and workplace language, trouble begins when a name becomes the whole explanation.
 outline: deep
 aside: true
 ---
@@ -14,7 +14,7 @@ aside: true
 
 <!-- DESC SEP -->
 
-Naming is not only definition; it is also a kind of concealment. From code variables to human relationships, we simplify the world through naming—and pay the price for it.
+Names make communication easier, but they also carry assumptions. Once a variable, a relationship, or a layoff has a name, do we keep asking what it actually contains?
 
 <!-- DESC SEP -->
 
@@ -22,37 +22,35 @@ Naming is not only definition; it is also a kind of concealment. From code varia
 
 There is a famous joke in computer science: there are only two hard things in programming—cache invalidation and naming things.
 
-Beginners are often puzzled: what's so hard about naming? `a`, `b`, `data`, `temp`—or, if all else fails, `flag1`, `flag2`. But anyone who's written code for a few years knows that when you stop at the keyboard, trying to find a fitting name for a variable, a function, or a class inside a complex business logic, you are, in fact, doing a deep philosophical exercise.
+`a`, `b`, `data`, `temp`—or, if all else fails, `flag1`, `flag2`. Giving a machine distinct identifiers is easy. Helping the next reader understand what each one represents and what it is responsible for is harder.
 
 You are defining its boundary.
 
-When you name a variable `isValid`, you are implying it has only two states—"yes" and "no"—and you have excluded possibilities like "validating" or "partially valid". When you name a module `UserAuth`, you are saying it shouldn't be responsible for "sending emails"—unless you decide to break encapsulation through some dirty trick.
+`isValid` leads a reader to expect a boolean. If the business also needs “validating” and “partially valid,” changing the name alone will not fix the state model. `UserAuth` suggests authentication duties: sending a verification email may belong there, while sending a marketing campaign would be hard to guess from the name. Names cannot replace design, but they can expose its ambiguities.
 
-In the world of code, wrong naming is disastrous. If you name a class that not only handles login but also initializes database connections and cleans logs as `LoginController`, the next maintainer will get lost when trying to find database connection code. Wrong naming is not merely a mistake in identifiers; it is a misalignment of mental models.
+If a class handles login, initializes database connections, and cleans logs, calling it `LoginController` sends maintainers looking in the wrong place. The program may still run, but the name has already given its readers a misleading map.
 
-Code must be precise because machines don't understand "you know what I mean". But interestingly, when we leave the IDE and return to a reality full of ambiguity, we still carry this compulsion to "control everything by naming". We crave labels for everything, believing that once we give something a name, we understand it—and have it under control.
-
-Yet the "compiler" of the real world is far more complicated than we imagine.
+This mismatch also occurs outside code. A name starts as a way into understanding, but we easily mistake knowing what something is called for knowing what it is. Relationships, emotions, and workplace terms are especially prone to giving us that confidence.
 
 ## Scripting Relationships
 
 The objects we are most enthusiastic to name are relationships between people.
 
-In an atomized society, two independent souls meet and produce a series of complex chemical reactions: admiration, dependence, physical attraction, intellectual resonance—perhaps mixed with a bit of competitiveness and some inexpressible sense of destiny. It is a chaotic, fluid, unique energy.
+Two people may feel admiration, dependence, physical attraction, and intellectual affinity, mixed with competition or hesitation. These feelings need not arrive together, or fit neatly under one label.
 
 But we can't stand this chaos. Social discipline demands a quick definition: what is your relationship?
 
 Are you "friends"? "lovers"? "friends with benefits"? "partners"?
 
-Once we choose one name, say "lovers", a huge cost follows. The name is no longer just a label; it is a heavy, pre-written script.
+Choosing a name such as “lovers” can express a commitment and make the relationship clear to both people. But it can also bring in a script they never discussed.
 
-If we name it "lovers", the social script says: we should say good night every day, exchange gifts on certain holidays, be responsible for exclusivity, and fulfill a series of rights and obligations under this name.
+Saying good night every day, exchanging holiday gifts, promising exclusivity: all these expectations may follow. Some matter deeply; others are habits, and the two people may understand them differently. “Isn't that what lovers are supposed to do?” can turn a necessary discussion into an obligation that cannot be questioned.
 
-The unique interaction pattern that may have belonged only to the two of you is overwritten by the generic class called "lovers". You are no longer two concrete individuals interacting; you are two role players acting out a scene.
+At that point, the way these two people relate may be overwritten by a generic class called “lovers.” The argument shifts from “What do we each need?” to “Are you playing your role properly?”
 
-This is one of the costs of naming: it uses a general script to erase individual uniqueness.
+This is one cost of naming: **when a general script replaces a specific agreement, the name crowds out individual differences.**
 
-How many relationships are forced to end because they cannot be classified by the existing vocabulary? How many people, in order to maintain a name like "married couple" or "best friends", painfully cut themselves to fit the definition, trimming away those tendrils of the soul that don't belong? While seeking security, we kill infinite possibilities.
+What concerns me is whether people can still express needs that do not fit the role of “spouse” or “best friend.” If keeping the label requires hiding those needs, the arrangement deserves another conversation.
 
 ## Pathologizing Emotions
 
@@ -60,7 +58,7 @@ Looking inward, our naming of our own feelings is equally concealing.
 
 Modern psychology and psychiatry have given us words for describing emotions and getting help. That is meaningful progress: diagnoses can open access to treatment, support, and reasonable rest. But when these words are overused, they can also become a hasty explanation for every complex experience.
 
-In the past, someone might feel hollow, cry at sunsets, find farming meaningless, and want to go far away. This is a complex state mixed with existential nihilism, physical fatigue, dissatisfaction with the status quo, and a metaphysical longing.
+Imagine someone feeling hollow, crying at sunsets, finding work meaningless, and wanting to go far away. Those few details do not tell us what they have experienced, let alone establish a diagnosis.
 
 Now we may quickly call it “depression,” “anxiety,” or “burnout.” A name can be an entry point to professional help and should not be casually dismissed, but it does not automatically explain a person’s whole situation.
 
@@ -72,27 +70,23 @@ The problem is not using diagnostic or psychological vocabulary. It is using it 
 
 ## Magic Words at Work
 
-If naming at a personal level still carries some helpless self-protection, then in business and workplaces, naming turns into outright "dark magic" that manipulates reality.
-
-Here, language is carefully designed to reshape cognition and even twist moral judgment.
+At work, some names also change where responsibility appears to lie. If a word makes a decision sound inherently right, questioning its consequences becomes harder.
 
 A familiar example for programmers is "sprint".
 
-In agile development, we call a two-week development cycle a "Sprint". In track and field, a sprint means unleashing all power in a short time, reaching top speed, and then—this is important—rest. No athlete can sprint continuously without stopping.
-
-But in big tech, one "Sprint" is immediately followed by the next. By naming normalized, high-intensity labor as "sprint", management skillfully implants an illusion of "short-term struggle, immediate victory". You feel like an athlete; in reality you are just a part on a conveyor belt.
+In Scrum, a Sprint is a fixed-length iteration, often two weeks. It does not require a team to work at maximum intensity throughout. In everyday language, however, sprinting means a brief all-out effort followed by rest. When managers borrow that meaning to demand extra effort, then put one “sprint” immediately after another, a temporary acceleration becomes a permanent demand. The problem is using the word to justify exhaustion, rather than iteration itself.
 
 Consider another word: "optimization".
 
-When a company decides to lay people off, it rarely says: "We will fire these thousand people because management made bad decisions and cash is tight." It says: "We are optimizing the organizational structure."
+Suppose a company lays people off because of poor decisions and a cash shortage, but announces only an “optimization of the organizational structure.” Both the cause and the cost recede into the background.
 
 "Firing" is brutal; it involves real families, mortgages, and tears. "Optimization" is neutral, mathematical, even positive. It suggests removing redundancy and improving efficiency.
 
 Through naming, brutal reality can become abstract. Decision makers signing documents process “data,” while the people affected must deal with rent, care work, and finding the next job. That distance between two languages is what needs to be seen.
 
-The third cost of naming: it strips things of moral qualities and emotional weight, allowing us to accept absurdity with a clear conscience.
+**The third cost of naming: it can soften the consequences and make a decision that deserves scrutiny seem self-evidently reasonable.**
 
-Call "overtime" a "flexible work arrangement"; call "exploitation" a "blessing"; call "consumerist traps" a "lifestyle upgrade". Every new term is invented to open a backdoor in our cognitive firewall, letting in concepts we would otherwise reject.
+Calling compulsory overtime “flexible work” or exploitation a “blessing” works in a similar way. To assess these terms, we need to ask who controls working hours and who pays the extra cost. A more pleasant name has answered neither question.
 
 ## Naming as a Dimensionality Reduction Strike
 
@@ -100,28 +94,16 @@ Back to programming. When designing interfaces, we always pursue abstraction. Th
 
 Naming is the abstraction interface through which humans perceive the world.
 
-The world is high-dimensional, continuous, full of impurities and details. Language is low-dimensional, discrete, standardized.
+“Dimensionality reduction” is a metaphor for the details a word leaves out. Omission is inevitable and need not be harmful. What matters is whether the omitted details would change the decision at hand.
 
-When we name a complex thing with a simple word, we are carrying out a "dimensionality reduction strike".
+We gain efficiency. When calling `sort()`, we usually need not care which algorithm it uses. But if our task requires a stable sort, we must check whether the interface guarantees it. Labels can similarly help us filter information, provided they preserve the distinctions our decision needs.
 
-We gain efficiency. Just like calling `sort()` in code, we don't need to know how quicksort swaps elements; we only need the result. In life, we use labels to filter information quickly, judge friend and foe quickly, and make decisions quickly.
+Inferring a couple's agreements from “lovers,” or assuming a decision deserves support because it is called “optimization,” treats something the interface never promised as a guarantee.
 
-But we also lose the real.
-
-Things that cannot be named—wild grass growing between labels, logic that doesn't fit grammar—are automatically filtered out by our cognitive system. Like someone who recognizes only the three primary colors—red, yellow, blue—who is destined to never appreciate Monet's water lilies.
-
-Laozi warned us two thousand years ago: "The name that can be named is not the eternal name."
-
-Wittgenstein said: "The limits of my language mean the limits of my world."
-
-We live in a cage built by vocabulary, yet we think the sky we see through the bars is the whole of it.
+Laozi's line about the name that can be named and Wittgenstein's remark about the limits of language each belong to their own philosophical context. Here, I take them as reminders: vocabulary affects what we notice, but a ready-made word should not end the inquiry.
 
 ## Epilogue
 
 Next time you are eager to name a feeling, define a relationship, or write those grand and hollow words in a weekly report, pause for one second.
 
-Try to stare at the thing itself.
-
-Feel the trembling called “anxiety,” and take seriously whether it needs help; understand the gaze called “ambiguity”; examine the action called “empowerment.”
-
-After stripping away the name, can you still recognize it?
+What agreements does “lovers” include? What circumstances lie behind “anxiety”? Who loses what in an “optimization”? Keep the name, and ask for the details it left out. A name earns trust by helping us understand that much.

@@ -22,13 +22,13 @@ Suppose I ask AI to add an export feature to a report.
 
 The button appears quickly, and clicking it downloads a file. But the file contains only the current page of data. I need to reconcile sales totals at the end of the month, which requires every row matching the filters, including the later pages.
 
-The program runs and the feature looks plausible, yet the result falls short. Three concepts help explain what happened. Intent, Spec, and Impl.
+The program runs and the feature looks plausible, yet the result falls short. Three concepts help explain the mismatch: Intent, Spec, and Impl.
 
-Intent is already a complete word. [Cambridge Dictionary](https://dictionary.cambridge.org/dictionary/english/intent) explains its noun meaning as wanting and planning to do something. In this article, it describes the goal we want to reach or the problem we want to solve. In the report example, that goal is to reconcile monthly sales with less manual work. Exporting a file is one way to get there.
+**Intent** describes the goal we want to reach or the problem we want to solve. Here, the goal is to reconcile monthly sales with less manual work; exporting a file is one way to get there. It is a complete word, as the [Cambridge Dictionary entry](https://dictionary.cambridge.org/dictionary/english/intent) explains.
 
-Spec is short for Specification. [Cambridge Dictionary](https://dictionary.cambridge.org/dictionary/english/specification) describes it as a detailed account of how something should be done or made, and lists spec as an informal short form. Here, a Spec turns a goal into concrete behavior and constraints. Export every row matching the current filters, keep monetary amounts to two decimal places, and make the total agree with the report. These requirements need enough detail for someone to check the result.
+**Spec**, short for [Specification](https://dictionary.cambridge.org/dictionary/english/specification), turns the goal into behavior and constraints we can check: export every row matching the current filters, keep monetary amounts to two decimal places, and make the total agree with the report. Without a clear data scope and monetary rules, “export succeeded” can mean different things.
 
-Here, Impl stands for Implementation. [Cambridge Dictionary](https://dictionary.cambridge.org/us/dictionary/english/implementation) describes this as putting a plan into practice or beginning to use a plan or system. In software development, Impl can also refer to the resulting code, configuration, and data processing. In this example, that means reusing the filtered query, handling pagination, generating a file, and making it available for download. Different code and technical approaches can satisfy the same specification.
+**Impl** stands for [Implementation](https://dictionary.cambridge.org/us/dictionary/english/implementation): the code, configuration, and processing that fulfill the specification. Here, it means reusing the filtered query, handling pagination, generating a file, and making it available for download. Different implementations can satisfy the same specification. Acceptance checks whether the agreed behavior holds.
 
 Following the development process gives us `Intent → Spec → Impl`. A goal becomes explicit requirements, then a working program.
 
@@ -57,5 +57,3 @@ Before giving a coding agent its next task, ask three questions.
 > What problem am I trying to solve?
 > What would count as complete?
 > What evidence would confirm it?
-
-The easier code becomes to generate, the more valuable it is to make goals, requirements, and acceptance criteria clear.

@@ -26,12 +26,12 @@ async function fetchDeployVersion(versionUrl: string): Promise<string | null> {
 
 function showReloadConfirm(): void {
   const isEnglish = window.location.pathname.startsWith('/en')
-  const header = isEnglish ? 'Update Available' : '发现新版本'
+  const header = isEnglish ? 'Site updated' : '网站已更新'
   const body = isEnglish
-    ? 'A new version has been deployed. Refresh this page now?'
-    : '检测到网站有新版本，是否立即刷新页面？'
-  const confirmText = isEnglish ? 'Refresh' : '立即刷新'
-  const cancelText = isEnglish ? 'Later' : '稍后再说'
+    ? 'Refresh to see the latest content.'
+    : '刷新页面以查看最新内容。'
+  const confirmText = isEnglish ? 'Refresh' : '刷新'
+  const cancelText = isEnglish ? 'Later' : '稍后'
 
   DialogPlugin.confirm({
     header,

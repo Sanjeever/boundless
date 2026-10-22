@@ -16,7 +16,7 @@ aside: true
 
 <!-- DESC SEP -->
 
-以前在国内开发，我给每个工具各配一套镜像源，换来的是记不清"哪个工具用哪家源"的维护负担。现在我让所有工具恢复官方源，网络请求统一走 FlClash 的混合代理——网络问题从"每个工具各查一遍源"收敛成"只在代理这一个地方查"。
+以前我给每个工具各配一套镜像源，排查时还要先回忆它指向哪里。现在把这些工具恢复到官方源，通过 FlClash 处理代理连接。源和网络路径分开配置后，至少能先分清是哪一层出了问题。
 
 <!-- DESC SEP -->
 
@@ -29,13 +29,13 @@ aside: true
 - 镜像源回答"请求发往哪"，是把下载请求重定向到第三方服务器；
 - 代理回答"请求怎么走"，不改动目标地址，只让流量经过本地端口转发出去。
 
-我过去的问题在于把两者混在一起：每个工具各配一套镜像源，镜像本身是第三方闭源服务，版本有延迟，还要长期维护。转向代理后，工具保持官方源，网络层统一走 FlClash，改动面小，也更好排查。
+镜像源是否好用，要看同步与服务情况，不能因为它由第三方提供就一概认定不可靠。我的问题是维护了太多不同的源配置。恢复官方源减少了这部分差异，代理连接、官方服务状态和各工具自身的配置仍然需要分别排查。
 
-所以下面的配置只有两个动作：**把源/仓库/index 复位成官方**，以及**让网络请求走代理**。有些工具自带代理配置，有些只认环境变量，分清楚这点，剩下的就是照抄。
+下面按两个步骤整理：**把源/仓库/index 复位成官方**，再**配置代理路径**。有些工具有独立代理选项，有些读取环境变量；已有的项目配置、企业仓库或私有源需要先核对，不能直接清除。
 
 ## 公共代理变量
 
-FlClash 是我使用的代理客户端，默认在 `7897` 端口暴露混合代理（同时支持 HTTP 与 SOCKS）。下面这些工具都直接读取标准代理环境变量，网络层不用单独配置：**uv、pip、Go、Dart/Flutter、Homebrew**。先在系统里固定这两个变量：
+我的 FlClash 配置在 `7897` 端口提供混合代理，同时支持 HTTP 与 SOCKS。本文按这个端口写示例，使用其他端口时相应替换。**uv、pip、Go、Dart/Flutter、Homebrew** 可通过代理环境变量配置网络路径：
 
 Windows（PowerShell，写入用户级变量）：
 
@@ -103,7 +103,7 @@ printf '%s\n' "$UV_DEFAULT_INDEX"
 uvx --refresh --verbose ruff --version
 ```
 
-`uvx` 能打印出 ruff 的版本号，说明 PyPI 与网络都通。
+先看 verbose 日志中的索引和下载地址，再看 ruff 是否启动。单独打印版本号可能用到了缓存，不足以证明本次请求经过 PyPI 和代理。
 
 ### pip
 
@@ -115,7 +115,7 @@ Windows 与 macOS 相同：
 pip config set global.index-url https://pypi.org/simple
 ```
 
-pip 的用户级配置文件分别位于 Windows 的 `%APPDATA%\pip\pip.ini` 和 macOS 的 `~/.config/pip/pip.conf`。验证：
+Windows 的 pip 用户配置通常在 `%APPDATA%\pip\pip.ini`。macOS 会根据目录是否存在等条件选择 `~/Library/Application Support/pip/pip.conf` 或 `~/.config/pip/pip.conf`，较新版本还会考虑 XDG 数据目录；可用 `pip config debug` 确认实际加载位置。验证：
 
 ```bash
 pip config list
@@ -182,7 +182,7 @@ env | grep -E '^PUB_HOSTED_URL=|^FLUTTER_STORAGE_BASE_URL=|^FLUTTER_GIT_URL='
 flutter pub get
 ```
 
-能拉取依赖，说明 pub.dev 与网络都通。
+结合下载日志确认是否访问了 pub.dev；已有缓存时，依赖解析成功不一定代表发生了网络下载。
 
 ### Homebrew
 
@@ -245,7 +245,7 @@ npm ping
 
 ### pnpm
 
-按当前 pnpm 11/12 配置，网络选项为 `httpProxy`、`httpsProxy`。下面恢复官方源并配置代理（Windows 与 macOS 相同）：
+本文按 pnpm 11/12 的配置方式记录，网络选项为 `httpProxy`、`httpsProxy`。下面恢复官方源并配置代理（Windows 与 macOS 相同）：
 
 ```bash
 pnpm config set registry "https://registry.npmjs.org/" --global
@@ -341,7 +341,7 @@ cargo search serde --limit 1
 
 ## Git 的两种通道
 
-Git 的远端可以走 HTTPS 或 SSH，两条路分别处理。统一原则：只代理 GitHub，不设全局通配代理，避免把无关请求也塞进代理。
+Git 的远端可以走 HTTPS 或 SSH，两条路分别处理。下面为 GitHub 设置专用代理。前面设置的公共代理变量仍可能被其他 HTTPS 请求读取，因此这不是对“仅 GitHub 走代理”的保证。
 
 ### Git：HTTPS
 
@@ -455,9 +455,9 @@ docker pull hello-world
 
 - 先确认 FlClash 在运行，且 7897 端口在监听。
 - 区分"源错了"和"代理没生效"：打印 registry/index 配置确认是官方地址，再单独测一次网络（如 `npm ping`、`docker pull`）。
-- 环境变量只在当前 shell 生效，新开的终端要重新加载（macOS `source ~/.zshrc`）。
+- 临时变量只在当前 shell 生效；Windows 用户级变量供新进程继承，macOS 则由新终端加载 shell 配置。已有终端需要单独更新。
 - 删镜像源前，先确认没有残留的第三方源地址覆盖项。
 
 ## 总结
 
-这套配置的代价是：没有代理时，官方源可能连不上。但换来的是每个工具都指向官方、可追溯，网络问题也收敛成一个故障点——代理挂了，只查一个地方。想落地的话，先按「公共代理变量」一节把两个变量设好，再对照你自己的工具清单逐项复位源。
+这套配置减少的是源地址的差异，没有消除网络故障。代理不可用、官方源异常、某个工具未读取预期配置，仍是不同的问题。先查实际源地址，再查代理路径，最后用下载日志确认请求去了哪里，比同时更换源和代理更容易定位原因。

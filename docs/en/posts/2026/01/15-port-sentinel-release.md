@@ -30,7 +30,7 @@ On Windows, the standard solution flow usually looks like this:
 3. Open Task Manager, switch to the "Details" tab, and find the corresponding process by PID.
 4. Or directly type `taskkill /PID <PID> /F` in the command line.
 
-While not difficult, this process is tedious, especially when it happens several times a day. Although there are some similar tools on the market, they either have interfaces stuck in the Windows 98 era, are full of ads, or are overly bloated.
+The steps are straightforward, but repeating them several times a day is annoying. My needs were narrow: find the process using a port, check what it is, and decide whether to stop it. I wanted an interface that made those steps easier to scan.
 
 I thought, why not build one myself? Simple, good-looking, and intuitive.
 
@@ -45,7 +45,7 @@ It mainly provides the following features:
 - **Real-time Monitoring**: Intuitively list the usage status of all current TCP/UDP ports.
 - **Process Association**: See at a glance which program (process name and PID) is occupying the port, without having to dig through Task Manager.
 - **Search & Filter**: Support searching by port number, PID, or process name, and filtering by protocol (TCP/UDP).
-- **One-Click Termination**: Found a conflicting process? Just click the "End Process" button to resolve it.
+- **End Process**: After confirming the target, use the “End Process” button to release its port.
 - **Auto-Refresh**: Supports optional auto-refresh to keep track of system status in real-time.
 
 In terms of interface design, I tried to keep it simple and modern, hoping to bring a little convenience to developers who are also troubled by port issues.
@@ -54,7 +54,7 @@ In terms of interface design, I tried to keep it simple and modern, hoping to br
 
 This time I chose **Flutter** to develop the Windows desktop client.
 
-Although Electron is also a good choice, Flutter often performs better in terms of performance and package size. Moreover, Flutter's UI construction method allowed me to quickly reproduce the interface in my mind.
+Flutter's way of building interfaces mattered most to me: it let me quickly turn the interface I had in mind into something usable. Performance and package size matter too, but this post contains no controlled comparison with Electron and cannot establish which is better on those measures.
 
 The project is completely open source. If you are interested in Flutter desktop development, feel free to check out the code.
 
@@ -68,4 +68,4 @@ See the repository’s Releases page for installers, the current version, and kn
 
 If you encounter bugs during use or have suggestions for new features, Issues and PRs are welcome.
 
-It does not replace `netstat`, PowerShell, or Task Manager. It puts “find the port, inspect the process, decide whether to stop it” in an interface that is easier to scan. I hope it saves a little command typing—and prevents one mistaken kill.
+`netstat`, PowerShell, and Task Manager can all perform these operations. Port Sentinel brings them into one interface, saving the trips between tools and the copying of PIDs.

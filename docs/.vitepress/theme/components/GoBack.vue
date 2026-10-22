@@ -6,7 +6,7 @@
     style="margin-bottom: 10px"
     @click="goBack">
     <template #icon><RollbackIcon /></template>
-    {{ isEN ? 'Go back ' : '返回上一页' }}
+    {{ isEN ? 'Back' : '返回' }}
   </t-button>
 </template>
 <script setup lang="ts">

@@ -23,7 +23,7 @@ I open-sourced a lightweight VS Code setup for AI-assisted development and code 
 
 I used to configure my editor around faster completion, generation, and saving. My workflow has since changed: Codex now handles most implementation work, while I use VS Code to read diffs, trace calls, and make small finishing edits.
 
-That change in roles makes some convenient defaults counterproductive. I may open a file only to inspect it, then have auto-save or format-on-save modify it. Hiding whitespace changes can make the diff on screen differ from what Git will actually record. Multiple AI entry points inside the editor add another layer of distraction without improving the review.
+That change in roles makes some convenient behaviors counterproductive. A casual edit during review can be written to disk by auto-save; format-on-save may change other lines as well. Hiding whitespace changes leaves the visible diff incomplete. Multiple AI entry points inside the editor compete for attention too.
 
 That is why I collected and published this setup:
 
@@ -108,5 +108,3 @@ Both scripts back up the existing user settings to a timestamped file, **replace
 If you already maintain a long-lived setup, the safest approach is not to run the installer immediately. Read `.vscode/settings.json` and `.vscode/extensions.json` first, then copy the parts that fit your workflow. The automated installers currently cover Windows and macOS only; Linux users need to copy the settings and install extensions manually.
 
 This setup is not meant to be a universal answer. It serves a specific workflow: an agent produces most changes, and a person uses the editor to understand and review the result. With a different workflow, auto-save, formatting, AI surfaces, and extension choices may all deserve different defaults.
-
-I published it not because everyone should end up with the same VS Code, but because a good configuration should be a clear starting point: you should know why each switch exists, and which parts should never be made public.

@@ -52,7 +52,7 @@ On return, the callback page had a history length of 1. There was no toolbar. I 
 | Render the page, then authorize | 2 | 2 | Present |
 | Authorize on the first request | 1 | 1 | Absent |
 
-The numbers are `history.length`. That test gave me a different route into the app. Go was already returning 302 responses, so there was no need to change nginx. I could leave out the page shown before authorization.
+The numbers are `history.length`. On this phone, omitting the page before authorization avoided the toolbar, which supported changing the entry point first. The test did not establish how WeChat manages history internally or whether every iOS WeChat version behaves the same way. Go was already returning 302 responses, and I left nginx unchanged.
 
 ## Changing the entry point
 

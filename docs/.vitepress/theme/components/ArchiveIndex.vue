@@ -31,8 +31,8 @@ function dateTime(timestamp: number) {
       <p>
         {{
           isEnglish
-            ? `${posts.length} articles, grouped by year.`
-            : `共 ${posts.length} 篇文章，按年份归档。`
+            ? `${posts.length} articles`
+            : `共 ${posts.length} 篇文章`
         }}
       </p>
     </header>

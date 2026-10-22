@@ -94,7 +94,7 @@ const expandLabel = computed(() => {
     : `展开全部 ${artists.value.length} 位`
 })
 const coverErrorLabel = computed(() =>
-  isEnglish.value ? 'Cover unavailable' : '封面暂不可用'
+  isEnglish.value ? 'Could not load cover' : '封面加载失败'
 )
 const externalLinkLabel = computed(() =>
   isEnglish.value ? 'Opens in a new window' : '在新窗口打开'

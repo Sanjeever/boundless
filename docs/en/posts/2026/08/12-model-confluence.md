@@ -80,7 +80,7 @@ The conversion covers the shared capabilities of the three protocols. Model Conf
 
 Clients use a virtual model name. Providers use real model names. The two are configured separately.
 
-A virtual model can have multiple ordered candidates. Each candidate contains a provider, a real model, and one or more protocol endpoints. Clients do not need to know the real model name.
+A virtual model can have multiple ordered candidates. Each contains a provider, a real model, and one or more protocol endpoints from which the gateway selects the actual request route.
 
 A candidate can also declare:
 
@@ -174,7 +174,7 @@ Native releases and the Docker image are available from the project's [GitHub Re
 
 The current version stores access keys, provider keys, request headers, request bodies, and response bodies in SQLite as-is. The admin console can also show the full credentials. Protect the data directory as sensitive data. Allow access only for trusted system users. Put a public deployment behind an HTTPS reverse proxy. Do not commit the database or exports with real keys to Git. Do not let multiple processes share the same data directory.
 
-Full request records require this trade-off. Make sure it fits your deployment.
+Raw payloads help diagnose conversion problems, but also place credentials and conversation content in the same data directory. Decide whether retaining these records fits the deployment environment.
 
 ## How It Differs from Other Projects
 
@@ -197,9 +197,5 @@ GT AI Gateway is the closest match in positioning. Model Confluence currently fo
 ## Closing
 
 The name “Model Confluence” comes from a simple idea. Models, providers, key pools, and protocols meet at one entry point. Requests then follow the configured route upstream.
-
-I built Model Confluence to solve four problems: protocol conversion, multiple-key routing, virtual models, and request records.
-
-Let protocols converge at the boundary. Make every request traceable.
 
 Project repository: [Sanjeever/model-confluence](https://github.com/Sanjeever/model-confluence). Issues and pull requests are welcome.

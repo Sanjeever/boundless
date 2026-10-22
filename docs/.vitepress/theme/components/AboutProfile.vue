@@ -9,10 +9,9 @@ const copy = computed(() =>
   isEnglish.value
     ? {
         title: 'About Me',
-        intro: 'Currently residing in Nanning, with the pen name Sanjeev.',
-        description:
-          'This is my personal blog for documenting learning and life.',
-        technology: 'Technology',
+        intro: 'I live in Nanning and write as Sanjeev.',
+        description: 'I write here about what I learn and how I live.',
+        technology: 'Tech stack',
         backend: 'Backend',
         frontend: 'Frontend',
         contact: 'Contact',
@@ -31,7 +30,7 @@ const copy = computed(() =>
     : {
         title: '关于我',
         intro: '现居南宁，笔名 Sanjeev。',
-        description: '这是我的个人博客，用于记录学习与生活。',
+        description: '在这里记录学习与生活。',
         technology: '技术栈',
         backend: '后端',
         frontend: '前端',

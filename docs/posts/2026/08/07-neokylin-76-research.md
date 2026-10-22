@@ -7,7 +7,7 @@ tags:
   - 系统运维
   - GRUB
   - VMware
-description: 我拿到一份名为 zbql7.6_v5u9.iso 的镜像，在 VMware 里安装后发现不知道任何密码、系统也没有网络。我通过 GRUB 重置密码、恢复网络，再通过 SSH 拆解了 NeoKylin 7.6 与 RHEL 7.6 的关系，以及 NKUC/Spacewalk 集中运维机制。
+description: 在 VMware 中恢复一份 NeoKylin 7.6 镜像的登录与网络，再依据发行标识、RPM 信息和客户端脚本，检查它与 RHEL 7.6、Spacewalk 的关系。
 outline: deep
 aside: true
 ---
@@ -20,7 +20,7 @@ aside: true
 
 <!-- DESC SEP -->
 
-拿到一份名为 `zbql7.6_v5u9.iso` 的系统镜像，在 VMware 中安装后，我既不知道任何密码，系统也没有网络。这篇文章记录我如何通过 GRUB 恢复访问、找回网络，再顺着 SSH 拆解这套系统的发行版身份、RPM 构建差异，以及 NKUC 和 Spacewalk 的集中运维机制。
+恢复访问后，我想继续弄清两个问题：它与 RHEL 7.6 的关系能从哪些信息里看出来，预装的 NKUC 客户端又能对机器做什么。下面的结论都针对这份镜像，不代表所有 NeoKylin 7.6 安装。
 
 ## 拿到镜像后遇到的两个问题
 
@@ -57,7 +57,7 @@ passwd <普通用户名>
 passwd: Authentication token manipulation error
 ```
 
-这个报错说明 `passwd` 没能把改动写进 `/etc/shadow`。排查后确认，根因是用 `init=/bin/bash` 启动时根文件系统默认按只读挂载，`passwd` 无法写入密码数据库。解决办法是先把它重新挂载为可写。
+这个报错本身不能唯一确定原因。这次检查发现，用 `init=/bin/bash` 启动后，根文件系统处于只读状态，`passwd` 无法写入密码数据库。先把它重新挂载为可写。
 
 ```bash
 mount -n -o remount,rw /
@@ -248,7 +248,7 @@ rpm -q --changelog kernel-$(uname -r) | head -n 50
 Modify for: neokylin-rpm-config
 ```
 
-之后大量记录来自 Red Hat 的内核补丁历史，包括 CVE 修复和硬件支持更新。这说明补丁历史大部分继承自 Red Hat，中标麒麟进行了自己的构建、签名和发行。仅凭这份 changelog，不能断言所有源码差异都只有这一处，它只记录到构建层面，不代表源码层面的全部改动。
+之后大量记录来自 Red Hat 的内核补丁历史，包括 CVE 修复和硬件支持更新。这份 changelog 显示了继承的补丁记录与中标麒麟新增的构建记录，并不是完整的源码差异清单。
 
 ### RPM 包的重新构建
 
@@ -267,9 +267,9 @@ Vendor   : CS2C
 Packager : NeoKylin Linux
 ```
 
-涉及 kernel、glibc、bash、systemd、yum、rpm、GNOME、NetworkManager、SELinux、OpenSSH、libvirt、Xorg、open-vm-tools 等。这说明中标麒麟对大量 Enterprise Linux 软件包进行了统一构建、签名和发行。
+涉及 kernel、glibc、bash、systemd、yum、rpm、GNOME、NetworkManager、SELinux、OpenSSH、libvirt、Xorg、open-vm-tools 等。这些字段显示大量基础包使用了中标麒麟的供应商与打包者标识。
 
-但 `Vendor` 和 `Packager` 字段只能证明包由中标麒麟构建或重新打包，不能单独证明源码发生了多少实质修改。
+但 `Vendor` 和 `Packager` 是包内元数据，不能单独验证构建来源、签名是否可信，更不能说明源码改动多少。确认来源需要结合签名及其信任链，判断改动程度则要比较对应源码。
 
 ### 中标麒麟自身的定制包
 
@@ -409,7 +409,7 @@ ls -l /etc/sysconfig/rhn/systemid
 No such file or directory
 ```
 
-`systemid` 不存在，说明这套系统没有完成 NKUC/Spacewalk 注册。尽管服务在运行。
+配置指定的 `systemid` 文件不存在，当前没有可用的注册身份。不过，守护进程仍在运行。
 
 ```bash
 systemctl status nkucsd --no-pager -l
@@ -446,7 +446,7 @@ Python script, ASCII text executable
 
 `nkuc_check` 不允许服务器直接下发任意 Python 代码。远程方法通过 `/usr/share/rhn/up2date_client/getMethod.py` 映射到本地函数，并受几层限制。
 
-1. 方法名只能包含字母、数字和下划线。
+1. 方法路径按 `.` 分段，各段只允许字母、数字和下划线，并须以字母开头。
 2. 方法必须位于 `/usr/share/rhn/actions`。
 3. 模块必须通过 `__rhnexport__` 显式导出方法。
 4. 未列入白名单的方法不能被调用。
@@ -487,7 +487,7 @@ up2date_config.rpmmacros
 up2date_config.get
 ```
 
-这些能力包括安装、更新、删除软件包，全量更新系统，回滚软件包版本，校验软件包，上传已安装软件包列表，上传硬件信息，修改更新客户端配置，调整检查周期，禁用客户端身份，以及远程重启系统。这不是通用远程 Shell，但这些动作仍然以 root 权限运行，所以它属于具有较高系统权限的集中运维客户端。白名单决定了集中管理方要么完全动不了客户端，要么只能执行这几类预设动作，相当于给远程能力画了一条边界，而不是把客户端变成一台可自由操作的机器。
+这些能力包括安装、更新、删除软件包，全量更新系统，回滚软件包版本，校验软件包，上传软件和硬件清单，修改更新配置、调整检查周期、禁用客户端身份，以及远程重启。白名单限制了可调用的函数入口，但这些动作以 root 权限运行，影响范围仍然很大。尤其软件包事务还可能执行包内脚本，因此“没有通用远程 Shell 入口”不能推导成“管理方无法执行其他代码”；还要看软件源、签名信任和动作参数。
 
 ### 远程重启和软件包管理
 
@@ -541,17 +541,13 @@ gpgcheck=0
 | `neokylin-release-server` | 发行版名称/版本标识、RHEL 兼容标识、RPM 宏、GPG 公钥、默认仓库配置、systemd 预设 |
 | `nkucsd` | 重新打包的 Spacewalk/RHN 查询守护进程；SysV init 脚本由 systemd-sysv-generator 托管，每 4 小时调用 `nkuc_check` |
 | `nkuc_check` | Python 脚本，负责连接 Spacewalk 服务器、获取动作队列并回传结果 |
-| `__rhnexport__` 白名单 | 把远程方法限制到 `/usr/share/rhn/actions` 中显式导出的本地函数，避免服务器下发任意代码 |
+| `__rhnexport__` 白名单 | 把方法调用限制到 `/usr/share/rhn/actions` 中显式导出的本地函数；动作本身仍有 root 级影响 |
 | `yum-nkuc-plugin` | 让 YUM 与 NKUC 集成的插件，当前 `enabled = 0` 被禁用 |
-| kernel / glibc / systemd 等基础包 | `Vendor: CS2C`、`Packager: NeoKylin Linux`，由中标麒麟统一构建和签名 |
+| kernel / glibc / systemd 等基础包 | 带有 `Vendor: CS2C`、`Packager: NeoKylin Linux` 元数据；来源与签名仍需独立校验 |
 
 ## 总结
 
-通过 GRUB 加 `init=/bin/bash` 进入 root shell 后，根文件系统默认只读，`passwd` 写不进 `/etc/shadow`，重挂为 `rw` 才能改密，再用 `/.autorelabel` 让 SELinux 重新标记。网络问题的根因是 NetworkManager 服务停用，`enable --now` 后手动连上 `ens33`，DHCP、路由、DNS 逐层打通，再设 `autoconnect yes` 保证重启后自动恢复。
-
-系统正式名 NeoKylin Linux Advanced Server V7Update6 (Chromium)，内核 `3.10.0-957.el7`，用的是 RPM、YUM、systemd、SELinux、GNOME、NetworkManager、XFS、LVM 这套 Enterprise Linux 7 技术栈。大量基础包由 CS2C/NeoKylin 重新构建和签名，但 `Vendor`/`Packager` 只能证明构建出自中标麒麟，不能单独说明源码改动程度；中标麒麟在基础之上加了品牌与发行标识、GPG 签名、NKUC 客户端、Spacewalk/RHN 兼容体系以及授权和系统管理组件。
-
-NKUC 集中管理里，`nkucsd` 定时调度，`nkuc_check` 联网执行，远程方法经 `__rhnexport__` 白名单映射到本地函数，具备软件安装/升级/删除/回滚、资产上报、配置调整和远程重启等 root 级能力。当前这台系统未注册（无 `systemid`、`serverURL` 为占位值、YUM 插件被禁用），因此不会执行真实远程动作。
+这份镜像保留了 RHEL 7.6 的发行标识、内核版本和大量补丁记录，同时加入 NeoKylin 的发行、授权和管理组件。这足以看出它与 Enterprise Linux 7 的紧密关系，却不足以量化源码差异。NKUC 的动作接口与 Spacewalk/RHN 体系相连，当前配置没有接入真实管理平台；接入之后，软件包操作和重启等 root 级能力就需要纳入信任判断。
 
 这套系统的软件基线主要来自 2018—2019 年，适合历史业务兼容测试、国产操作系统研究、Enterprise Linux 7 运维学习或老旧商业软件验证。要用于新的联网生产系统，得先确认厂商支持状态、安全更新来源、仓库可用性和漏洞修复是否可持续，再评估业务系统的兼容要求。
 

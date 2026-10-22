@@ -14,7 +14,7 @@ aside: true
 
 <!-- DESC SEP -->
 
-I work on several projects and often receive a vague complaint, a photo, or several voice messages. The problem has been reported, but starting an investigation still takes a few rounds of questions. Here are some examples.
+I work on several projects and often receive a vague complaint, a photo, or several voice messages. Before investigating, I still need to ask where it happened and what went wrong. The examples below show which added details make a report easier to investigate.
 
 <!-- DESC SEP -->
 

@@ -73,7 +73,9 @@ report.txt ─┐
 backup.txt ─┘
 ```
 
-Edit the content through either name and the other sees the change. Removing
+An in-place edit to the data is visible through either name. Some editors save
+by writing a new file and replacing the old path, however; that detaches the
+replaced name from the original hard-link relationship. Removing
 one name only removes one entry; the data is freed after the final hard link is
 gone.
 
@@ -216,6 +218,12 @@ New-Item -ItemType SymbolicLink `
 The target `../.agents/skills` resolves from the directory containing
 `.claude/skills`. Moving the whole repository preserves that relationship, so
 the link continues to work.
+
+In Git Bash, also check the [MSYS symlink mode](https://www.msys2.org/docs/symlinks/): `ln -s` may copy the target
+instead of creating a native Windows symlink. You can use the PowerShell
+command above instead. To stay with Git Bash, check the
+`winsymlinks:nativestrict` setting in `MSYS` and your creation privileges, then
+verify `LinkType` and the Git mode as described below.
 
 ### Make Sure Git Preserves the Symlink
 

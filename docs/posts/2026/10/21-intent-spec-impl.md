@@ -24,11 +24,11 @@ AI 可以加快实现，从想法到可用软件，仍需把目标、要求与�
 
 程序能运行，功能也像模像样，交付结果却仍然偏离预期。理解这类问题，可以借助三个概念，Intent、Spec 和 Impl。
 
-Intent 本身就是完整单词，中文可译为“意图”。[《剑桥词典》](https://dictionary.cambridge.org/dictionary/english/intent)将其名词含义解释为想要并打算做某件事。放到软件开发中，本文用它表达想达成什么目标、解决什么问题。在报表例子里，这个目标是核对月底销售额，减少手工整理。导出文件是其中一种手段。
+**Intent（意图）**回答想达成什么目标、解决什么问题。在报表例子里，目标是核对月底销售额，减少手工整理，导出文件是其中一种手段。它是完整单词，含义可参见[《剑桥词典》](https://dictionary.cambridge.org/dictionary/english/intent)。
 
-Spec 是 Specification 简写，中文常译为“规格”或“规约”。[《剑桥词典》](https://dictionary.cambridge.org/dictionary/english/specification)将其解释为对某事应当怎样完成或制造作出详细描述，并注明 spec 属于非正式简称。在本文语境中，Spec 把目标转成具体行为与约束。例如，导出当前筛选条件下全部明细，金额保留两位小数，合计与报表一致。这些要求需要具体到能够检查结果。
+**Spec（规格或规约）**是 [Specification](https://dictionary.cambridge.org/dictionary/english/specification) 的简称，在这里把目标转成可检查的行为与约束：导出当前筛选条件下全部明细，金额保留两位小数，合计与报表一致。数据范围与金额口径不说清楚，“导出成功”仍然可以对应不同结果。
 
-这里用 Impl 表示 Implementation，中文译为“实现”。[《剑桥词典》](https://dictionary.cambridge.org/us/dictionary/english/implementation)将其解释为把计划付诸行动，或开始使用某项计划、系统。在软件开发中，Impl 也常指落实规格后产出，比如代码、配置与数据处理流程。例如，复用筛选查询，处理分页，生成文件，再提供下载。不同代码和技术方案，可以满足同一份规格。
+**Impl（实现）**在这里表示 [Implementation](https://dictionary.cambridge.org/us/dictionary/english/implementation)，即落实规格的代码、配置与处理流程：复用筛选查询，处理分页，生成文件，再提供下载。同一份规格可以有不同实现，验收时检查的是约定的行为是否成立。
 
 顺着软件形成过程，可以写成 `Intent → Spec → Impl`。目标逐渐变成明确要求，再变成可运行程序。
 
@@ -57,5 +57,3 @@ Spec 是 Specification 简写，中文常译为“规格”或“规约”。[�
 > 我想解决什么问题？
 > 什么结果算完成？
 > 用什么证据确认？
-
-生成代码越容易，越值得把目标、要求与验收说清楚。

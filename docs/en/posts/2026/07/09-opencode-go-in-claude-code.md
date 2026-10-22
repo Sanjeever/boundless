@@ -21,7 +21,7 @@ This post records two traps I hit while connecting OpenCode Go to Claude Code v2
 
 ## What OpenCode Go Is, and Why I Wanted It in Claude Code
 
-[OpenCode Go](https://opencode.ai/docs/zh-cn/go) is OpenCode's own low-cost subscription: $5 for the first month, then $10 per month, in exchange for stable access to a curated set of open-source coding models. Models are hosted in the US, EU, and Singapore for steady global reach, with a zero-retention policy and no training on your data.
+[OpenCode Go](https://opencode.ai/docs/zh-cn/go) is OpenCode's model subscription service. The plan recorded here cost $5 for the first month and $10 per month thereafter. The service description at the time stated that models were hosted in the US, EU, and Singapore, with no data retention or training on user data. Those are provider statements, not findings independently verified in this post.
 
 Inside OpenCode's own TUI it is a first-class citizen: run `/connect`, pick `OpenCode Go`, paste the API key, and `/models` lists everything.
 
@@ -38,9 +38,9 @@ In the OpenCode Go model list at the time, **6 models also exposed an Anthropic-
 | Qwen3.7 Plus | qwen3.7-plus | `https://opencode.ai/zen/go/v1/messages` |
 | Qwen3.6 Plus | qwen3.6-plus | `https://opencode.ai/zen/go/v1/messages` |
 
-This post only verified those six models. For the availability of other models and whether they still expose only `chat/completions`, consult the current OpenCode docs. If the protocol is incompatible, a translation layer is needed in between; that is out of scope here.
+This table records six compatible endpoints listed at the time. The actual session shown below uses qwen3.7-max; it does not establish tool-use or context capabilities for every model. Consult the current OpenCode docs for other models. An incompatible protocol requires a translation layer, which is outside this post's scope.
 
-What this post records is: **even for the 6 models that should just work, I hit two config traps — and the error messages lied to me the whole way through.**
+The lesson from this setup is specific: **endpoint compatibility is not enough; the base URL and authentication header must also match. I got both wrong, and the UI messages did not directly identify either cause.**
 
 ## Trap One: "Model Does Not Exist" Was Actually a Duplicate `/v1` in the URL
 
@@ -76,7 +76,7 @@ post https://opencode.ai/zen/go/v1/v1/messages?beta=true failed with status 404
 
 The cause is straightforward: Claude Code auto-appends `/v1/messages` to `ANTHROPIC_BASE_URL`. So the base URL must not already contain `/v1`. Either you carry it or Claude Code does, not both. I had copied the official endpoint verbatim, so both sides carried it.
 
-That request hit a path that does not exist and came back as the **404 HTML page** of the opencode site itself (`<title>404 - Page Not Found</title>`), not a JSON error. Claude Code could not parse it and translated every non-200 into the generic "model does not exist or you have no access."
+That request hit a nonexistent path and returned the opencode site's **404 HTML page** (`<title>404 - Page Not Found</title>`), not a JSON error. The UI displayed “model does not exist or you have no access.” This shows how this failure was presented, not how the client parsed it internally or how it handles every other error.
 
 The fix is one line — drop the trailing `/v1` from the base URL:
 
@@ -105,7 +105,7 @@ Claude Code has two variables for the key, and they map to two different HTTP he
 
 I had written `ANTHROPIC_AUTH_TOKEN`, so Claude Code sent only `Authorization` and **never sent `x-api-key`**. OpenCode Go's gateway wants `x-api-key`, and answers `Authorization: Bearer` with a 401 Missing API key.
 
-`curl` makes it obvious:
+The curl fragments below preserve the original notes to illustrate the two headers. They are not complete successful-request examples: the body is only `{}`, and the Chinese version's second command also lacks the output destination for `-o`. The 200 in the comment is therefore not established by these commands. Reproduction requires a valid key, a complete Messages body, and correct command arguments.
 
 ```bash
 # Authorization only — 401
@@ -160,24 +160,24 @@ Drop it into `~/.claude/settings.json`. `model` uses the `opus` alias, which tog
 
 It works.
 
-## A Few Environment Variables That Do Nothing
+## Model Mapping and Other Variables
 
-While setting up, I copied a bunch of variables with `_NAME` suffixes, plus a `FABLE` and a `REASONING` one. After checking the [Claude Code docs](https://code.claude.com/docs/en/model-config), it turns out **Claude Code does not read any of them.**
+While setting up, I copied variables with `_NAME` suffixes, along with `FABLE` and `REASONING` variants. Model mapping and display names need to be distinguished. Newer [Claude Code docs](https://code.claude.com/docs/en/model-config) explicitly list `_NAME` and related variables, so a blanket claim that they are ignored is inaccurate. The table separates their purposes; the connection configuration above still records v2.1.205.
 
-| Variable | Read? | Note |
+| Variable | Purpose and version scope | Note |
 |---|---|---|
-| `ANTHROPIC_DEFAULT_OPUS_MODEL` | Yes | Controls which model the `opus` alias maps to |
-| `ANTHROPIC_DEFAULT_SONNET_MODEL` | Yes | Controls the `sonnet` alias |
-| `ANTHROPIC_DEFAULT_HAIKU_MODEL` | Yes | Controls the `haiku` alias and background tasks |
-| `CLAUDE_CODE_SUBAGENT_MODEL` | Yes | Controls which model subagents use |
-| `ANTHROPIC_DEFAULT_OPUS_MODEL_NAME` | No | No `_NAME` suffixed variant exists |
-| `ANTHROPIC_DEFAULT_SONNET_MODEL_NAME` | No | Same |
-| `ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME` | No | Same |
-| `ANTHROPIC_DEFAULT_FABLE_MODEL` | No | The `fable` alias has no env override |
-| `ANTHROPIC_DEFAULT_FABLE_MODEL_NAME` | No | Does not exist |
-| `ANTHROPIC_REASONING_MODEL` | No | Does not exist |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL` | Model mapping | Controls which model the `opus` alias maps to |
+| `ANTHROPIC_DEFAULT_SONNET_MODEL` | Model mapping | Controls the `sonnet` alias |
+| `ANTHROPIC_DEFAULT_HAIKU_MODEL` | Model mapping | Controls the `haiku` alias |
+| `CLAUDE_CODE_SUBAGENT_MODEL` | Subagent model | Controls which model subagents use |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL_NAME` | Listed in newer docs | Sets a pinned model's display name, not its model ID |
+| `ANTHROPIC_DEFAULT_SONNET_MODEL_NAME` | Listed in newer docs | Same; check support in the client version |
+| `ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME` | Listed in newer docs | Same |
+| `ANTHROPIC_DEFAULT_FABLE_MODEL` | Listed in newer docs | Maps `fable`; does not establish support in older clients |
+| `ANTHROPIC_DEFAULT_FABLE_MODEL_NAME` | Listed in newer docs | Sets the pinned model's display name |
+| `ANTHROPIC_REASONING_MODEL` | Purpose not confirmed here | Not used as a basis for this setup |
 
-Leaving them in does not break anything, but they are pure self-comfort. Better to drop them and keep the config clean.
+For this setup, start with the variables actually used in the full configuration above. With another client version, check which variables it supports and what they do.
 
 ## Why the Errors Stay So Misleading
 
@@ -186,9 +186,7 @@ Looking back, both traps produced untrustworthy messages:
 - Trap one was a 404, but the prompt said "model does not exist or no access";
 - Trap two only sent `Authorization`, but the prompt said "Missing API key" — the gateway wants a different kind of key, so "missing" is not strictly wrong, but it points the user in the wrong direction.
 
-In the combination of Claude Code v2.1.205 and this gateway response that I tested, 404 and 401 ended up as very similar generic messages, and the HTML 404 was not surfaced clearly. When using a third-party gateway, do not trust the UI message alone: capture the real request. Other client versions and gateway implementations may handle errors differently.
-
-There is nothing for me to fix here — collapsing errors into one message is the client's design choice. But for the user it means **the first reaction to this kind of prompt should not be swapping models — it should be capturing the actual request.**
+The messages pointed to a model and a key, but omitted what was needed to locate the faults: the actual request path and the header the gateway accepts. Checking those two details gets closer to the problem than repeatedly switching models.
 
 The way to capture it:
 
@@ -202,10 +200,8 @@ claude -p "hi" --debug 2> debug.log
 
 OpenCode Go is not Anthropic, and the models are not Claude. The two systems only agree on the shape of the `messages` interface; they are not equivalent in capability:
 
-- There is no OpenCode-Go-backed guarantee of extra tool-use features or long-context windows — capability is whatever those 6 models bring themselves;
-- The other Go models (GLM, Kimi, DeepSeek, MiMo) only expose `chat/completions` and **cannot** be fed directly to Claude Code — that is out of scope here;
+- A successful `messages` request does not establish compatibility for tool use or long contexts; check these behaviors for the specific model;
+- Models listed at the time with only `chat/completions` endpoints (GLM, Kimi, DeepSeek, MiMo) cannot use this configuration directly; protocol translation is outside the scope here;
 - This is a third-party gateway, not Anthropic. If something breaks, file it with OpenCode, not Anthropic.
 
-But for "I want Claude Code's interaction model with cheap open-source models for daily tasks", these 6 are enough, and the config is not complicated. Once you clear the two traps, the experience is continuous.
-
-The config is not complicated. What it does is fold "the config is wrong" and "the backend is broken" into the same sentence. That is the only reason this post exists.
+What this record establishes is that the qwen3.7-max session connected. The URL and authentication header were separate conditions. A new error after fixing the first was useful evidence that the request had reached the next stage.

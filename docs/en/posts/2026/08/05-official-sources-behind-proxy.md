@@ -16,7 +16,7 @@ aside: true
 
 <!-- DESC SEP -->
 
-I used to give every tool its own mirror registry and could never remember which source each one pointed at. Now every tool uses its official source and all traffic goes through a single FlClash proxy — network trouble collapsed from "check each tool's source" to "check the proxy".
+I used to configure a different mirror for each tool, then had to recall those choices before debugging. Now these tools use official sources with proxy connections handled by FlClash. Configuring the source and network path separately at least gives me a way to tell which layer is failing.
 
 <!-- DESC SEP -->
 
@@ -29,13 +29,13 @@ Before you start, separate two things that are often conflated:
 - A **mirror source** answers "where the request goes" — it redirects downloads to a third-party server.
 - A **proxy** answers "how the request travels" — it leaves the target address alone and just routes traffic through a local port.
 
-My old problem was mixing the two: a different mirror per tool, all of them closed third-party services that lagged on versions and needed long-term maintenance. After switching to a proxy, tools keep official sources and the network layer goes through FlClash — a smaller surface, and easier to debug.
+A mirror's usefulness depends on synchronization and service quality; being a third-party service does not make it inherently unreliable. My problem was maintaining too many different source settings. Restoring official sources reduces that variation. Proxy connectivity, official service status, and each tool's configuration still need separate checks.
 
-So the configuration below only does two things: **reset the source/registry/index to official**, and **route network requests through the proxy**. Some tools have their own proxy settings, others only read the environment variables. Tell those apart and the rest is copy-paste.
+The setup below follows two steps: **restore the official source/registry/index**, then **configure the proxy path**. Some tools have their own proxy options; others read environment variables. Check existing project settings, corporate repositories, and private sources before clearing anything.
 
 ## Shared proxy environment variables
 
-FlClash is the proxy client I use; by default it exposes a mixed proxy on port `7897` (both HTTP and SOCKS). The following tools read the standard proxy environment variables directly, so their network layer needs no extra configuration: **uv, pip, Go, Dart/Flutter, Homebrew**. Pin these two variables down first.
+My FlClash setup exposes a mixed HTTP/SOCKS proxy on port `7897`. The examples use that port; substitute yours if it differs. **uv, pip, Go, Dart/Flutter, and Homebrew** can use proxy environment variables to configure their network path:
 
 Windows (PowerShell, sets user-level variables):
 
@@ -103,7 +103,7 @@ printf '%s\n' "$UV_DEFAULT_INDEX"
 uvx --refresh --verbose ruff --version
 ```
 
-If `uvx` prints the ruff version, PyPI and the network both work.
+Inspect the verbose log for the index and download URLs, then check whether ruff starts. A version number alone may come from cached content and does not establish that this request reached PyPI through the proxy.
 
 ### pip
 
@@ -115,7 +115,7 @@ Same on Windows and macOS:
 pip config set global.index-url https://pypi.org/simple
 ```
 
-pip's user-level config file lives at `%APPDATA%\pip\pip.ini` on Windows and `~/.config/pip/pip.conf` on macOS. Verify:
+On Windows, pip's user configuration normally lives at `%APPDATA%\pip\pip.ini`. On macOS, it may use `~/Library/Application Support/pip/pip.conf` or `~/.config/pip/pip.conf` depending on which directories exist; newer versions also consider XDG data directories. Use `pip config debug` to see the actual loaded paths. Verify:
 
 ```bash
 pip config list
@@ -182,7 +182,7 @@ No output is expected. In a Flutter project run:
 flutter pub get
 ```
 
-If it resolves dependencies, pub.dev and the network both work.
+Check the download log to confirm access to pub.dev. With cached packages, successful dependency resolution does not necessarily involve a network download.
 
 ### Homebrew
 
@@ -245,7 +245,7 @@ npm ping
 
 ### pnpm
 
-Written for the current pnpm 11/12 configuration; the network options are `httpProxy` and `httpsProxy`. Restore the official source and set the proxy (same on Windows and macOS):
+This records the pnpm 11/12 configuration, where the network options are `httpProxy` and `httpsProxy`. Restore the official source and set the proxy (same on Windows and macOS):
 
 ```bash
 pnpm config set registry "https://registry.npmjs.org/" --global
@@ -341,7 +341,7 @@ If `cargo search` returns results, crates.io and the network both work.
 
 ## Git's two channels
 
-Git remotes can go over HTTPS or SSH, and the two paths are handled separately. The rule of thumb: proxy GitHub only and skip a global catch-all proxy, so unrelated requests don't get routed through it.
+Git remotes can use HTTPS or SSH, and the paths are handled separately. The settings below define a GitHub-specific proxy. Other HTTPS requests may still read the shared proxy environment variables set earlier, so this does not guarantee that only GitHub traffic uses a proxy.
 
 ### Git: HTTPS
 
@@ -455,9 +455,9 @@ The first command should print `[]`, meaning no leftover mirrors.
 
 - Make sure FlClash is running and port 7897 is listening.
 - Tell apart "wrong source" from "proxy not working": print the registry/index config to confirm it's official, then test the network once (e.g. `npm ping`, `docker pull`).
-- Environment variables only apply to the current shell; reload them in new terminals (macOS `source ~/.zshrc`).
+- Temporary variables apply only to the current shell. Windows user-level variables are inherited by new processes, while new macOS terminals load shell configuration. Existing terminals need a separate update.
 - Before removing mirrors, confirm there are no leftover third-party source address overrides.
 
 ## Summary
 
-The trade-off is that without a proxy, official sources may be unreachable. In return, every tool points at the official, traceable source, and network problems collapse into a single failure point — if the proxy fails, you check one place. To get started, first set the two variables in the shared proxy environment variables section, then reset sources for each tool on your list.
+This setup reduces variation in source addresses; it does not eliminate network failures. An unavailable proxy, an official service outage, and a tool reading unexpected settings remain different problems. Check the effective source first, then the proxy path, and use download logs to confirm where requests went. That is easier to reason about than changing the source and proxy at the same time.

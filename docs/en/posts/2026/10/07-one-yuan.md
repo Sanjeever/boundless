@@ -288,12 +288,9 @@ In a server room somewhere, artificial intelligence was still calculating.
 
 Chen Yu closed the computer.
 
-And suddenly she understood.
-
-The machine knew what had happened to the age.
-
-But it might never know how heavy one yuan could be.
+She suddenly understood: the machine knew what had happened in those decades,
+but it might not know how much that one yuan weighed.
 
 She knew.
 
-But that was all she knew.
+But she knew only that one yuan.

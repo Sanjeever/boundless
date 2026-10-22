@@ -27,7 +27,7 @@ const copy = computed(() =>
         title: 'Projects',
         technology: 'Platform and technology',
         screenshotLoading: 'Loading project screenshot',
-        screenshotError: 'Project screenshot unavailable',
+        screenshotError: 'Could not load screenshot',
         connectionDiagram:
           'An MCP client connects through SSH MCP to multiple SSH servers.',
         client: 'MCP client',
@@ -37,7 +37,7 @@ const copy = computed(() =>
         title: '项目',
         technology: '平台与技术',
         screenshotLoading: '正在加载项目截图',
-        screenshotError: '项目截图暂不可用',
+        screenshotError: '项目截图加载失败',
         connectionDiagram: 'MCP 客户端通过 SSH MCP 连接多台 SSH 服务器。',
         client: 'MCP 客户端',
         server: '服务器',
@@ -93,7 +93,7 @@ const projects = computed<Project[]>(() => [
     name: isEnglish.value ? 'Model Confluence' : '模汇',
     repositoryName: 'model-confluence',
     description: isEnglish.value
-      ? 'A self-hosted AI gateway that converts protocols and tracks API usage.'
+      ? 'Give AI clients one endpoint for protocol conversion and usage records.'
       : '为 AI 客户端提供统一入口，转换协议并记录调用用量。',
     stack: [isEnglish.value ? 'Self-hosted' : '自部署', 'Go', 'React'],
     url: 'https://github.com/Sanjeever/model-confluence',

@@ -15,7 +15,7 @@ aside: true
 
 <!-- DESC SEP -->
 
-After AI coding assistants truly entered everyday development, an easily overlooked but critical question emerges: how exactly do they edit files?
+Codex describes edits as patches; Claude Code uses exact text replacement or whole-file writes. How these approaches locate text, fail, and leave reviewable changes deserves a closer look.
 
 <!-- DESC SEP -->
 
@@ -40,7 +40,7 @@ A typical structure looks like:
 
 The defining characteristic of this approach is that changes are inherently "diff-centric." Codex doesn't simply say "replace this string with that string" — it uses a patch to express "here's what changed." This makes it particularly well-suited for small to medium-scale precise modifications, such as refactoring a function, adding a test, adjusting a configuration, or creating a new file.
 
-From a developer's perspective, the advantage of `apply_patch` is that it closely aligns with the mental model of Git diffs. The before and after content is presented side by side — which lines were deleted, which were added, all visible at a glance. This form naturally encourages "minimal diffs": only change what's relevant to the task, no unrelated formatting, no sweeping refactors.
+`apply_patch` resembles Git diff: deleted and added lines are explicit in the patch, making its scope easy to inspect. But a patch can also rewrite most of a file. The format cannot guarantee a minimal diff; unrelated formatting and refactoring still have to be caught in the final changes.
 
 That said, patch-based editing also has its own requirements. A patch must contain enough context; otherwise it may fail to match the target location or create ambiguity in files with many similar code blocks. If the file contains Chinese characters, tabs, special indentation, or invisible characters, the patch may also fail due to imperfect context matching. In such cases, Codex typically re-locates content via shell commands first, then generates a more precise patch.
 
@@ -74,7 +74,7 @@ This leads to several notable differences.
 
 First, Codex's modifications are more like Git diffs. The output is naturally suited for review — developers can directly see added and deleted lines. Claude Code's modifications are more like editor operations, focused on "replace this exact block of text with that block of text."
 
-Second, Claude Code imposes a stronger "read before modify" requirement. Both `Edit` and overwrite-mode `Write` demand reading the file first. This reduces the risk of blind modifications and makes the editing process more dependent on the current file's real content.
+Second, `Edit` takes the old text as an explicit parameter, so its caller needs the exact content. Patches need reliable context too. Tool constraints can help enforce reading before editing, but they cannot replace that discipline.
 
 Third, Codex feels natural when handling multi-file, small-scope changes. A single patch can update multiple files simultaneously and also add, delete, or move files. Claude Code can handle multiple files too, but its mental model leans more toward reading files one by one and replacing text position by position.
 
@@ -84,9 +84,9 @@ Fourth, the failure modes differ. Codex's patches may fail due to insufficient c
 
 There's no absolute answer to this question; it depends more on the type of task.
 
-For small to medium-scale code changes, especially scenarios requiring clear diffs, Codex's `apply_patch` has a strong advantage. It naturally aligns with code review workflows and is well-suited for localized function modifications, test additions, configuration adjustments, and small cross-file changes.
+For small additions and deletions across several files, `apply_patch` can express the entire change in one patch, making the combined scope visible at invocation.
 
-For scenarios that heavily emphasize "read the original first, then replace precisely," Claude Code's `Edit` feels more solid. It mandates reading the file and requires exact old-text matching, which makes modification behavior more conservative and helps avoid erroneous changes.
+For replacing a unique block of text, `Edit` has straightforward inputs. It fails when the original text does not match, but strict matching alone does not establish a lower overall error rate. Neither tool can decide whether the chosen target or the understanding of the requirement is correct.
 
 For creating new files, both handle it well. Codex can express file creation via `Add File`; Claude Code can create files directly with `Write`.
 
@@ -103,13 +103,5 @@ This points to an important insight: the reliability of an AI coding assistant d
 A good AI coding assistant shouldn't just be able to "get the code right" — it should also let the developer clearly see what was changed, why, whether it crossed any boundaries, and whether it preserved the user's existing work.
 
 ## Closing Thoughts
-
-Claude Code and Codex's file-editing approaches represent two different engineering orientations.
-
-Codex expresses modifications as patches through `apply_patch`, closer to Git diffs and the command-line developer's way of working. Claude Code decomposes modifications into precise replacements and full-file writes through `Edit` and `Write`, closer to a strict text-editor model.
-
-The former emphasizes diff expression; the latter emphasizes precise matching after reading. The former suits patch-style, multi-file small-step modifications; the latter suits conservative, explicit, controllable text replacement.
-
-But regardless of the approach, what truly determines the experience is not the tool's name, but the principles behind it: read before you write, minimal changes, avoid unrelated formatting, respect user modifications, and execute commands with care.
 
 When evaluating an AI coding assistant, ask less “Can it modify code?” and more: “For the same change, can it state its assumptions, produce a reviewable diff, and expose failures clearly?” That says more than a tool name about whether it belongs in a real engineering workflow.

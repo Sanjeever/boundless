@@ -25,7 +25,7 @@ export default defineConfig({
       next: '下一篇',
     },
     outlineTitle: '本文目录',
-    lastUpdatedText: '最近更新时间',
+    lastUpdatedText: '更新于',
 
     // sidebar: sideBarConfig,
 
@@ -50,16 +50,16 @@ export default defineConfig({
 
 export const search: DefaultTheme.AlgoliaSearchOptions['locales'] = {
   root: {
-    placeholder: '搜索文档',
+    placeholder: '搜索本站',
     translations: {
       button: {
-        buttonText: '搜索文档',
-        buttonAriaLabel: '搜索文档',
+        buttonText: '搜索本站',
+        buttonAriaLabel: '搜索本站',
       },
       modal: {
         searchBox: {
-          resetButtonTitle: '清除查询条件',
-          resetButtonAriaLabel: '清除查询条件',
+          resetButtonTitle: '清除搜索',
+          resetButtonAriaLabel: '清除搜索',
           cancelButtonText: '取消',
           cancelButtonAriaLabel: '取消',
         },
@@ -72,8 +72,8 @@ export const search: DefaultTheme.AlgoliaSearchOptions['locales'] = {
           removeFavoriteSearchButtonTitle: '从收藏中移除',
         },
         errorScreen: {
-          titleText: '无法获取结果',
-          helpText: '你可能需要检查你的网络连接',
+          titleText: '搜索失败',
+          helpText: '请重试',
         },
         footer: {
           selectText: '选择',
@@ -82,10 +82,10 @@ export const search: DefaultTheme.AlgoliaSearchOptions['locales'] = {
           searchByText: '搜索提供者',
         },
         noResultsScreen: {
-          noResultsText: '无法找到相关结果',
-          suggestedQueryText: '你可以尝试查询',
-          reportMissingResultsText: '你认为该查询应该有结果？',
-          reportMissingResultsLinkText: '点击反馈',
+          noResultsText: '未找到相关结果',
+          suggestedQueryText: '试试其他关键词',
+          reportMissingResultsText: '缺少预期结果？',
+          reportMissingResultsLinkText: '反馈问题',
         },
       },
     },

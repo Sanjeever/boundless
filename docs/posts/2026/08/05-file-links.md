@@ -70,7 +70,8 @@ report.txt ─┐
 backup.txt ─┘
 ```
 
-修改其中任意一个名称下的内容，其他名称看到的内容也会变化。删除一个
+直接修改这份文件数据，其他名称看到的内容也会变化。但有些编辑器保存时
+会写入新文件再替换原路径，这会让被替换的名称脱离原有硬链接关系。删除一个
 名称只会减少一个入口；只有最后一个硬链接也被删除后，文件数据才会被
 释放。
 
@@ -207,6 +208,11 @@ New-Item -ItemType SymbolicLink `
 
 相对目标 `../.agents/skills` 以 `.claude/skills` 所在目录为基准。整个
 仓库移动到别处以后，两者的相对关系不变，链接仍然有效。
+
+Git Bash 还需要留意 [MSYS 的符号链接模式](https://www.msys2.org/docs/symlinks/)：`ln -s` 可能复制目标内容，
+并未创建 Windows 原生符号链接。可以使用上面的 PowerShell 命令；继续用
+Git Bash 时，先确认 `MSYS` 中的 `winsymlinks:nativestrict` 设置及创建权限，
+再用下文的 `LinkType` 和 Git 模式检查结果。
 
 ### 让 Git 保留符号链接
 
