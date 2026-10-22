@@ -5,7 +5,7 @@ tags:
   - Information Access
   - AI
   - Independent Thinking
-description: AI makes content easier to produce while leaving readers to check its claims. A look at AI slop, technical reading, and using AI to trace conclusions back to evidence.
+description: Tracing DeepSeek's reported cost of under $6 million back to its technical report shows how retellings lose model names, assumptions, and cost boundaries—and how to check a technical claim.
 outline: deep
 aside: true
 ---
@@ -14,7 +14,7 @@ aside: true
 
 <!-- DESC SEP -->
 
-A technical introduction leaves you with a project name, a star count, and a promise to replace everything. When you actually need the tool, you still have to start with the documentation. AI makes this content easier to produce while leaving readers to do the checking. Facing AI slop, we need evidence we can trace.
+“Under $6 million” sounds precise. Which model it refers to, and which expenses it covers, can become less clear in the retelling. Following DeepSeek coverage back to its technical report shows how omitted conditions change a conclusion.
 
 <!-- DESC SEP -->
 
@@ -30,19 +30,35 @@ The introduction that promised to save you time has left you with the work of fi
 
 A feature may still be experimental. A project may support only some file formats. A performance gain may depend on a particular environment. After a few rounds of retelling, “worth trying” becomes “a complete replacement,” and “an improvement in one area” becomes “crushing the competition.” The conditions disappear as the language grows more certain.
 
-Take Vitest's Trace View. Its [official documentation](https://main.vitest.dev/guide/browser/trace-view) explains how it reconstructs browser interaction steps through DOM snapshots and describes what those snapshots capture. Images and canvas pixels are not inlined by default, and some external resources still depend on their original URLs. Calling it “test recording” gives readers an easy starting point. But if you need to debug a chart, an image, or a styling problem, those details matter.
-
 A good explanation supplies context. It shows why a capability is useful and under what conditions it works. After reading, we can make a better decision about using it.
 
 A poor retelling makes the conclusion easier to spread. You can repeat how impressive the tool is without explaining why it fits your task.
 
 “Secondhand” tells us little about quality. Translations, textbooks, and technical explanations all have value. The useful question is what readers gain, and what they lose, through each retelling.
 
+## What Does “Under $6 Million” Cover?
+
+On January 27, 2025, CNN's _First Move_ introduced DeepSeek-R1, then said the company claimed to have spent under $6 million training its models. A guest compared roughly $5.6 million with billions spent by US companies, mentioning Meta's planned spending of about $65 billion that year. The exchange appears near the start of the [program's transcript](https://transcripts.cnn.com/show/fmjc/date/2025-01-27/segment/01).
+
+The discussion can leave the impression that R1 cost about $5.6 million to develop, remarkably little beside large companies' overall spending. Before comparing those amounts, we need to establish what the smaller figure describes.
+
+The [introduction and Table 1 of the initial DeepSeek-V3 report](https://arxiv.org/html/2412.19437v1#S1) give the calculation: 2.788 million H800 GPU-hours for V3's official training, valued at an assumed rental rate of $2 per GPU-hour, producing $5.576 million. The next sentence explicitly excludes earlier research and ablation experiments on architectures, algorithms, and data.
+
+That changes at least three parts of the initial impression.
+
+First, the figure refers to **V3**. Using it in a discussion of R1 requires explaining the relationship, rather than letting readers treat it as R1's cost. Second, it values training compute using a rental assumption. Precision to the nearest thousand dollars does not make an estimate an audited bill. Third, research and experiments sit outside the stated boundary. Using the number to answer “What does it cost to develop a model from scratch?” expands its meaning.
+
+This also explains the problem with comparing it directly to a company's annual spending. One amount has a defined training scope; the other requires checking what the budget includes. Both numbers can have sources without their ratio being a meaningful measure of efficiency.
+
+This check does not establish DeepSeek's total research and development costs or independently verify its compute usage. It establishes what the report says and which conditions the program left unstated. Correcting the use of “$6 million” requires neither inventing a larger total nor treating the omission as evidence that the original report was fraudulent.
+
+The investigation changes the questions worth asking next: which training designs reduced compute requirements, how the results can be verified, and what another team would need to reproduce them. Staying with the contrast between two amounts makes it harder to reach those technical questions.
+
 ## AI Slop Can Read Smoothly
 
-[Cambridge Dictionary](https://dictionary.cambridge.org/us/dictionary/english/ai-slop?topic=internet-terminology-and-abbreviations) defines AI slop as low-quality digital content created by AI. [Dictionary.com](https://www.dictionary.com/browse/ai-slop) also emphasizes the perception of poor quality and little effort in work produced by large language models and diffusion models, including text and images.
+[Merriam-Webster's relevant definition of slop](https://www.merriam-webster.com/dictionary/slop) describes low-quality digital content produced with AI, usually in quantity. Poor retellings predate AI; AI makes it easier to rewrite and expand them in bulk.
 
-As [AP reported](https://www.ap.org/news-highlights/spotlights/2025/merriam-websters-2025-word-of-the-year-is-slop/), Merriam-Webster chose **slop** as its 2025 word of the year. Its relevant definition emphasizes low-quality digital content produced with AI, usually in quantity.
+The CNN example establishes an omission of conditions, with no evidence that the segment was AI-generated. It gives “low quality” something we can inspect, so the judgment need not rest on prose style.
 
 In technical reading, I am especially wary of articles that look complete. The project names are correct. The terminology is familiar. There is a feature list, a set of use cases, and a closing prediction about the future. The prose flows and the structure looks sound, yet there is no account of trying the tool or evidence for the judgments that matter.
 
@@ -50,25 +66,17 @@ Such an article can contain plenty of accurate statements. It can rephrase a REA
 
 Vague prose and exaggerated claims alone cannot establish that an article was generated by AI. Using AI does not establish poor quality either. Criticism of a particular article needs to identify what is missing: sources, conditions, or an account of testing. Calling something AI slop also requires grounds. It should not become a label we attach on sight.
 
-## The Cost of Checking and the Fear of Falling Behind
+## Who Does the Checking?
 
-To me, the most troubling consequence of AI slop in technical reading is the gap between the cost of producing a claim and the cost of checking it.
+What concerns me is content that appears to have made a judgment for readers while leaving the checking until they actually need to use its conclusion.
 
-AI can quickly write a project introduction. Checking its claim of being “a complete replacement” may require reading documentation, comparing versions, searching issues, and setting up an environment.
+Suppose an introduction calls a tool “a complete replacement” without identifying the versions compared or the missing features. A reader starts migrating, encounters an unsupported feature, and has to return to the documentation, search issues, or reconsider the choice. The introduction omits the conditions; the cost may surface later in the reader's work.
 
-When the publisher skips verification, readers inherit the work. One untested claim can spread to many people, each spending time separately to find out whether it holds up.
+That sequence explains a risk. It does not tell us how many people end up redoing work or how much time they lose. Likewise, the earlier case demonstrates information lost in one retelling; it cannot establish the quality of technical content as a whole.
 
-We bookmark an article because it might be useful someday. When that day arrives, the bookmark offers little basis for a decision. We still have to find the project and check its limits. Our earlier reading mostly left us with a name and a moment of excitement.
+There is also a reading motive worth examining. “Learn it before it's too late” makes a tool awaiting evaluation feel like overdue homework. If fear of falling behind leads a reader to keep bookmarking tools without recording their uses and limits, the next real problem still requires sorting through them from scratch.
 
-Every day brings a breakthrough tool. Every week brings an industry about to be overturned. After enough of these claims, it is easy to wonder whether everyone else is already using something new and leaving us behind.
-
-We can understand this as one way [FOMO](https://dictionary.cambridge.org/us/dictionary/english/fomo), or Fear of Missing Out, shows up in technical reading. We worry about missing a tool, a breakthrough, or an advantage that supposedly everyone else already has.
-
-“Learn it before it's too late” puts a deadline on reading. Before we know what problem a tool solves, we click, bookmark, and plan to catch up later. As the bookmarks accumulate, so does the sense of homework left undone.
-
-An article with few technical details can still draw us in by making it feel dangerous to remain uninformed for a while. Reading becomes organized around avoiding the feeling of falling behind, while the problem we actually need to solve slips into the background.
-
-If a piece of “knowledge sharing” saves the writer the effort of checking, passes that effort to readers, and leaves them feeling behind, whose time has it saved?
+FOMO, or Fear of Missing Out, can describe that situation. Establishing that exaggerated content generally causes anxiety would require other evidence. For a reading decision, a narrower question is enough: do I currently have a task this tool needs to solve?
 
 ## Use AI to Find the Evidence
 
@@ -82,28 +90,20 @@ Start with the task at hand:
 
 > Read this project's official documentation, release history, and relevant issues. Assess whether it can handle my task: [specific task]. Identify the relevant versions, prerequisites, and known limits. Distinguish the author's claims, available test results, and unresolved questions. Link to the original material supporting each key conclusion. State clearly when you cannot access a source or find supporting evidence.
 
+For the cost claim above, narrow the task further: find the report version where $5.576 million first appeared, locate the table and adjacent explanation, and identify the model, calculation assumptions, and included and excluded costs. Then compare those with the program's wording. This makes it easier to catch an answer that substitutes R1 for V3 or turns a compute estimate into total development spending.
+
 Then open the sources that affect your decision and check whether they support the conclusions. The presence of a link does not establish that the citation is accurate.
 
 Original material has a perspective too. A project homepage may be promotional. An official demo may choose favorable conditions. Real work also calls for issue reports, independent experience, and sometimes a trial of our own. Labels such as “official,” “open source,” and “highly starred” cannot stand in for evidence.
 
 ## What Can You Check After Reading?
 
-When a project interests you, follow the introduction to its repository, then read the README, releases, and relevant issues. For claims that affect your choice, look for independent experience or run a small trial. Reading around a concrete problem gives you a better chance of building useful judgment than constantly chasing new names.
+I would keep a small note to judge whether a piece has left me with usable information:
 
-Keep a few sources handy and visit them when needed. They provide leads; individual claims still need to be traced and checked.
+> What does it claim? Where is the original evidence? Which conditions must remain attached for me to use the conclusion?
 
-::: details Places to look
+For the cost example, the useful details are V3, GPU-hours, the rental assumption, and the exclusions. For a performance review, they might be the version, hardware, data size, comparison target, and test scripts. Record the conditions that could change your decision; every article need not receive a full audit.
 
-- Open-source projects: [GitHub Trending](https://github.com/trending). Follow through to repository documentation, releases, and issues.
-- Technical discussion: [Hacker News](https://news.ycombinator.com/), [Show HN](https://news.ycombinator.com/show), and [Lobsters](https://lobste.rs/about). Look for original material, replies from authors, and practical feedback.
-- Research: [arXiv](https://arxiv.org/) and [USENIX](https://www.usenix.org/publications/proceedings). Examine experimental conditions and limitations. Inclusion on arXiv does not establish peer review.
-- Engineering practice: [Cloudflare Engineering](https://blog.cloudflare.com/tag/engineering/) and [Netflix TechBlog](https://netflixtechblog.com/). Pay attention to each team's scale, resources, and constraints.
-- Web technologies and protocols: [MDN](https://developer.mozilla.org/zh-CN/docs/Web) and [RFC Editor](https://www.rfc-editor.org/). Read alongside specifications, document status, and version information.
+If an introduction offers only an interesting project name, treat it as a lead. When a concrete task arises, check its repository, releases, and relevant issues. When actual behavior matters, run a small trial that matches the task. The introduction alone does not justify jumping to “we should migrate now.”
 
-:::
-
-A new tool can be worth learning about without needing to interrupt your work today. You can leave it unfamiliar until you have a concrete question to investigate.
-
-The next time you finish an introduction promising to “transform the industry,” pause before bookmarking it. Ask what it has given you that lets you check its conclusion.
-
-If the key judgment has no support, fear of falling behind is no reason to keep reading. You have no obligation to do the homework every publisher skipped.
+A useful retelling can explain what “$6 million” covers and spare the next reader this investigation. That is the work I want technical writing to save its readers.
