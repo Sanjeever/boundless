@@ -5,7 +5,7 @@ tags:
   - AI
   - Software Engineering
   - Vibe Coding
-description: Reducing documentation drift in projects developed with coding agents by clarifying sources of truth, preserving design rationale, and maintaining documentation according to semantic changes.
+description: Outdated documentation can carry errors into the next implementation. Maintaining it means identifying which constraints still hold and tracing changes to the descriptions they affect.
 outline: deep
 aside: true
 ---
@@ -14,304 +14,123 @@ aside: true
 
 <!-- DESC SEP -->
 
-An implementation can meet its requirements today while later changes pull the code, specification, and documentation apart. I ask coding agents to review existing docs, then put principles for incremental maintenance based on semantic changes into AGENTS.md, leaving reliable project knowledge for the next session.
+The code has changed, but old instructions can still shape a coding agent's next implementation. When maintaining project documentation, I care most about deciding which descriptions have become outdated and which constraints should still hold.
 
 <!-- DESC SEP -->
 
-In [Intent and Code](/en/posts/2026/10/21-intent-spec-impl), I discussed `Intent → Spec → Impl`. A goal becomes requirements we can check, then a working program. Each step can introduce a mismatch.
+Suppose a report endpoint originally returned a file directly. As data volume grows, exports move to background tasks: return a task ID first, then download the file once it is ready. The code has changed, but the README and integration example still describe the old behavior. In the next session, a coding agent follows that example to build another page and could save the task ID as a “report file.”
 
-Suppose the report export now works correctly and downloads every row matching the filters. As the project grows, so does the data volume. Exporting becomes a background task: submit a request, receive a task ID, and download the file once it is ready.
+This growing separation between evolving code and existing descriptions is **documentation drift**. Old instructions enter a new session's context and influence the next implementation, giving errors a path to spread.
 
-The code has changed, but the README still says that a successful request returns the file directly. The example still saves the response as a file. A coding agent in a new session reads that example while adding exports to another page. Following it could produce a “report file” containing a task ID.
+## Are the docs wrong, or is the implementation?
 
-This is a hypothetical example, but it shows how outdated documentation can feed into later implementations. The old instructions look authoritative, giving the error a path into the next task.
+“Keep the docs consistent with the code” still requires judgment. If the move to background tasks is an agreed change, the old integration instructions need updating. But if the specification requires all matching rows and the code exports only the current page, changing the docs to say “exports the current page” could turn a bug into a new requirement.
 
-I call this growing separation between evolving code and existing descriptions **documentation drift**. It can appear in READMEs and design documents, as well as comments, examples, and configuration guides. I pay particular attention to it in projects developed over time with coding agents. Each new session needs to gather context again, and the material we leave behind helps shape its next decisions.
+In [Intent and Code](/en/posts/2026/10/21-intent-spec-impl), I discussed `Intent → Spec → Impl`. The specification states requirements; the implementation provides concrete behavior. When they disagree, we need to establish which decisions have changed and which promises still apply.
 
-That is why I usually give the agent a dedicated documentation maintenance task: address accumulated problems and put principles for future maintenance into AGENTS.md. The first thing to clarify is how to handle conflicting information.
+**Code tells us what is implemented now; established constraints help us judge whether that implementation is correct.** I choose evidence according to the question: inspect the implementation and relevant tests to check the actual response; trace the agreed specification and subsequent changes to judge whether the export includes the right rows. Tests and schemas also need scrutiny of what they actually check. They cannot establish that the requirements themselves are correct.
 
-## First, decide which source can answer the question
+In [The Origins of Software Engineering](https://jyywiki.cn/GSE/2026/lect5.md), jyy distinguishes concrete behavior from the requirements that behavior must satisfy, and reminds us to preserve what remains undecided. Here, that means separating choices an agent fills in to complete an implementation from requirements that have been agreed. If the repository cannot resolve an important disagreement, preserve the evidence and take it to someone with the authority to decide.
 
-“Keep the documentation consistent with the code” sounds reasonable, but applying it can hide a problem.
+## Keep the decision and the conditions behind it
 
-Consider the export again. If the docs describe a synchronous file response and an approved change has moved the implementation to background tasks, the old usage instructions need updating. But if the specification requires all matching rows and the code exports only the current page, changing the docs to say “exports the current page” turns a possible bug into a new requirement.
+Knowing what was chosen is not enough to judge whether a constraint still applies.
 
-Both conflicts look like disagreement between prose and code. They call for different responses.
+Consider the export again. Writing “use background tasks” tells the next developer what the current approach is. Recording the growing data volume, excessive synchronous request times, and continuing requirement to export all matching rows explains why the approach was chosen and which requirements remain. If synchronous processing later becomes fast enough, there is a basis for reconsidering the decision.
 
-We need to identify the **source of truth**. I start by distinguishing the kinds of questions being asked.
+[Requirements and Architecture (1)](https://jyywiki.cn/GSE/2026/lect6.md) discusses how a current result can compress facts, rules, and approval processes. Keep only the result, and its origins become hard to explain. Documentation has a similar problem: once the reason for moving exports to background tasks is deleted, even an accurate account of the current code cannot recover that reasoning.
 
-| Question                                                                            | Main sources                                                                           |
-| ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Which internal function or data structure does the current implementation use?      | Implementation code                                                                    |
-| What are the current configuration defaults, and how does the API actually respond? | Configuration definitions, implementation, and tests that verify the relevant behavior |
-| What input should the API accept, and what guarantees should it provide?            | The agreed contract or schema, together with the implementation and contract tests     |
-| Why is the system designed this way, and which boundaries should hold?              | Agreed specifications, design documents, and architecture decision records             |
-| How should users run, use, and deploy the project?                                  | Instructions checked against the actual workflow                                       |
+Michael Nygard's [architecture decision records, or ADRs](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions), preserve the context, status, and consequences of important decisions. When a decision is superseded, keep its record and identify the replacement. A project may not need a dedicated ADR directory, but its decisions and the conditions behind them should be findable.
 
-These sources still need scrutiny. A schema that is not used for validation can diverge from the API. A test with an incorrect assertion can accept incorrect behavior. Whether a design document still applies depends on the status of its decisions and subsequent changes.
+This also sets a boundary for simplifying docs. Internal call sequences can be left to the code when describing them adds no explanatory value. The constraints a choice addresses and the tradeoffs it makes deserve a record. Otherwise, the next change begins with another round of guesswork.
 
-**Code tells us what is implemented now; established constraints help us judge whether that implementation is correct.** When they conflict, trace the original rationale, requirement changes, and supporting evidence. An intentional design change should be reflected in the docs. An unintended deviation in behavior needs fixing. If the repository cannot resolve an important tradeoff, take the disagreement to someone who can make that decision.
+## Reduce what needs manual synchronization
 
-In [Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions), Michael Nygard describes the dilemma facing someone who inherits a decision without its rationale: blindly accept it or blindly reverse it. He proposes architecture decision records, or ADRs, that retain context, the decision, its status, and its consequences. When a decision is superseded, keep the old record and identify its replacement.
+Useful knowledge also has a maintenance cost. Repeat the same API response type in the README, reference docs, integration example, and AGENTS.md, and each copy becomes another place to miss during a change.
 
-This is why I ask agents to preserve design context. Rewriting every document to match the current code could erase the very evidence needed to judge whether the code has departed from its requirements.
+[Requirements and Architecture (2)](https://jyywiki.cn/GSE/2026/lect7.md) offers a useful idea: preserve facts and rules, then compute the results that can be derived from them. Maintenance can then focus on whether the computation and its dependencies are correct, reducing the need to synchronize multiple copies of state.
 
-## Leave fewer facts that need repeated synchronization
+Applied to documentation, I would first look for repeated information with a clear source. If task statuses and response fields already have a shared definition, reference material can be generated from it. If integration examples are executable, they can be included in API checks to catch an example that still saves the response as a file.
 
-Once the sources are clear, the next concern is duplicated maintenance.
+But a generated parameter table can accurately describe an API that violates its requirements. The promise to export all matching rows and the reason for choosing background tasks still need independent records against which to judge the implementation.
 
-The [DRY principle in The Pragmatic Programmer](https://pragprog.com/tips/) calls for each piece of knowledge to have one clear, authoritative representation within a system. That concern about duplicated knowledge also applies to documentation.
+The remaining material also needs clear ownership. I prefer the README to provide entry points for running and developing the project, detailed docs to hold contracts, usage, and design context, and AGENTS.md to state working constraints and point to relevant material. Link to existing explanations to reduce copies of volatile facts. API inputs, outputs, error semantics, and deployment steps should remain concrete: simplifying docs must preserve the information readers need to complete their tasks.
 
-Suppose the default retry count appears in the code, README, configuration example, and AGENTS.md. Changing it means finding all four places. Miss one, and readers can get different answers. I would rather let the configuration definition establish the default, have the reference explain the option, and link to it from other entry points. Examples that need to show a concrete value should be included in the impact review when that value changes.
+## Include the relevant docs in a complete change
 
-Some descriptions can simply be reduced.
+Even with fewer copies, a change can affect several places. Finding them starts with describing how behavior changed.
 
-```diff
-- TaskQueue uses a LinkedList to store tasks.
-+ TaskQueue maintains an ordered queue of pending tasks.
-```
+“Changed the export service” points to a group of source files. “The endpoint now returns a task ID instead of a file; callers must check its status and download the file when it is ready” provides clues about return types, status queries, and the download flow. API contracts, callers, examples, and usage instructions may all depend on the old behavior.
 
-If readers only need to understand the module's responsibility, the second sentence is enough. The underlying data structure can change while that responsibility remains, leaving the documentation valid.
+[Version Control (2)](https://jyywiki.cn/GSE/2026/lect4.md) describes the links between requirements, design, implementation, and verification as traceability. Keeping files in one repository and recording their history in Git does not automatically explain which example depends on which contract. Impact analysis for documentation follows those links when something changes.
 
-But removing a detail can also lose useful information when it reflects an important constraint. Imagine a queue that frequently needs to cancel tasks at arbitrary positions. The cost of removal may have influenced the choice of data structure. In that case, record the cancellation requirement, cost constraints, and rationale. If the access pattern later changes, someone taking over can judge whether to revisit the choice.
-
-[Google's code review guide](https://google.github.io/eng-practices/review/reviewer/looking-for.html#comments) makes a related distinction: comments generally supply reasoning that the code cannot express directly, while documentation for classes, modules, and functions should also explain their purpose, usage, and behavior.
-
-So “repeat fewer implementation details” should not become “only document why.” API inputs, outputs, and error semantics, the meaning of configuration options, and necessary deployment steps deserve concrete descriptions. Ask whom the information serves, where it should be maintained, and how a change will reveal that it needs attention.
-
-## Give README, docs, and AGENTS.md clear roles
-
-Mixing documentation responsibilities can create more duplication.
-
-I prefer to keep the README as an entry point. Readers should learn what the project is, its main capabilities, and how to run it or contribute, then follow links to detailed material. How a particular class is assembled or which internal functions call each other usually does not belong there.
-
-[Diátaxis](https://diataxis.fr/) distinguishes tutorials, how-to guides, technical reference, and explanation according to readers' needs. It offers a useful perspective when organizing docs: is someone learning, completing a task, looking up precise information, or trying to understand a design?
-
-For the export feature, integrating a minimal example, looking up task status fields, and understanding why exports run asynchronously are different reading needs. The material can link between them. Whether it needs separate files depends on length and the effort required to find it. A small project might handle all three in sections of one document.
-
-As for AGENTS.md, its [official description](https://agents.md/#why-agents-md) presents it as a predictable place for coding agents to find project context and instructions, complementing the README written for people.
-
-In my approach, it also defines how to handle documentation impact. The agent needs to know which constraints to respect, where to find supporting material, and what counts as complete. If a dedicated document already explains a design, link to it. Repeatedly copying that content gives AGENTS.md another version of the same information to keep up to date.
-
-## Review accumulated problems, then guide future changes
-
-When outdated material has accumulated, I ask the agent to perform a focused documentation review. It covers the README, docs, AGENTS.md, comments, examples, and configuration guides, looking for duplication, stale claims, contradictions, and missing design rationale.
-
-The broad scope addresses the existing backlog. The agent reads the material, verifies important facts against code, tests, and configuration, then decides what to remove, merge, rewrite, or preserve. If the structure is clear enough, keep it. Finding a few problems does not require redesigning the whole documentation tree.
-
-I give the agent two requirements together: reduce volatile implementation descriptions and preserve constraints and design context with lasting value. The first keeps documentation from chasing local implementation changes. The second prevents the review from stripping away useful detail.
-
-A completed review only addresses the problems identified at that point. The next feature can change an API, configuration, or deployment process and introduce new mismatches. I therefore also ask the agent to put principles for subsequent tasks into AGENTS.md.
-
-For example, this can serve as a starting point, adapted to the project.
-
-```text
-Documentation consistency
-
-Use code as the source for current implementation details. Use agreed
-design material as the source for explicit architecture constraints,
-design decisions, and behavioral contracts. Resolve conflicts in light
-of the context of the change.
-
-When completing a change with semantic impact:
-- Understand which behavior, interface, constraint, architecture, or
-  implementation assumption changed in the final result.
-- Find documentation, comments, tests, examples, and configuration that
-  may describe those concepts.
-- Update material that would become false, misleading, or inconsistent.
-- Decide whether documentation needs updating based on semantic impact,
-  rather than whether a source file changed.
-- Prefer stable concepts, behavior, boundaries, constraints, and rationale.
-
-Keep the review proportional to the task's impact. Reading every document
-for every task is unnecessary.
-```
-
-[Write the Docs describes Docs as Code](https://www.writethedocs.org/guide/docs-as-code/) as using tools such as version control and code review for documentation and integrating it into development workflows. Making documentation impact part of an agent's completion criteria is how I want to apply that idea.
-
-Keeping Markdown and code in one repository makes it easier to edit and review them together. Deciding which passages need changing still requires understanding the change.
-
-## Use semantic changes to find affected knowledge
-
-“Changed the export service” is not specific enough. A more useful description is: “The export endpoint now returns a task ID instead of a file. Callers must check the task status and download the file when it is ready.”
-
-That description provides search clues. The API docs may describe the return type, a frontend example may assume it receives a file, and usage instructions may promise an immediate download. All can be affected without mentioning the service's class name.
-
-This is what I mean by **impact analysis** in documentation maintenance: understand the change, then find existing knowledge that depends on the old behavior. I use **context routing** to describe locating the material needed for the task this way: choose reading entry points based on the problem, then gather context as needed.
-
-An agent can inspect changes with `git diff`, check the working tree with `git status --short`, and use `rg` to search for endpoint paths, configuration options, old terminology, and descriptions of behavior. These commands supply clues; the task determines how to use them. New, untracked files also need to be read, since an ordinary diff will not include everything.
-
-For example, in the hypothetical project above, this search could help locate descriptions of the old export contract.
+In the hypothetical project above, a search for the old endpoint and terminology could be a starting point.
 
 ```bash
 rg -n 'exportReport|/api/reports/export|returns the file directly|synchronous export' .
 ```
 
-Each result needs judgment. A historical decision record may need to remain, while a current integration example needs rewriting. Other passages may use different wording, requiring further exploration through callers and documentation links. Matching a term makes a passage worth inspecting; it does not by itself justify changing it.
+Each match needs judgment. A current integration example needs rewriting; a historical decision record may need to remain, marked as superseded. Other descriptions may use different wording, requiring further investigation through callers and documentation links. Start with the intended behavior change, then check against the final result so that a revised implementation does not get reviewed against an outdated plan.
 
-Changes that look similar can also have different impacts.
+[Version Control](https://jyywiki.cn/GSE/2026/lect3.md) discusses an atomic change as a complete modification organized around a clear intent, one that can be explained and verified. I want documentation included in that scope. When the background task implementation is ready, review its contracts, integration examples, and usage instructions together, checking whether current instructions still lead callers to depend on the old behavior.
 
-| Change                                                                | What to investigate                                                                                                     |
-| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Replace the queue's internal data structure while preserving behavior | Whether implementation descriptions are stale and the original rationale still applies                                  |
-| Move from synchronous export to background tasks                      | API contracts, calling examples, interaction flows, and relevant timeout and status configuration                       |
-| Change export scope from all matching rows to the current page        | Whether this violates the agreed specification and whether there is evidence of an approved requirement change          |
-| Rename an internal function                                           | Whether docs actually reference the symbol; a purely internal rename may require no reader-facing documentation changes |
-
-An initial impact analysis can identify useful material while clarifying the task. After implementation, review the final changes again, since they may differ from the original plan. The process can look like this:
+For AGENTS.md, a short rule can capture this expectation.
 
 ```text
-Identify the behavior and constraints intended to change
-    → Find relevant context
-    → Implement the change
-    → Review consistency against the final result
+Documentation consistency
+
+- When completing a change, describe the final changes to behavior,
+  interfaces, or constraints. Follow relevant calls and documentation
+  links to check whether contracts, examples, comments, and usage
+  instructions still hold.
+- Resolve conflicts between implementation and agreed requirements using
+  the requirements and context of the change. Do not turn a behavioral
+  deviation directly into a new requirement.
+- Preserve important decisions and their rationale. Reduce duplicate
+  copies of volatile facts.
+- Keep the review proportional to the task's impact. Update documentation
+  according to whether its content is affected.
 ```
 
-The [Documentation section of Google's review guide](https://google.github.io/eng-practices/review/reviewer/looking-for.html#documentation) offers a concrete criterion: when a change affects how users build, test, interact with, or release code, check that the associated documentation is updated. A requirement tied to impact is easier to apply than a general reminder to “keep the docs in sync.”
+If outdated material has already accumulated, I would first give the agent a dedicated maintenance task: verify important facts, address duplication and contradictions, then put these principles into AGENTS.md. Keep an existing structure that works, and check that the review has not erased design rationale or left broken links. Subsequent tasks can review their own impact, keeping a broad cleanup from becoming a fixed burden on every change.
 
-Before completing a task, I want the agent to be able to answer three questions.
-
-> What behavior, interface, constraint, architecture, or implementation assumption changed?
->
-> Where else in the repository are those concepts described?
->
-> Are the code, documentation, tests, examples, and configuration still consistent?
-
-Consistency here includes implementation respecting constraints that remain valid, as well as instructions matching the actual workflow. Unchanged docs may be appropriate because the task did not affect them. A large documentation update can still miss the most important contract. The review needs to examine the substance.
-
-## What to leave for the next session
-
-For a small project, clear entry points, a few links, and these principles are usually enough. If multiple subsystems make finding material substantially harder, consider a lightweight mapping from code directories to their architecture docs. The mapping needs maintenance too. I would add it when the reduction in search effort justifies that cost.
-
-Read the final diff once more. Did a deleted paragraph contain important design rationale? Did moving a document leave two copies of a default value? Will a rule added to AGENTS.md make the next small change require a full review process? The documentation review itself can introduce problems.
-
-I cannot conclude that a maintenance prompt will eliminate documentation drift. An agent can miss relevant material or misunderstand a design, and important disagreements still need human judgment. What I want is a concrete expectation: when delivering a feature, also check whether it has left the project with incorrect instructions or descriptions.
+An agent can still miss material or misunderstand a design, and important disagreements still need human judgment. Whether this approach reduces later misuse needs to be tested through continued changes.
 
 The next session does not need to reconstruct our entire conversation. It should be able to find the current requirements, important boundaries, and reasons behind those choices.
 
 ::: details Documentation maintenance task to adapt for your coding agent
 
-The task below puts these principles into a reusable prompt. Before running it, identify which working-tree changes belong to existing work.
-
 ```md
-Review and improve this project's documentation. Make the necessary changes
-directly.
+Review and improve this project's documentation. Make the necessary
+changes directly and preserve the user's existing work.
+Include the README, docs, AGENTS.md, relevant comments, examples, and
+configuration guides.
 
-Include README.md, `docs/**`, AGENTS.md, architectural explanations in code
-comments, examples, configuration guides, development instructions, and
-other text material with lasting maintenance value.
+Read the project entry points and relevant code. Check important facts
+against implementation, configuration, and tests. Address stale claims,
+duplication, and contradictions. Keep an existing structure that works.
 
-The goal is to reduce documentation drift and help future coding agent
-sessions find reliable project knowledge. Keep the work simple and
-appropriate to the project's size.
+Distinguish current implementation from agreed requirements. Resolve
+conflicts by tracing requirements and the context of changes. Preserve
+and report important unresolved disagreements, continuing work that does
+not depend on them. Keep important decisions, their assumptions, and
+rationale. Mark superseded decisions accordingly.
 
-## Understand the project first
+Reduce copies of volatile facts and link to them from other entry points.
+Consider which reference material can be generated from definitions and
+which examples can be checked. Adopt these approaches according to the
+project's actual needs and maintenance costs.
 
-Read the existing AGENTS.md, README, and relevant documentation. Learn the
-main code directories and modules. Check important facts against code,
-configuration, and tests. Look for obvious duplication, stale information,
-and contradictions.
+Add incremental maintenance principles suited to the project to AGENTS.md:
+understand the final behavior change, follow relevant calls and docs to
+check affected contracts, examples, comments, and usage instructions, and
+update content according to semantic impact. Keep the review proportional
+to the task.
 
-Preserve the user's existing changes. Do not delete, move, or rewrite
-content based only on a filename or search match.
-
-## Identify sources of truth
-
-- Use code for current implementation details.
-- Use actual configuration definitions and code for options and defaults.
-- Assess actual API behavior using code, schemas, tests, and what they
-  actually validate.
-- Use agreed specifications and design material for behavioral contracts,
-  architecture constraints, and design decisions.
-- Check usage and deployment instructions against the actual workflow.
-
-When code and documentation conflict, first determine whether the document
-describes an implementation or establishes a constraint to follow.
-Correct stale implementation descriptions. Do not remove explicit design
-constraints merely because the code differs. Resolve conflicts using
-change history, code, tests, and context.
-
-If an important design disagreement cannot be resolved from the
-repository, preserve the relevant material and report it in the result.
-Continue work that does not depend on that decision.
-
-## Reduce duplication and volatile information
-
-Check whether references to class names, method names, internal calls, and
-data structures serve a useful reading purpose. Remove or replace them
-with stable descriptions when they are readily available in code and add
-no explanatory value.
-
-When an implementation choice has design significance, preserve its
-context, constraints, rationale, and consequences. Do not lose that
-evidence while simplifying the docs.
-
-Prefer maintaining each changeable fact in one place, with links from
-other locations. Keep reference material and how-to guides accurate and
-concrete where they need to show behavior, parameters, or steps.
-
-## Clarify documentation responsibilities
-
-Use the README mainly for the project's purpose, core capabilities,
-structural overview, and entry points for running and developing it.
-Put details in suitable locations and keep them reachable through links.
-
-Address duplication, stale claims, unclear responsibilities, and
-contradictions in docs. Keep an existing structure that works. Do not
-create many small documents merely to complete a formal structure.
-
-Distinguish historical decisions from current instructions. Preserve
-superseded decisions that retain value, marking their status and linking
-to their replacements.
-
-## Update AGENTS.md for future tasks
-
-Organize goals, principles, boundaries, sources of truth, and completion
-criteria around the actual project. Preserve implementation autonomy.
-Avoid requiring every task to read all documentation or run unrelated
-checks.
-
-Add documentation consistency principles suited to this project:
-
-- After a change with semantic impact, understand which behavior,
-  interface, constraint, architecture, or implementation assumption
-  changed in the final result.
-- Find documentation, comments, tests, examples, and configuration that
-  may describe those concepts.
-- Update content that would become false, misleading, or inconsistent.
-- Do not mechanically change documentation because a source file changed.
-- Intentionally resolve conflicts between implementation and explicit
-  architecture constraints or design decisions, using available evidence.
-- Prefer stable concepts, behavior, boundaries, constraints, and rationale.
-- Keep the review proportional to the task's impact.
-
-Use git diff, git status --short, rg, or other suitable tools. The point
-is to understand the relationship between changes and project knowledge.
-
-Add a lightweight code-to-documentation mapping only if the project needs
-it to reduce the effort of finding material across subsystems.
-
-## Complete and review the work
-
-Choose verification proportional to the changes. Documentation work does
-not automatically require a full build or test suite. When checking a
-command, configuration, or behavior, choose a method that supplies the
-relevant evidence.
-
-Review consistency across the final changes, including new and moved
-files:
-
-1. Do current descriptions still contain obvious stale claims or
-   contradictions?
-2. Did the review introduce duplicate information or broken links?
-3. Were valid constraints mistakenly rewritten to match the implementation?
-4. Was design context with lasting value deleted?
-5. Has AGENTS.md become too procedural or copied too much volatile detail?
-6. Will the new rules apply to future tasks, beyond the current state?
-
-Report the actual changes, verification results, and important unresolved
-decisions requiring human judgment. Do not claim to have proved that the
-entire repository is free of documentation drift.
+Review the final diff for lost design context, duplication, and broken
+links. When checking commands, configuration, or behavior, use verification
+that supplies the relevant evidence. Report the actual changes,
+verification results, and disagreements that still need human judgment.
 ```
 
 :::
