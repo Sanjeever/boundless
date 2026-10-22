@@ -9,383 +9,124 @@ const copy = computed(() =>
   isEnglish.value
     ? {
         title: 'About Me',
-        intro: 'I live in Nanning and write as Sanjeev.',
-        description: 'I write here about what I learn and how I live.',
-        technology: 'Tech stack',
-        backend: 'Backend',
-        frontend: 'Frontend',
+        intro: 'I’m Sanjeev. I live in Nanning and write code.',
+        nameIntro: 'Sanjeev corresponds to the Sanskrit word saṃjīva. The ',
+        dictionary: 'Monier-Williams Sanskrit-English Dictionary',
+        nameMeaning:
+          ' lists “living,” “making alive,” and “revival” among its meanings. I like the sense of vitality. I hope to always have something to work on and something to look forward to.',
+        outlook:
+          'I like Wang Xiaobo, especially his passion for wisdom and his refusal to surrender to nihilism. To me, that means continuing toward my goals. When I want to understand something, I read and ask. When I want to make something, I get to work.',
+        writing:
+          'I write here about technical work and everyday thoughts. Some questions have no answers yet. I write them down anyway.',
         contact: 'Contact',
         email: 'Email',
-        interests: 'Interests',
-        music: 'Music',
-        musicians: 'Cheer Chen, Dean Ting, Chen Li, Li Zhi',
-        literature: 'Literature',
-        writers: 'Wang Xiaobo',
-        albumAlt: [
-          'JESUS IS KING album cover',
-          '背面是我 album cover',
-          '吉他手 album cover',
-        ],
       }
     : {
         title: '关于我',
-        intro: '现居南宁，笔名 Sanjeev。',
-        description: '在这里记录学习与生活。',
-        technology: '技术栈',
-        backend: '后端',
-        frontend: '前端',
+        intro: '我是 Sanjeev，现居南宁，平时写代码。',
+        nameIntro: 'Sanjeev 对应梵语 saṃjīva。',
+        dictionary: '《Monier-Williams 梵英词典》',
+        nameMeaning:
+          '收有“活着”“赋予生命”“复苏”等释义。我喜欢“生机”这层寓意，希望自己始终有事可做，有所向往。',
+        outlook:
+          '我喜欢王小波，尤其认同他对智慧那份热忱，以及不向虚无投降这句话。对我来说，就是朝着目标持续向前。想弄明白，就去读、去问；想做出来，就动手。',
+        writing: '这里记录技术实践与日常思考。有些问题暂时没有答案，也先记下。',
         contact: '联系我',
         email: '邮箱',
-        interests: '爱好',
-        music: '音乐',
-        musicians: '陈绮贞、丁世光、陈粒、李志',
-        literature: '文学',
-        writers: '王小波',
-        albumAlt: [
-          'JESUS IS KING 专辑封面',
-          '背面是我专辑封面',
-          '吉他手专辑封面',
-        ],
       }
 )
-
-const backend = [
-  'Java, Spring Boot',
-  'MySQL, ClickHouse, TrinoSQL',
-  'Redis, Kafka',
-  'JUnit 5, Maven',
-  'MyBatis Plus',
-]
-const frontend = ['Vue 3, TypeScript', 'Vite', 'Tailwind CSS']
 </script>
 
 <template>
   <main class="about-profile">
     <header class="about-intro">
-      <div>
-        <h1>{{ copy.title }}</h1>
-        <p class="intro-lead">{{ copy.intro }}</p>
-        <p>{{ copy.description }}</p>
-      </div>
-      <img
-        src="/logo.png"
-        :alt="isEnglish ? 'Boundless flower mark' : '无垠花瓣标志'"
-        width="400"
-        height="400" />
+      <h1>{{ copy.title }}</h1>
+      <p>{{ copy.intro }}</p>
     </header>
 
-    <section class="technology-section">
-      <h2>{{ copy.technology }}</h2>
-      <div class="technology-groups">
-        <div>
-          <h3>{{ copy.backend }}</h3>
-          <ul>
-            <li v-for="item in backend" :key="item">{{ item }}</li>
-          </ul>
-        </div>
-        <div>
-          <h3>{{ copy.frontend }}</h3>
-          <ul>
-            <li v-for="item in frontend" :key="item">{{ item }}</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <section class="contact-section">
-      <h2>{{ copy.contact }}</h2>
-      <div class="contact-links">
-        <a href="mailto:hi@sanjeev.top">
-          <span>{{ copy.email }}</span>
-          <strong>hi@sanjeev.top</strong>
+    <div class="about-copy">
+      <p>
+        {{ copy.nameIntro }}
+        <a href="https://www.tuninst.net/SED-MW/download-prem/s.htm">
+          {{ copy.dictionary }}
         </a>
-        <a
-          href="https://github.com/Sanjeever"
-          target="_blank"
-          rel="noopener noreferrer">
-          <span>GitHub</span>
-          <strong>github.com/Sanjeever</strong>
-        </a>
-      </div>
-    </section>
+        {{ copy.nameMeaning }}
+      </p>
+      <p>{{ copy.outlook }}</p>
+      <p>{{ copy.writing }}</p>
+    </div>
 
-    <section class="interests-section">
-      <div class="interest-copy">
-        <h2>{{ copy.interests }}</h2>
-        <div>
-          <h3>{{ copy.music }}</h3>
-          <p>{{ copy.musicians }}</p>
-        </div>
-        <div>
-          <h3>{{ copy.literature }}</h3>
-          <p>{{ copy.writers }}</p>
-        </div>
-      </div>
-      <div class="interest-covers">
-        <img
-          src="/images/albums/jesus-is-king.jpg"
-          :alt="copy.albumAlt[0]"
-          loading="lazy" />
-        <img
-          src="/images/albums/back-of-me.jpg"
-          :alt="copy.albumAlt[1]"
-          loading="lazy" />
-        <img
-          src="/images/albums/groupies.jpg"
-          :alt="copy.albumAlt[2]"
-          loading="lazy" />
-      </div>
-    </section>
+    <nav class="contact-links" :aria-label="copy.contact">
+      <a href="mailto:hi@sanjeev.top" :aria-label="copy.email">
+        hi@sanjeev.top
+      </a>
+      <a
+        href="https://github.com/Sanjeever"
+        target="_blank"
+        rel="noopener noreferrer">
+        GitHub
+      </a>
+    </nav>
   </main>
 </template>
 
 <style scoped>
 .about-profile {
-  width: min(1100px, 100%);
+  width: min(760px, 100%);
   min-height: 100dvh;
   margin-inline: auto;
-  padding: calc(var(--vp-nav-height) + 80px) clamp(24px, 4vw, 48px) 120px;
-}
-
-.about-intro {
-  display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(220px, 4fr);
-  gap: clamp(48px, 8vw, 112px);
-  align-items: center;
-  min-height: 420px;
-  margin-bottom: 128px;
+  padding: calc(var(--vp-nav-height) + 80px) 32px 120px;
 }
 
 .about-intro h1 {
-  margin: 0 0 38px;
+  margin: 0 0 40px;
   color: var(--vp-c-text-1);
-  font-size: clamp(56px, 8vw, 88px);
+  font-size: clamp(40px, 6vw, 56px);
   font-weight: 640;
-  letter-spacing: -0.06em;
-  line-height: 0.98;
-}
-
-.about-intro p {
-  max-width: 42ch;
-  margin: 12px 0 0;
-  color: var(--vp-c-text-2);
-  font-size: 17px;
-  line-height: 1.75;
-}
-
-.about-intro .intro-lead {
-  color: var(--vp-c-text-1);
-  font-size: 20px;
-}
-
-.about-intro img {
-  width: min(280px, 100%);
-  height: auto;
-  transform: rotate(4deg);
-}
-
-section {
-  margin-top: 120px;
-}
-
-section > h2,
-.interest-copy > h2 {
-  margin: 0 0 44px;
-  color: var(--vp-c-text-1);
-  font-size: clamp(34px, 4.2vw, 48px);
-  font-weight: 620;
   letter-spacing: -0.04em;
-  line-height: 1.1;
+  line-height: 1.2;
 }
 
-.technology-groups {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  gap: clamp(48px, 10vw, 132px);
-  max-width: 850px;
+.about-intro p,
+.about-copy p {
+  margin: 0 0 28px;
+  color: var(--vp-c-text-1);
+  font-size: 17px;
+  line-height: 1.9;
 }
 
-.technology-groups h3,
-.interest-copy h3 {
-  margin: 0 0 20px;
+.about-profile a {
   color: var(--vp-c-brand-1);
-  font-family: var(--vp-font-family-mono);
-  font-size: 12px;
-  font-weight: 520;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
 }
 
-.technology-groups ul {
-  display: grid;
-  gap: 12px;
-  margin: 0;
-  padding: 0;
-  color: var(--vp-c-text-2);
-  font-size: 16px;
-  line-height: 1.55;
-  list-style: none;
+.about-profile a:hover {
+  color: var(--vp-c-brand-2);
 }
 
-.contact-section {
-  max-width: 850px;
+.about-profile a:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 4px;
 }
 
 .contact-links {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.contact-links a {
-  display: grid;
-  gap: 14px;
-  min-height: 150px;
-  align-content: space-between;
-  padding: 26px;
-  border-radius: var(--boundless-radius);
-  color: var(--vp-c-text-1);
-  background: var(--vp-c-bg-soft);
-  text-decoration: none;
-  transition:
-    color 180ms ease,
-    transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.contact-links a:hover,
-.contact-links a:focus-visible {
-  color: var(--vp-c-brand-1);
-  transform: translateY(-2px);
-}
-
-.contact-links span {
-  color: var(--vp-c-text-3);
-  font-family: var(--vp-font-family-mono);
-  font-size: 11px;
-}
-
-.contact-links strong {
-  overflow-wrap: anywhere;
-  font-size: 17px;
-  font-weight: 580;
-}
-
-.interests-section {
-  display: grid;
-  grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.6fr);
-  gap: clamp(56px, 9vw, 120px);
-  align-items: end;
-}
-
-.interest-copy > div + div {
-  margin-top: 34px;
-}
-
-.interest-copy p {
-  margin: 0;
-  color: var(--vp-c-text-2);
-  font-size: 16px;
-  line-height: 1.7;
-}
-
-.interest-covers {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: center;
-}
-
-.interest-covers img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: var(--boundless-radius);
-  object-fit: cover;
-  box-shadow: var(--boundless-media-shadow);
-}
-
-.interest-covers img:first-child {
-  transform: rotate(-4deg);
-}
-
-.interest-covers img:nth-child(2) {
-  position: relative;
-  z-index: 1;
-  transform: scale(1.08) rotate(2deg);
-}
-
-.interest-covers img:last-child {
-  transform: rotate(5deg);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .about-intro {
-    animation: about-reveal 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-}
-
-@keyframes about-reveal {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 10px, 0);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-top: 48px;
+  font-size: 15px;
+  line-height: 1.75;
 }
 
 @media (max-width: 767px) {
   .about-profile {
-    padding: calc(var(--vp-nav-height) + 52px) 18px 80px;
-  }
-
-  .about-intro {
-    grid-template-columns: minmax(0, 1fr) 110px;
-    gap: 24px;
-    min-height: 0;
-    margin-bottom: 0;
+    padding: calc(var(--vp-nav-height) + 48px) 24px 80px;
   }
 
   .about-intro h1 {
-    margin-bottom: 28px;
-    font-size: 52px;
-  }
-
-  .about-intro img {
-    width: 110px;
-  }
-
-  section {
-    margin-top: 80px;
-  }
-
-  section > h2,
-  .interest-copy > h2 {
-    margin-bottom: 34px;
-    font-size: 36px;
-  }
-
-  .technology-groups,
-  .contact-links,
-  .interests-section {
-    grid-template-columns: 1fr;
-  }
-
-  .technology-groups {
-    gap: 44px;
-  }
-
-  .interests-section {
-    gap: 52px;
-  }
-}
-
-@media (max-width: 420px) {
-  .about-intro {
-    display: block;
-  }
-
-  .about-intro img {
-    display: none;
+    margin-bottom: 32px;
   }
 }
 </style>
