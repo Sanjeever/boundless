@@ -19,6 +19,10 @@ Tired of the tedious process of checking port usage and killing processes on Win
 
 <!-- DESC SEP -->
 
+> **October 23, 2026 update**
+>
+> Port Sentinel 2.0 rebuilds the app with Go + Wails and adds macOS and Linux desktop support. This post records the original Flutter Windows version. Read [Port Sentinel 2.0](/en/posts/2026/10/23-port-sentinel-2) for the rebuild, or [download the latest release](https://github.com/Sanjeever/port_sentinel/releases/latest).
+
 ## Why Reinvent the Wheel?
 
 As a backend developer, I often encounter this scenario: starting a local service and getting the error "Port 8080 already in use".

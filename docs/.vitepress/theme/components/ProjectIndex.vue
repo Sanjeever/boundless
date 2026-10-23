@@ -58,17 +58,17 @@ const projects = computed<Project[]>(() => [
     id: 'port-sentinel',
     name: 'Port Sentinel',
     description: isEnglish.value
-      ? 'Inspect Windows port usage, find conflicting processes, and stop them.'
-      : '查看 Windows 端口占用，定位并结束冲突进程。',
-    stack: ['Windows', 'Flutter'],
+      ? 'Inspect local connections, find port conflicts, and manage processes across desktop platforms.'
+      : '跨平台端口与进程管理工具，查看本地连接，定位并处理端口冲突。',
+    stack: ['Windows / macOS / Linux', 'Go', 'Wails', 'React'],
     url: 'https://github.com/Sanjeever/port_sentinel',
     screenshot: {
-      src: 'https://raw.githubusercontent.com/Sanjeever/port_sentinel/main/assets/screenshot/home_page.png',
+      src: 'https://raw.githubusercontent.com/Sanjeever/port_sentinel/main/assets/screenshot/main-macos.png',
       alt: isEnglish.value
-        ? 'Port Sentinel showing occupied ports, processes, and process controls'
-        : 'Port Sentinel 的端口占用列表、进程信息与进程操作',
-      width: 1684,
-      height: 992,
+        ? 'Port Sentinel 2.0 on macOS with port search, connection filters, and a process table in Simplified Chinese'
+        : 'Port Sentinel 2.0 macOS 中文界面，展示端口搜索、连接筛选与进程表格',
+      width: 2360,
+      height: 1520,
     },
   },
   {

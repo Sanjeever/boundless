@@ -19,6 +19,10 @@ aside: true
 
 <!-- DESC SEP -->
 
+> **2026 年 10 月 23 日更新**
+>
+> Port Sentinel 2.0 使用 Go + Wails 重构，新增 macOS 与 Linux 桌面支持。本文记录 Flutter Windows 首发版本，重构介绍见[《端口哨兵 2.0》](/posts/2026/10/23-port-sentinel-2)。[下载新版](https://github.com/Sanjeever/port_sentinel/releases/latest)。
+
 ## 为什么造这个轮子？
 
 作为一个后端开发者，我经常遇到这样的场景：启动本地服务时报错 "Port 8080 already in use"。
