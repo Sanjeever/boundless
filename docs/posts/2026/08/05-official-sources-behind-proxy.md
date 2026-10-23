@@ -7,7 +7,7 @@ tags:
   - Windows
   - macOS
   - 命令行
-description: 在中国同时使用 Windows 和 macOS 开发时，我放弃给每个工具配置镜像源，改让所有工具走官方源，网络请求统一走 FlClash 混合代理，并整理出这套完整配置。
+description: 记录 Windows 和 macOS 开发工具恢复官方源、配置 FlClash 代理的方法，并区分源地址、代理路径与缓存带来的排查差异。
 outline: deep
 aside: true
 ---
@@ -20,7 +20,7 @@ aside: true
 
 <!-- DESC SEP -->
 
-用过一段时间镜像源后，我遇到的不是"连不上"这种一次性问题，而是慢性的：某个源的镜像更新慢半拍、另一个偶发返回旧版本，不同工具各指各的镜像，排查时还得先回忆它指向哪。后来我换了个思路——工具保持官方源，网络请求统一走 FlClash 的混合代理。这篇记录这套配置，覆盖 npm、pnpm、uv、pip、Maven、Go、Cargo、Dart/Flutter，以及 Git 的 HTTP 与 SSH、Homebrew 和 Docker Desktop。遇到问题先看文末的「排查思路」。
+用过一段时间镜像源后，我遇到过同步滞后、返回旧版本的问题。不同工具各指各的镜像，排查时还得先回忆它指向哪。后来我把这些工具恢复到官方源，再分别配置到 FlClash 的代理连接。这篇记录 npm、pnpm、uv、pip、Maven、Go、Cargo、Dart/Flutter，以及 Git 的 HTTP 与 SSH、Homebrew 和 Docker Desktop 的设置。遇到问题先看文末的「排查思路」。
 
 ## 镜像源和代理是两回事
 
@@ -31,7 +31,7 @@ aside: true
 
 镜像源是否好用，要看同步与服务情况，不能因为它由第三方提供就一概认定不可靠。我的问题是维护了太多不同的源配置。恢复官方源减少了这部分差异，代理连接、官方服务状态和各工具自身的配置仍然需要分别排查。
 
-下面按两个步骤整理：**把源/仓库/index 复位成官方**，再**配置代理路径**。有些工具有独立代理选项，有些读取环境变量；已有的项目配置、企业仓库或私有源需要先核对，不能直接清除。
+下面按两个步骤整理：**把源/仓库/index 复位成官方**，再**配置代理路径**。有些工具有独立代理选项，有些读取环境变量；FlClash 收到连接后，还会按自己的规则决定直连还是转发。已有的项目配置、企业仓库或私有源需要先核对，不能直接清除。
 
 ## 公共代理变量
 
@@ -96,10 +96,21 @@ unset UV_INDEX_URL
 source ~/.zshrc
 ```
 
-验证（两平台相同）：
+先确认当前终端中的变量。PowerShell：
+
+```powershell
+$env:UV_DEFAULT_INDEX
+```
+
+macOS：
 
 ```bash
 printf '%s\n' "$UV_DEFAULT_INDEX"
+```
+
+两平台都可运行：
+
+```bash
 uvx --refresh --verbose ruff --version
 ```
 
@@ -122,11 +133,11 @@ pip config list
 pip index versions pip
 ```
 
-`pip index versions pip` 能列出版本，说明 PyPI 与网络都通。
+`pip index versions pip` 能列出版本，说明当前有效配置能取得版本信息。[pip 配置](https://pip.pypa.io/en/stable/topics/configuration/)还可能被环境变量覆盖；需要确认源地址时，检查 `pip config debug`、`PIP_INDEX_URL` 和详细请求日志。要确认代理路径，还需查看 FlClash 连接记录。
 
 ### Go
 
-`GOPROXY` 是 Go 模块仓库，**不是**网络代理。它决定模块从哪下载；真正走代理的是上面的公共变量。
+`GOPROXY` 配置的是[模块代理服务](https://go.dev/ref/mod#goproxy-protocol)，**不是** HTTP 网络代理。它决定模块从哪下载；HTTP 请求的网络路径由上面的公共变量等配置决定。
 
 Windows 与 macOS 相同：
 
@@ -143,7 +154,7 @@ go env GOSUMDB
 go list -m -versions golang.org/x/text
 ```
 
-`go list` 能列出版本，说明模块代理与网络都通。
+`go list` 能列出版本，说明这次版本查询成功；不能据此确认所有模块下载路径都可用。这里的 `direct` 表示在前一个模块代理返回特定状态（如 404、410）时直接访问源码仓库，后续还可能调用 Git。
 
 ### Dart / Flutter
 
@@ -245,7 +256,7 @@ npm ping
 
 ### pnpm
 
-本文按 pnpm 11/12 的配置方式记录，网络选项为 `httpProxy`、`httpsProxy`。下面恢复官方源并配置代理（Windows 与 macOS 相同）：
+本文按 [pnpm 11/12 的配置方式](https://pnpm.io/settings)记录，网络选项为 `httpProxy`、`httpsProxy`。下面恢复官方源并配置代理（Windows 与 macOS 相同）：
 
 ```bash
 pnpm config set registry "https://registry.npmjs.org/" --global
@@ -421,7 +432,7 @@ ssh -T git@github.com
 
 ## Docker Desktop
 
-仅 macOS。Docker Desktop 需要在它自己的设置里配置代理；`daemon.json` 里的 daemon 代理配置会被忽略，改文件没用。
+这里记录 macOS 的操作。[Docker 官方文档](https://docs.docker.com/engine/daemon/proxy/)说明，Docker Desktop 会忽略 `daemon.json` 中的代理设置，应在 Desktop 设置中配置；这个限制针对代理字段，后面的 `registry-mirrors` 仍在 Docker Engine 配置中处理。
 
 **恢复官方源：** 进入 `Docker Desktop → Settings → Docker Engine`，删除类似配置：
 

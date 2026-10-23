@@ -15,7 +15,7 @@ const copy = computed(() =>
         nameMeaning:
           ' lists “living,” “making alive,” and “revival” among its meanings. I like the sense of vitality. I hope to always have something to work on and something to look forward to.',
         outlook:
-          'I like Wang Xiaobo, especially his passion for wisdom and his refusal to surrender to nihilism. To me, that means continuing toward my goals. When I want to understand something, I read and ask. When I want to make something, I get to work.',
+          'I like Wang Xiaobo’s passion for wisdom, and I share the resolve not to surrender to nihilism. When I want to understand something, I read and ask. When I want to make something, I get to work.',
         blogIntro: 'This blog is called 无垠 (Boundless). The ',
         chineseDictionary: 'Revised Mandarin Chinese Dictionary',
         chineseMeaning:
@@ -36,7 +36,7 @@ const copy = computed(() =>
         nameMeaning:
           '收有“活着”“赋予生命”“复苏”等释义。我喜欢“生机”这层寓意，希望自己始终有事可做，有所向往。',
         outlook:
-          '我喜欢王小波，尤其认同他对智慧那份热忱，以及不向虚无投降这句话。对我来说，就是朝着目标持续向前。想弄明白，就去读、去问；想做出来，就动手。',
+          '我喜欢王小波对智慧那份热忱，也认同不向虚无投降的态度。想弄明白，就去读、去问；想做出来，就动手。',
         blogIntro: '这里叫「无垠 Boundless」。',
         chineseDictionary: '《重編國語辭典修訂本》',
         chineseMeaning: '将“無垠”解释为“遼遠而無邊際”；',

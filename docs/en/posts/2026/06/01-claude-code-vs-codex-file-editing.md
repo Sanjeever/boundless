@@ -6,7 +6,7 @@ tags:
   - AI
   - Programming
   - Tools
-description: 'An observation of Claude Code’s text replacement and Codex’s patch editing: tools change, but minimal changes and reviewability should not.'
+description: How patches and exact text replacement locate edits, handle changes across files, and fail when context does not match.
 outline: deep
 aside: true
 ---
@@ -21,11 +21,9 @@ Codex describes edits as patches; Claude Code uses exact text replacement or who
 
 On the surface, both Claude Code and Codex can “read code, modify code, run commands, fix problems.” In the tool shapes observed when this post was written, however, they express edits differently: Codex describes changes as patches, while Claude Code uses precise text replacement or whole-file writes. Clients evolve, so this is a discussion of two editing models—not a permanent promise about any version.
 
-This difference not only affects tool invocation patterns, but also the controllability of changes, the clarity of diffs, the troubleshooting path when things go wrong, and the trust developers place in AI modifications.
-
 ## Codex: Patch-Oriented Editing Centered on apply_patch
 
-When Codex edits files, the core tool is `apply_patch`. It receives patch text resembling a unified diff, used to add, delete, update, or move files.
+The Codex setup observed here uses `apply_patch`, which receives patch text resembling a unified diff to add, delete, update, or move files. OpenAI's [Codex Prompting Guide](https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide) also provides the format and implementation examples for this tool.
 
 A typical structure looks like:
 
@@ -38,15 +36,11 @@ A typical structure looks like:
 *** End Patch
 ```
 
-The defining characteristic of this approach is that changes are inherently "diff-centric." Codex doesn't simply say "replace this string with that string" — it uses a patch to express "here's what changed." This makes it particularly well-suited for small to medium-scale precise modifications, such as refactoring a function, adding a test, adjusting a configuration, or creating a new file.
-
 `apply_patch` resembles Git diff: deleted and added lines are explicit in the patch, making its scope easy to inspect. But a patch can also rewrite most of a file. The format cannot guarantee a minimal diff; unrelated formatting and refactoring still have to be caught in the final changes.
 
 That said, patch-based editing also has its own requirements. A patch must contain enough context; otherwise it may fail to match the target location or create ambiguity in files with many similar code blocks. If the file contains Chinese characters, tabs, special indentation, or invisible characters, the patch may also fail due to imperfect context matching. In such cases, Codex typically re-locates content via shell commands first, then generates a more precise patch.
 
 Thus, Codex's common workflow is: first understand the project structure and code context using shell commands like `rg`, `rg --files`, `Get-Content`, `Get-ChildItem`, then apply precise modifications with `apply_patch`, and optionally run formatting, tests, or service commands to verify the result.
-
-This workflow closely resembles a command-line developer's daily routine: search first, then read, then patch, then verify.
 
 ## Claude Code: A Text-Editing Model Centered on Edit and Write
 
@@ -54,17 +48,13 @@ Claude Code's file-editing approach draws a clearer distinction between two kind
 
 It primarily uses two tools: `Edit` and `Write`.
 
-`Edit` performs precise string replacement: it takes a file path, the original string, and the replacement. In a sound workflow, read the file first and make `old_string` exactly match it, including indentation, spaces, and line breaks. Versions may enforce “read before edit” differently, but it remains a discipline worth following.
-
-This means Claude Code's partial editing is not based on "patch hunks" but on "exact text matching." It reads the file first, confirms the original text, then replaces one complete block of old text with a block of new text.
+`Edit` performs precise string replacement: it takes a file path, the original string, and the replacement. Read the file first and make `old_string` exactly match it, including indentation, spaces, and line breaks. The newer [official tools reference](https://code.claude.com/docs/en/tools-reference#edit-tool-behavior) distinguishes matching and uniqueness requirements from read-before-edit checks that vary by model version.
 
 The advantage of this approach is that it's intuitive, strict, and controllable. As long as `old_string` is unique, the replacement behavior is unambiguous. It also naturally encourages the AI to look at the original file before modifying, rather than acting from memory or guesswork.
 
 But the constraints are equally apparent: the original string must match exactly. If the file contains multiple identical fragments, you need to ensure uniqueness or explicitly use `replace_all`. If indentation, line endings, tabs, or special characters aren't handled properly, the replacement will fail. For complex files, Claude Code may need `cat -A`, PowerShell scripts, or other commands to verify invisible characters and precise formatting.
 
 `Write`, on the other hand, is used for creating new files or completely overwriting existing ones. Creating a new file is straightforward; before overwriting an existing file, read it first, because whole-file writes are especially likely to create large diffs or overwrite user work.
-
-From a tool-selection standpoint, Claude Code's logic is very clear: modify a few lines with `Edit`, create new files with `Write`, and rewrite an entire file also with `Write` — but only after `Read`. For replacing multiple identical strings, use `Edit` with `replace_all`.
 
 ## The Fundamental Differences
 
@@ -98,10 +88,4 @@ Although their tool models differ, Claude Code and Codex share many principles w
 
 Whether or not a tool enforces it, both should follow the same editing discipline: understand context first, make the smallest relevant change, avoid unrelated refactors or formatting, never run destructive commands such as `git reset --hard` without explicit authorization, and treat existing worktree changes as user assets rather than temporary content to overwrite.
 
-This points to an important insight: the reliability of an AI coding assistant depends not only on model capability, but also on its editing discipline.
-
-A good AI coding assistant shouldn't just be able to "get the code right" — it should also let the developer clearly see what was changed, why, whether it crossed any boundaries, and whether it preserved the user's existing work.
-
-## Closing Thoughts
-
-When evaluating an AI coding assistant, ask less “Can it modify code?” and more: “For the same change, can it state its assumptions, produce a reviewable diff, and expose failures clearly?” That says more than a tool name about whether it belongs in a real engineering workflow.
+The diff on disk still needs review. Patch input and replacement arguments show what a tool was asked to change; they do not establish that it targeted the right location, preserved existing work, or met the requirement.

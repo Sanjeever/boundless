@@ -24,7 +24,7 @@ AI 可以加快实现，从想法到可用软件，仍需把目标、要求与�
 
 程序能运行，功能也像模像样，交付结果却仍然偏离预期。理解这类问题，可以借助三个概念，Intent、Spec 和 Impl。
 
-**Intent（意图）**回答想达成什么目标、解决什么问题。在报表例子里，目标是核对月底销售额，减少手工整理，导出文件是其中一种手段。它是完整单词，含义可参见[《剑桥词典》](https://dictionary.cambridge.org/dictionary/english/intent)。
+**[Intent（意图）](https://dictionary.cambridge.org/dictionary/english/intent)**回答想达成什么目标、解决什么问题。在报表例子里，目标是核对月底销售额，减少手工整理，导出文件是其中一种手段。
 
 **Spec（规格或规约）**是 [Specification](https://dictionary.cambridge.org/dictionary/english/specification) 的简称，在这里把目标转成可检查的行为与约束：导出当前筛选条件下全部明细，金额保留两位小数，合计与报表一致。数据范围与金额口径不说清楚，“导出成功”仍然可以对应不同结果。
 

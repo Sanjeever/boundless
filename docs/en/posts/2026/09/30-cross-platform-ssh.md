@@ -104,6 +104,8 @@ sudo ufw allow OpenSSH
 
 Run the second command only when UFW is enabled and SSH is not already allowed. The main server configuration is `/etc/ssh/sshd_config`, which may include files under `/etc/ssh/sshd_config.d/`. On Ubuntu in particular, those files are usually loaded before the rest of the main file. Later, `sshd -T` will show the effective setting. See the [Ubuntu OpenSSH guide](https://ubuntu.com/server/docs/how-to/security/openssh-server/) and [Debian Reference](https://www.debian.org/doc/manuals/debian-reference/ch06.en.html).
 
+By default, `sshd -T` prints configuration without a specific connection context. If the file contains rules such as `Match User` or `Match Address`, supply `-C` as described in the [OpenSSH manual](https://man.openbsd.org/sshd.8#C), for example `sudo sshd -T -C user=alice,addr=192.168.1.10,host=client.example`. Here, `addr` is the client's address and `host` is its hostname as resolved by the server. Supply any other parameters needed by your matching rules. The root checks below also need the relevant account and connection context.
+
 ## Make the first connection from the client
 
 On macOS, `ssh` is normally available in Terminal. On Windows, run `ssh -V` in PowerShell. If the client is missing, install it from an elevated PowerShell:
@@ -336,7 +338,7 @@ For example, to connect from Linux to a Windows administrator account, generate 
 ## Where to look when a connection fails
 
 - **`Connection timed out`**: Check the IP address, VPN or route, whether the target is awake, and local or cloud firewall rules. A Mac may also be asleep.
-- **`Connection refused`**: The address is reachable, but nothing is accepting connections on port 22. Check `Get-Service sshd` on Windows, `systemctl status ssh` on Linux, or the Remote Login switch on a Mac.
+- **`Connection refused`**: The connection was actively rejected, commonly because no service is listening on the target port, though a firewall can also reject it. Check `Get-Service sshd` on Windows, `systemctl status ssh` on Linux, or the Remote Login switch on a Mac, then inspect inbound rules.
 - **The target still asks for its password, or you see `Permission denied (publickey)`**: Add `-vvv` on the client to see which key it offered. On the target, check that the public key is complete and in the right account's file. For a Windows administrator, inspect the special file and its ACL. On macOS/Linux, check permissions on `~/.ssh` and `authorized_keys`. On a Mac, also check the Remote Login allowlist.
 - **Root is rejected**: Check `permitrootlogin` in the target's `sshd -T` output, root's own public-key file, and whether the Mac root account is enabled. A regular Linux user's `authorized_keys` does not authorize root.
 - **`REMOTE HOST IDENTIFICATION HAS CHANGED`**: Determine whether the target was reinstalled, its address was reassigned, or its host key changed, then verify the new fingerprint. Do not bypass the host-key check.

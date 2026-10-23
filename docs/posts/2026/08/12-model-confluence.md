@@ -178,21 +178,19 @@ curl.exe http://127.0.0.1:8080/v1/chat/completions `
 
 ## 和其他项目的区别
 
-这些项目的定位不同。下面只比较它们主要解决的问题。
+下面按截至 2026 年 10 月 23 日的各项目文档列出主要用途，作为选型入口。表格没有比较同一任务下的配置时间、性能或协议覆盖完整性。
 
-| 项目 | 主要用途 | 关注重点 | 模汇的侧重点 |
-| --- | --- | --- | --- |
-| [模汇](https://github.com/Sanjeever/model-confluence) | 私有部署的 AI 协议网关 | 三种协议、虚拟模型、多供应商、多 Key、请求记录 | 协议路由和请求详情 |
-| [new-api](https://github.com/QuantumNous/new-api) | 模型聚合与分发平台 | 多模型、多渠道、组织管理、使用分析和成本管理 | 模汇范围更窄，配置更简单 |
-| [one-api](https://github.com/songquanpeng/one-api) | LLM API 管理与二次分发 | 多供应商渠道、Key、用户、额度和分组 | 更偏 API 分发和运营管理 |
-| [sub2api](https://github.com/Wei-Shaw/sub2api) | 订阅接入与中转 | Claude、OpenAI、Gemini、Grok 等订阅和共享 | 重点是订阅接入，模汇使用自有供应商和 API Key |
-| [cc-switch](https://github.com/farion1231/cc-switch) | AI 编程客户端配置管理 | Claude Code、Codex 等客户端的切换 | 运行在客户端侧，和模汇可以互补 |
-| [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) | CLI 账号代理服务 | CLI 接入、OAuth、多账号和兼容 API | 重点是账号接入，模汇重点是协议转换和 Key 池 |
-| [GT AI Gateway](https://github.com/alexazhou/gt_ai_gateway) | 轻量协议网关 | 协议转换、多上游、请求可视化、缓存和多种部署 | 与模汇最接近，侧重点各有不同 |
+| 项目 | 主要用途 | 关注重点 |
+| --- | --- | --- |
+| [模汇](https://github.com/Sanjeever/model-confluence) | 私有部署的 AI 协议网关 | 三种协议、虚拟模型、多供应商、多 Key、请求记录 |
+| [new-api](https://github.com/QuantumNous/new-api) | 模型聚合与分发平台 | 多模型、多渠道、组织管理、使用分析和成本管理 |
+| [one-api](https://github.com/songquanpeng/one-api) | LLM API 管理与二次分发 | 多供应商渠道、Key、用户、额度和分组 |
+| [sub2api](https://github.com/Wei-Shaw/sub2api) | 订阅接入与中转 | Claude、OpenAI、Gemini、Grok 等订阅和共享 |
+| [cc-switch](https://github.com/farion1231/cc-switch) | AI 编程客户端配置管理 | 客户端配置切换、本地代理 |
+| [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) | CLI 账号代理服务 | CLI 接入、OAuth、多账号和兼容 API |
+| [GT AI Gateway](https://github.com/alexazhou/gt_ai_gateway) | 轻量协议网关 | 协议转换、多上游、请求可视化、缓存和多种部署 |
 
-new-api 和 one-api 适合管理模型、渠道和 API 分发。sub2api 和 CLIProxyAPI 适合处理订阅或 CLI 账号接入。cc-switch 适合切换本地客户端配置。
-
-GT AI Gateway 和模汇的定位最接近。模汇当前重点是三种协议、虚拟模型、多 Key 路由和请求级记录。客户端走了哪个上游，跨协议请求转换成了什么，失败前尝试过哪些路径，都能在后台查看。
+cc-switch 除了切换客户端配置，也提供本地代理等功能，不能把这些项目严格分成互不重叠的类别。对我自己的需求，模汇优先解决的是追查一次请求的去向、转换内容和失败前的尝试路径。
 
 ## 写在最后
 

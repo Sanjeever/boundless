@@ -80,7 +80,7 @@ passwd root
 passwd <普通用户名>
 ```
 
-如果提示弱密码，那只是警告，不代表修改失败。真正的成功标志是 `passwd: all authentication tokens updated successfully.`
+弱密码提示不一定代表修改失败，也不能据此认定成功；是否允许设置还取决于密码策略。这次成功的输出是 `passwd: all authentication tokens updated successfully.`
 
 改完密码后，重启前还要做几件事。
 
@@ -236,7 +236,7 @@ Packager    : NeoKylin Linux
 Vendor      : CS2C
 ```
 
-内核版本和 Source RPM 与 RHEL 7.6 的 `3.10.0-957.el7` 一致。看内核的变更记录开头。
+内核版本与 [RHEL 7.6 首发内核](https://access.redhat.com/articles/red-hat-enterprise-linux-release-dates) `3.10.0-957` 对应，Source RPM 字段也采用相应命名；同名不能证明源码或二进制完全一致。看内核的变更记录开头。
 
 ```bash
 rpm -q --changelog kernel-$(uname -r) | head -n 50
@@ -505,8 +505,8 @@ up2date_config.get
 服务端下发软件包动作
   → nkuc_check 解析 XML-RPC
     → packages.py 构造 YUM 事务
-      → 依赖解析和事务测试
-        → GPG 签名校验
+      → 依赖解析、下载及按配置校验签名
+        → YUM 事务测试
           → root 权限执行安装/升级/删除/回滚
             → 结果回传服务端
 ```

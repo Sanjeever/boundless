@@ -54,7 +54,7 @@ session conn disconnect!!!
 
 视频会话始终没有稳定下来，Windows 也就迟迟拿不到桌面画面。这些现象把排查方向指向了 Wayland 与当前 ToDesk 屏幕采集方式的兼容性。
 
-[ToDesk 的 Linux 故障说明](https://todesk.com/faq/110.html)要求被控端使用 X11 桌面。后来切到 Xfce 的 X11 会话后，远程连接恢复正常，也印证了这次排查的方向。
+后来切到 Xfce 的 X11 会话后，远程连接恢复正常，也印证了这次排查的方向。这次结果针对上面列出的 ToDesk 版本；其他版本的连接问题可从 [ToDesk 帮助中心](https://todesk.com/faq/110.html)查起。
 
 ## 换一个桌面
 

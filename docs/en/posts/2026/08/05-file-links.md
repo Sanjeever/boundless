@@ -205,7 +205,7 @@ mkdir -p .claude
 ln -s ../.agents/skills .claude/skills
 ```
 
-PowerShell 7.1 and later support relative targets for directory symlinks:
+[PowerShell 7.1 and later](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/new-item#example-7-create-a-symbolic-link-to-a-file-or-folder) support relative targets for directory symlinks on Windows:
 
 ```powershell
 New-Item -ItemType Directory -Path .\.claude -Force | Out-Null
@@ -240,7 +240,7 @@ link:
 git config core.symlinks true
 ```
 
-`core.symlinks` controls whether Git checks out a real symlink or a small plain
+[`core.symlinks`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-coresymlinks) controls whether Git checks out a real symlink or a small plain
 file containing the target path. It does not grant Windows permission to create
 symlinks; an elevated terminal or Developer Mode remains a separate
 prerequisite.

@@ -98,6 +98,8 @@ The question becomes how much accuracy an extra inference budget buys. Should th
 
 In a [2024 study](https://arxiv.org/html/2408.03314v1), Snell and colleagues examined verifier-guided search and revisions enabled by dedicated fine-tuning on the MATH benchmark. The experiments showed that the appropriate strategy depended on how difficult a question was for the base model. Adjusting compute allocation by difficulty was more effective than uniformly increasing the number of candidates.
 
+Estimating difficulty also costs compute. The paper used 2,048 samples per question and compared bins based on ground-truth answers with bins predicted by a verifier. [Section 3.2 and Appendix C](https://arxiv.org/html/2408.03314v1#S3.SS2) explain that this estimation cost was excluded from the analysis. The experiments demonstrate the potential of allocation strategies, rather than an efficiency gain that includes every deployment cost.
+
 Extra compute needs a mechanism that can put it to use. Once more candidates exist, how do we identify the better answer? If revisions are allowed, how do we avoid changing a correct answer into an incorrect one? These steps affect the return.
 
 A longer response alone therefore does not establish more effective reasoning. We need to measure the task, the procedure, the compute spent, and the resulting improvement. Results on math problems also cannot be assumed to hold across all tasks.

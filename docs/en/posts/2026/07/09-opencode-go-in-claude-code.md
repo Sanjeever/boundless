@@ -96,7 +96,7 @@ Once the path was fixed, the error changed:
 
 This one was at least honest about the category — auth was off.
 
-Claude Code has two variables for the key, and they map to two different HTTP headers:
+Claude Code's [environment variable reference](https://code.claude.com/docs/en/env-vars) distinguishes two authentication headers:
 
 | Variable | Header sent |
 |---|---|
@@ -105,22 +105,24 @@ Claude Code has two variables for the key, and they map to two different HTTP he
 
 I had written `ANTHROPIC_AUTH_TOKEN`, so Claude Code sent only `Authorization` and **never sent `x-api-key`**. OpenCode Go's gateway wants `x-api-key`, and answers `Authorization: Bearer` with a 401 Missing API key.
 
-The curl fragments below preserve the original notes to illustrate the two headers. They are not complete successful-request examples: the body is only `{}`, and the Chinese version's second command also lacks the output destination for `-o`. The 200 in the comment is therefore not established by these commands. Reproduction requires a valid key, a complete Messages body, and correct command arguments.
+To compare authentication separately, use the following Bash requests with your own key and a model ID that is still available. These examples show the request structure: the same Messages body with different authentication headers. Model availability and account limits can also affect the result; take the status and error details from the actual response.
 
 ```bash
-# Authorization only — 401
-curl -s -o /dev/null -w "HTTP %{http_code}\n" \
+# Compare Authorization
+curl -sS -w "\nHTTP %{http_code}\n" \
   https://opencode.ai/zen/go/v1/messages \
   -H "Authorization: Bearer sk-..." \
   -H "anthropic-version: 2023-06-01" \
-  -H "content-type: application/json" -d '{}'
+  -H "content-type: application/json" \
+  -d '{"model":"qwen3.7-max","max_tokens":16,"messages":[{"role":"user","content":"hi"}]}'
 
-# x-api-key only — 200
-curl -s -o /dev/null -w "HTTP %{http_code}\n" \
+# Compare x-api-key
+curl -sS -w "\nHTTP %{http_code}\n" \
   https://opencode.ai/zen/go/v1/messages \
   -H "x-api-key: sk-..." \
   -H "anthropic-version: 2023-06-01" \
-  -H "content-type: application/json" -d '{}'
+  -H "content-type: application/json" \
+  -d '{"model":"qwen3.7-max","max_tokens":16,"messages":[{"role":"user","content":"hi"}]}'
 ```
 
 The fix is again a rename — swap the variable name to `ANTHROPIC_API_KEY`, value unchanged:
@@ -162,7 +164,7 @@ It works.
 
 ## Model Mapping and Other Variables
 
-While setting up, I copied variables with `_NAME` suffixes, along with `FABLE` and `REASONING` variants. Model mapping and display names need to be distinguished. Newer [Claude Code docs](https://code.claude.com/docs/en/model-config) explicitly list `_NAME` and related variables, so a blanket claim that they are ignored is inaccurate. The table separates their purposes; the connection configuration above still records v2.1.205.
+**October 23, 2026 update:** The [Claude Code docs](https://code.claude.com/docs/en/model-config) now explicitly list variables such as `_NAME`, distinguishing model mapping from display names. The table describes their purposes in the current documentation; it does not establish that v2.1.205 supported every variable. The connection configuration above still records the July 9 setup.
 
 | Variable | Purpose and version scope | Note |
 |---|---|---|
@@ -181,7 +183,7 @@ For this setup, start with the variables actually used in the full configuration
 
 ## Why the Errors Stay So Misleading
 
-Looking back, both traps produced untrustworthy messages:
+Looking back, neither message was enough to locate the cause on its own:
 
 - Trap one was a 404, but the prompt said "model does not exist or no access";
 - Trap two only sent `Authorization`, but the prompt said "Missing API key" — the gateway wants a different kind of key, so "missing" is not strictly wrong, but it points the user in the wrong direction.
@@ -194,7 +196,7 @@ The way to capture it:
 claude -p "hi" --debug 2> debug.log
 ```
 
-`-p` runs non-interactively, and `--debug` prints the SDK-layer request URL, status code, and response body. You can see at a glance which path was hit and what came back. That is far faster than cycling through model names against the "model does not exist" prompt.
+`-p` runs non-interactively. In this session, `--debug` exposed the request path and status shown above. Logged fields and file locations may vary by version; check the [CLI reference](https://code.claude.com/docs/en/cli-reference). Start with the actual URL, then the status code and whatever response information is available.
 
 ## One Boundary Note
 

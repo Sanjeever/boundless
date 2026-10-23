@@ -178,21 +178,19 @@ Raw payloads help diagnose conversion problems, but also place credentials and c
 
 ## How It Differs from Other Projects
 
-These projects have different focuses. The table below compares the main problem each one addresses.
+The table lists the main uses described in each project's documentation as of October 23, 2026, as a starting point for evaluation. It does not compare setup time, performance, or completeness of protocol coverage on the same task.
 
-| Project | Primary use | Main focus | Model Confluence's focus |
-| --- | --- | --- | --- |
-| [Model Confluence](https://github.com/Sanjeever/model-confluence) | Self-hosted AI protocol gateway | Three protocols, virtual models, multiple providers, key pools, request records | Protocol routing and request details |
-| [new-api](https://github.com/QuantumNous/new-api) | Model aggregation and distribution platform | Multiple models and channels, organization management, usage and cost analysis | Narrower scope and simpler configuration |
-| [one-api](https://github.com/songquanpeng/one-api) | LLM API management and redistribution | Provider channels, keys, users, quotas, and groups | More focused on API distribution and operations |
-| [sub2api](https://github.com/Wei-Shaw/sub2api) | Subscription access and relay | Claude, OpenAI, Gemini, and Grok subscriptions and sharing | Focuses on subscriptions; Model Confluence uses self-managed providers and API keys |
-| [CC Switch](https://github.com/farion1231/cc-switch) | AI coding client configuration manager | Switching Claude Code, Codex, and other client configurations | Runs on the client side and can complement Model Confluence |
-| [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) | CLI account proxy | CLI access, OAuth, multiple accounts, and compatible APIs | Focuses on protocol conversion and key pools |
-| [GT AI Gateway](https://github.com/alexazhou/gt_ai_gateway) | Lightweight protocol gateway | Protocol conversion, multiple upstreams, request visualization, caching, and deployment options | The closest in positioning, with a different emphasis |
+| Project | Primary use | Main focus |
+| --- | --- | --- |
+| [Model Confluence](https://github.com/Sanjeever/model-confluence) | Self-hosted AI protocol gateway | Three protocols, virtual models, multiple providers, key pools, request records |
+| [new-api](https://github.com/QuantumNous/new-api) | Model aggregation and distribution platform | Multiple models and channels, organization management, usage and cost analysis |
+| [one-api](https://github.com/songquanpeng/one-api) | LLM API management and redistribution | Provider channels, keys, users, quotas, and groups |
+| [sub2api](https://github.com/Wei-Shaw/sub2api) | Subscription access and relay | Claude, OpenAI, Gemini, and Grok subscriptions and sharing |
+| [CC Switch](https://github.com/farion1231/cc-switch) | AI coding client configuration manager | Client configuration switching and a local proxy |
+| [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) | CLI account proxy | CLI access, OAuth, multiple accounts, and compatible APIs |
+| [GT AI Gateway](https://github.com/alexazhou/gt_ai_gateway) | Lightweight protocol gateway | Protocol conversion, multiple upstreams, request visualization, caching, and deployment options |
 
-new-api and one-api are suited to model, channel, and API distribution management. sub2api and CLIProxyAPI focus on subscription or CLI account access. CC Switch focuses on switching local client configurations.
-
-GT AI Gateway is the closest match in positioning. Model Confluence currently focuses on three protocols, virtual models, key-pool routing, and request-level records. The console shows which upstream handled a request, what a cross-protocol request became, and which routes were tried before failure.
+CC Switch also provides features such as a local proxy alongside configuration switching, so these are overlapping uses rather than exclusive categories. For my own needs, Model Confluence prioritizes tracing where a request went, what was converted, and which routes were tried before failure.
 
 ## Closing
 

@@ -104,6 +104,8 @@ sudo ufw allow OpenSSH
 
 第二条只在 UFW 已启用且尚未放行 SSH 时执行。服务端主配置是 `/etc/ssh/sshd_config`，也可能读取 `/etc/ssh/sshd_config.d/` 中的片段。特别是 Ubuntu，配置片段通常在主文件前加载，不能只看主文件里最后写了什么；后文用 `sshd -T` 查看生效值。[Ubuntu OpenSSH 文档](https://ubuntu.com/server/docs/how-to/security/openssh-server/)与[Debian 参考手册](https://www.debian.org/doc/manuals/debian-reference/ch06.en.html)都有安装和配置说明。
 
+`sshd -T` 默认输出未代入具体连接条件的配置。如果文件含有 `Match User`、`Match Address` 等规则，应按 [OpenSSH 手册](https://man.openbsd.org/sshd.8#C)加上 `-C`，例如 `sudo sshd -T -C user=alice,addr=192.168.1.10,host=client.example`。这里的 `addr` 是客户端地址，`host` 是服务端解析得到的客户端主机名；还使用其他匹配条件时，应补齐对应参数。后文检查 root 时也要代入相应账号与连接条件。
+
 ## 从客户端完成第一次连接
 
 macOS 一般可直接在终端使用 `ssh`。Windows 在 PowerShell 中运行 `ssh -V`；若没有客户端，可在管理员 PowerShell 中安装：
@@ -336,7 +338,7 @@ Linux 用 `sudo sshd -t` 检查语法，再运行 `sudo systemctl restart ssh`�
 ## 连不上时先看哪一层
 
 - **`Connection timed out`**：先查 IP、VPN/路由、目标机是否开机，以及本机或云平台的防火墙。macOS 还要确认目标 Mac 没有睡眠。
-- **`Connection refused`**：目标地址可以到达，但 22 端口没有服务接听。检查 Windows 的 `Get-Service sshd`、Linux 的 `systemctl status ssh`，或 Mac 的“远程登录”开关。
+- **`Connection refused`**：连接被主动拒绝，常见原因是目标端口没有服务监听，也可能是防火墙主动拒绝。检查 Windows 的 `Get-Service sshd`、Linux 的 `systemctl status ssh`，或 Mac 的“远程登录”开关，再查入站规则。
 - **仍要求目标账号密码或显示 `Permission denied (publickey)`**：在客户端加 `-vvv` 看实际提供了哪把密钥；在目标机检查公钥是否完整、是否放在正确账号下。Windows 管理员尤其要查专用文件与 ACL；macOS/Linux 查 `~/.ssh` 和 `authorized_keys` 权限。Mac 还要查“远程登录”的允许名单。
 - **root 被拒绝**：在目标机看 `sshd -T` 的 `permitrootlogin`，再核对 root 的公钥文件和 macOS 的 root 账号状态。不要把 Linux 普通用户的 `authorized_keys` 当作 root 的。
 - **`REMOTE HOST IDENTIFICATION HAS CHANGED`**：先确认目标机是否重装、换了地址或主机密钥，再核对新指纹。不要直接跳过主机密钥检查。

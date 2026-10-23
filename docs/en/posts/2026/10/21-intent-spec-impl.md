@@ -24,7 +24,7 @@ The button appears quickly, and clicking it downloads a file. But the file conta
 
 The program runs and the feature looks plausible, yet the result falls short. Three concepts help explain the mismatch: Intent, Spec, and Impl.
 
-**Intent** describes the goal we want to reach or the problem we want to solve. Here, the goal is to reconcile monthly sales with less manual work; exporting a file is one way to get there. It is a complete word, as the [Cambridge Dictionary entry](https://dictionary.cambridge.org/dictionary/english/intent) explains.
+**[Intent](https://dictionary.cambridge.org/dictionary/english/intent)** describes the goal we want to reach or the problem we want to solve. Here, the goal is to reconcile monthly sales with less manual work; exporting a file is one way to get there.
 
 **Spec**, short for [Specification](https://dictionary.cambridge.org/dictionary/english/specification), turns the goal into behavior and constraints we can check: export every row matching the current filters, keep monetary amounts to two decimal places, and make the total agree with the report. Without a clear data scope and monetary rules, “export succeeded” can mean different things.
 

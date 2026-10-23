@@ -25,9 +25,9 @@ Many architecture optimizations in the past were fundamentally designed for larg
 These approaches have value at certain team scales, but they can also leave a long trail of dependencies to understand before a straightforward change can begin.
 
 To change one field, you first have to pass through controller, service, assembler, domain, repository, dto, mapper, converter, and facade.
-Each layer “looks reasonable,” but once you connect them, the actual modification path gets longer and longer, and information loss increases.
+If these layers each keep a separate representation of the field, every mapping must be checked. Missing one can leave the old and new representations inconsistent.
 
-Different models, context windows, retrieval tools, and task types behave differently, so AI should not be treated as a fixed personality. In practical collaboration, however, one rule is useful: a change with clear boundaries and relevant context that can close within one task is easier for both people and Agents to complete correctly.
+Different models, context windows, retrieval tools, and task types behave differently. What follows is a set of architecture review criteria: keep the context for a change concentrated, its boundaries clear, and its results verifiable. Whether this improves a particular Agent's success rate requires comparison on concrete tasks.
 
 “Understanding first” does not declare scalability obsolete. It asks every layer of abstraction to reduce a real comprehension or change cost. A short modification path does not mean putting all code in one file; it means readers can find boundaries, verify outcomes, and understand impact without guessing their way across irrelevant layers.
 
@@ -37,8 +37,6 @@ Different models, context windows, retrieval tools, and task types behave differ
 
 For any requirement, can AI complete the whole loop of understanding, modification, and verification within a small set of files?
 File count is a starting point for inspection, not a verdict. A dozen files may represent necessary protocol, authorization, and storage boundaries. If they merely forward the same field through successive layers, understanding and synchronizing those repeated representations becomes extra work.
-
-A truly efficient architecture is not “complete layering,” but paths that are reachable, testable, and explainable.
 
 ### 2) Do Directories and Module Names Express Business Meaning Directly?
 
@@ -50,7 +48,7 @@ A name should at least suggest where to look first. `shared` can be useful, but 
 ### 3) Does the Middle Layer Provide Real Value?
 
 In many projects, the problem is not “too many layers” itself, but too many “idle layers”: call forwarding, parameter wrapping, and renaming before passing things along.
-On architecture diagrams, these layers look neat. For AI, they are almost pure noise.
+Without an additional responsibility, they still make the person or Agent changing the code read and synchronize each step to check that nothing in the call chain was missed.
 
 Every layer should answer the same question: what real complexity did I reduce?
 Isolating an external interface, centralizing authorization, or providing an independent test boundary can justify a layer. A layer that only forwards calls without such a responsibility is a candidate for consolidation.

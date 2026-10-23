@@ -38,7 +38,7 @@ The objects we are most enthusiastic to name are relationships between people.
 
 Two people may feel admiration, dependence, physical attraction, and intellectual affinity, mixed with competition or hesitation. These feelings need not arrive together, or fit neatly under one label.
 
-But we can't stand this chaos. Social discipline demands a quick definition: what is your relationship?
+When someone asks “What is your relationship?”, feelings the two people have yet to discuss may have to fit under a label first.
 
 Are you "friends"? "lovers"? "friends with benefits"? "partners"?
 
@@ -74,7 +74,7 @@ At work, some names also change where responsibility appears to lie. If a word m
 
 A familiar example for programmers is "sprint".
 
-In Scrum, a Sprint is a fixed-length iteration, often two weeks. It does not require a team to work at maximum intensity throughout. In everyday language, however, sprinting means a brief all-out effort followed by rest. When managers borrow that meaning to demand extra effort, then put one “sprint” immediately after another, a temporary acceleration becomes a permanent demand. The problem is using the word to justify exhaustion, rather than iteration itself.
+The [2020 Scrum Guide](https://scrumguides.org/scrum-guide.html#the-sprint) defines a Sprint as a fixed-length event of one month or less and calls for a sustainable pace of work. In everyday language, however, sprinting means a brief all-out effort followed by rest. When managers borrow that meaning to demand extra effort, then put one “sprint” immediately after another, a temporary acceleration becomes a permanent demand. The problem is using the word to justify exhaustion, rather than iteration itself.
 
 Consider another word: "optimization".
 
@@ -88,19 +88,15 @@ Through naming, brutal reality can become abstract. Decision makers signing docu
 
 Calling compulsory overtime “flexible work” or exploitation a “blessing” works in a similar way. To assess these terms, we need to ask who controls working hours and who pays the extra cost. A more pleasant name has answered neither question.
 
-## Naming as a Dimensionality Reduction Strike
+## What a Name Leaves Out
 
 Back to programming. When designing interfaces, we always pursue abstraction. The essence of abstraction is to ignore details and extract commonalities.
 
-Naming is the abstraction interface through which humans perceive the world.
-
-“Dimensionality reduction” is a metaphor for the details a word leaves out. Omission is inevitable and need not be harmful. What matters is whether the omitted details would change the decision at hand.
+A name leaves out details too. Omission is inevitable and need not be harmful. What matters is whether the omitted details would change the decision at hand.
 
 We gain efficiency. When calling `sort()`, we usually need not care which algorithm it uses. But if our task requires a stable sort, we must check whether the interface guarantees it. Labels can similarly help us filter information, provided they preserve the distinctions our decision needs.
 
 Inferring a couple's agreements from “lovers,” or assuming a decision deserves support because it is called “optimization,” treats something the interface never promised as a guarantee.
-
-Laozi's line about the name that can be named and Wittgenstein's remark about the limits of language each belong to their own philosophical context. Here, I take them as reminders: vocabulary affects what we notice, but a ready-made word should not end the inquiry.
 
 ## Epilogue
 

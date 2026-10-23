@@ -96,7 +96,7 @@ post https://opencode.ai/zen/go/v1/v1/messages?beta=true failed with status 404
 
 这次信息还算诚实——确实是鉴权不对。
 
-Claude Code 有两套写 key 的环境变量，它们映射到两个不同的 HTTP 头：
+Claude Code 的[环境变量文档](https://code.claude.com/docs/en/env-vars)区分了两种鉴权头：
 
 | 环境变量 | 发送的头 |
 |---|---|
@@ -105,22 +105,24 @@ Claude Code 有两套写 key 的环境变量，它们映射到两个不同的 HT
 
 我之前写的是 `ANTHROPIC_AUTH_TOKEN`，于是 Claude Code 只发 `Authorization`，**不发 `x-api-key`**。而 OpenCode Go 的网关认的是 `x-api-key`，对 `Authorization: Bearer` 直接回 401 Missing API key。
 
-下面保留当时记录的 curl 片段，用来说明两种鉴权头的区别。它不是完整的成功请求示例：请求体只有 `{}`，中文片段的第二条命令还缺少 `-o` 的输出目标。因此，注释中的 200 不能由这段命令本身证明；复现时需要有效 key、完整 Messages 请求体和正确的命令参数。
+若要单独比较鉴权方式，可以在 Bash 中使用下面两个请求，替换为自己的 key 和仍可用的模型 ID。它们是请求结构示例，携带相同的 Messages 请求体，区别在鉴权头；模型可用性、账号额度等也会影响响应，状态码和错误原因以实际响应为准。
 
 ```bash
-# 只带 Authorization —— 401
-curl -s -o /dev/null -w "HTTP %{http_code}\n" \
+# 比较 Authorization
+curl -sS -w "\nHTTP %{http_code}\n" \
   https://opencode.ai/zen/go/v1/messages \
   -H "Authorization: Bearer sk-..." \
   -H "anthropic-version: 2023-06-01" \
-  -H "content-type: application/json" -d '{}'
+  -H "content-type: application/json" \
+  -d '{"model":"qwen3.7-max","max_tokens":16,"messages":[{"role":"user","content":"hi"}]}'
 
-# 只带 x-api-key —— 200
-curl -s -o -w "HTTP %{http_code}\n" \
+# 比较 x-api-key
+curl -sS -w "\nHTTP %{http_code}\n" \
   https://opencode.ai/zen/go/v1/messages \
   -H "x-api-key: sk-..." \
   -H "anthropic-version: 2023-06-01" \
-  -H "content-type: application/json" -d '{}'
+  -H "content-type: application/json" \
+  -d '{"model":"qwen3.7-max","max_tokens":16,"messages":[{"role":"user","content":"hi"}]}'
 ```
 
 修复同样是改名，把变量名换成 `ANTHROPIC_API_KEY`，值不变：
@@ -162,7 +164,7 @@ curl -s -o -w "HTTP %{http_code}\n" \
 
 ## 模型映射和其他变量
 
-配置时我顺手抄了一堆带 `_NAME` 后缀、和 `FABLE` / `REASONING` 字样的变量。这里需要分清模型映射与显示名称。[Claude Code 官方文档](https://code.claude.com/docs/en/model-config)在较新版本中明确列出了 `_NAME` 等变量，把它们一概判为“不读取”并不准确。下面区分用途，前面的接入配置仍对应本文记录的 v2.1.205。
+**2026 年 10 月 23 日补注：** [Claude Code 官方文档](https://code.claude.com/docs/en/model-config)现在明确列出了 `_NAME` 等变量，用于区分模型映射与显示名称。下面列出当前文档中的用途，不能据此推定 v2.1.205 已支持所有变量；前面的接入配置仍对应 7 月 9 日的记录。
 
 | 变量 | 用途与版本范围 | 备注 |
 |---|---|---|
@@ -181,7 +183,7 @@ curl -s -o -w "HTTP %{http_code}\n" \
 
 ## 为什么报错一直这么 misleading
 
-回头看，这两个坑的报错信息都不可信：
+回头看，这两条提示都不足以单独定位原因：
 
 - 坑一明明是 404，但提示是"模型不存在或无权限"；
 - 坑二明明只发了 `Authorization`，但提示是"Missing API key"——网关要的是另一种 key，说"missing"也不能算错，但对用户来说它把方向带偏了。
@@ -194,7 +196,7 @@ curl -s -o -w "HTTP %{http_code}\n" \
 claude -p "hi" --debug 2> debug.log
 ```
 
-`-p` 是非交互模式，`--debug` 把 SDK 层的请求 URL、状态码、响应体都打出来。一眼就能看到打的是哪条路径、回了什么。这比在"模型不存在"这句话上反复试配置快得多。
+`-p` 是非交互模式。这次记录通过 `--debug` 找到了上面的请求路径与状态码；不同版本记录的字段和日志位置可能变化，可查[CLI 参数文档](https://code.claude.com/docs/en/cli-reference)。定位这类问题时，先找实际请求 URL，再看状态码和可用的响应信息。
 
 ## 一点边界
 

@@ -6,7 +6,7 @@ tags:
   - Go
   - Wails
   - Tools
-description: Port Sentinel 2.0 rebuilds the app with Go + Wails, adds macOS and Linux desktop support, and reworks connection scanning, system authorization, and process operations.
+description: Port Sentinel 2.0 rebuilds the app with Go + Wails, adds macOS and Linux desktop packages, and explains scanning, authorization, process operations, and the hands-on checks still needed.
 outline: deep
 aside: true
 ---
@@ -15,7 +15,7 @@ aside: true
 
 <!-- DESC SEP -->
 
-Port Sentinel 2.0 rebuilds the app with Go + Wails, adds macOS and Linux desktop support, and reworks connection scanning, system authorization, and process operations.
+Port Sentinel 2.0 rebuilds the app with Go + Wails and adds macOS and Linux desktop packages. This post covers scanning, authorization, and process operations, along with the scope of build checks and hands-on desktop validation.
 
 <!-- DESC SEP -->
 

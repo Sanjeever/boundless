@@ -80,7 +80,7 @@ passwd root
 passwd <普通用户名>
 ```
 
-If it warns about a weak password, that's only a warning, not a failure. The real success marker is `passwd: all authentication tokens updated successfully.`
+A weak-password message alone establishes neither failure nor success; acceptance also depends on password policy. In this case, the success message was `passwd: all authentication tokens updated successfully.`
 
 After changing the passwords, I did a few things before rebooting.
 
@@ -236,7 +236,7 @@ Packager    : NeoKylin Linux
 Vendor      : CS2C
 ```
 
-The kernel version and Source RPM match RHEL 7.6's `3.10.0-957.el7`. Look at the top of the kernel changelog.
+The kernel version corresponds to [RHEL 7.6's initial kernel](https://access.redhat.com/articles/red-hat-enterprise-linux-release-dates), `3.10.0-957`, and the Source RPM field follows that naming. Matching names do not prove identical source or binaries. Look at the top of the kernel changelog.
 
 ```bash
 rpm -q --changelog kernel-$(uname -r) | head -n 50
@@ -505,8 +505,8 @@ It schedules a reboot 3 minutes after receiving the action. The config `noReboot
 server sends a package action
   → nkuc_check parses the XML-RPC
     → packages.py builds a YUM transaction
-      → dependency resolution and transaction test
-        → GPG signature check
+      → resolve dependencies, download, and check signatures as configured
+        → YUM transaction test
           → root executes install/upgrade/remove/rollback
             → result reported back to the server
 ```

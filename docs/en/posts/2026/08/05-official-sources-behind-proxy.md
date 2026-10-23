@@ -7,7 +7,7 @@ tags:
   - Windows
   - macOS
   - CLI
-description: Developing with both Windows and macOS in China, I stopped configuring a mirror registry for every tool. Instead every tool uses its official source and all network traffic goes through a single FlClash mixed proxy. This post records the complete setup.
+description: Restoring official sources and configuring FlClash proxies for Windows and macOS development tools, with checks that distinguish source addresses, network paths, and cached results.
 outline: deep
 aside: true
 ---
@@ -20,7 +20,7 @@ I used to configure a different mirror for each tool, then had to recall those c
 
 <!-- DESC SEP -->
 
-After a while with mirrors, the problem wasn't a one-time "can't connect" — it was chronic. One mirror lagged a version behind, another occasionally served stale packages, and every tool pointed at a different registry, so debugging meant first recalling which one each pointed to. So I flipped the approach: tools keep their official sources, and all network traffic goes through one FlClash mixed proxy. This post records the setup, covering npm, pnpm, uv, pip, Maven, Go, Cargo, Dart/Flutter, Git over HTTP and SSH, Homebrew, and Docker Desktop. If something won't connect, start with the troubleshooting notes at the end.
+After using mirrors for a while, I had encountered synchronization delays and stale versions. Each tool pointed at a different registry, so debugging started with recalling those choices. I restored these tools to their official sources, then configured their proxy connections to FlClash. This post covers npm, pnpm, uv, pip, Maven, Go, Cargo, Dart/Flutter, Git over HTTP and SSH, Homebrew, and Docker Desktop. If something won't connect, start with the troubleshooting notes at the end.
 
 ## Mirror sources and proxies are two different things
 
@@ -31,7 +31,7 @@ Before you start, separate two things that are often conflated:
 
 A mirror's usefulness depends on synchronization and service quality; being a third-party service does not make it inherently unreliable. My problem was maintaining too many different source settings. Restoring official sources reduces that variation. Proxy connectivity, official service status, and each tool's configuration still need separate checks.
 
-The setup below follows two steps: **restore the official source/registry/index**, then **configure the proxy path**. Some tools have their own proxy options; others read environment variables. Check existing project settings, corporate repositories, and private sources before clearing anything.
+The setup below follows two steps: **restore the official source/registry/index**, then **configure the proxy path**. Some tools have their own proxy options; others read environment variables. FlClash then applies its own rules to choose a direct or forwarded connection. Check existing project settings, corporate repositories, and private sources before clearing anything.
 
 ## Shared proxy environment variables
 
@@ -96,10 +96,21 @@ unset UV_INDEX_URL
 source ~/.zshrc
 ```
 
-Verify (same on both platforms):
+Check the variable in the current terminal. In PowerShell:
+
+```powershell
+$env:UV_DEFAULT_INDEX
+```
+
+On macOS:
 
 ```bash
 printf '%s\n' "$UV_DEFAULT_INDEX"
+```
+
+Then run this on either platform:
+
+```bash
 uvx --refresh --verbose ruff --version
 ```
 
@@ -122,11 +133,11 @@ pip config list
 pip index versions pip
 ```
 
-If `pip index versions pip` lists versions, PyPI and the network both work.
+If `pip index versions pip` lists versions, the effective configuration can retrieve version information. Environment variables can override [pip configuration](https://pip.pypa.io/en/stable/topics/configuration/); inspect `pip config debug`, `PIP_INDEX_URL`, and verbose request logs to confirm the source. Use FlClash's connection records to confirm the proxy path.
 
 ### Go
 
-`GOPROXY` is Go's module repository, **not** a network proxy. It decides where modules come from; the actual proxy is the shared environment variables above.
+`GOPROXY` configures a [module proxy service](https://go.dev/ref/mod#goproxy-protocol), **not** an HTTP network proxy. It determines where modules come from; settings such as the shared environment variables determine the network path for HTTP requests.
 
 Same on Windows and macOS:
 
@@ -143,7 +154,7 @@ go env GOSUMDB
 go list -m -versions golang.org/x/text
 ```
 
-If `go list` prints versions, the module proxy and network both work.
+If `go list` prints versions, this version query succeeded; it does not establish that every module download path works. Here, `direct` means accessing the source repository when the preceding module proxy returns particular statuses, such as 404 or 410. That path may invoke Git as well.
 
 ### Dart / Flutter
 
@@ -245,7 +256,7 @@ npm ping
 
 ### pnpm
 
-This records the pnpm 11/12 configuration, where the network options are `httpProxy` and `httpsProxy`. Restore the official source and set the proxy (same on Windows and macOS):
+This records the [pnpm 11/12 configuration](https://pnpm.io/settings), where the network options are `httpProxy` and `httpsProxy`. Restore the official source and set the proxy (same on Windows and macOS):
 
 ```bash
 pnpm config set registry "https://registry.npmjs.org/" --global
@@ -421,7 +432,7 @@ ssh -T git@github.com
 
 ## Docker Desktop
 
-macOS only. Docker Desktop must be configured inside its own settings; proxy configuration in `daemon.json` is ignored, so editing the file won't help.
+These steps record the macOS setup. [Docker's documentation](https://docs.docker.com/engine/daemon/proxy/) states that Docker Desktop ignores proxy settings in `daemon.json`; configure them through Desktop settings. This limitation concerns proxy fields. The `registry-mirrors` setting below is still managed through the Docker Engine configuration.
 
 **Restore the official source:** go to `Docker Desktop → Settings → Docker Engine`, remove config like:
 

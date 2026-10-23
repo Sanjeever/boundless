@@ -196,7 +196,7 @@ mkdir -p .claude
 ln -s ../.agents/skills .claude/skills
 ```
 
-PowerShell 7.1 及以上版本支持为目录创建相对目标的符号链接：
+[PowerShell 7.1 及以上版本](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/new-item#example-7-create-a-symbolic-link-to-a-file-or-folder)支持在 Windows 上为目录创建相对目标的符号链接：
 
 ```powershell
 New-Item -ItemType Directory -Path .\.claude -Force | Out-Null
@@ -228,7 +228,7 @@ git config --get core.symlinks
 git config core.symlinks true
 ```
 
-`core.symlinks` 决定 Git 是把符号链接检出为真正的链接，还是写成一个
+[`core.symlinks`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-coresymlinks) 决定 Git 是把符号链接检出为真正的链接，还是写成一个
 只包含目标路径的普通文本文件。它不会授予 Windows 创建符号链接的
 权限；管理员终端或开发者模式仍然是另一项前提。
 

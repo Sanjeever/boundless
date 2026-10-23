@@ -54,7 +54,7 @@ session conn disconnect!!!
 
 The video session never settled into a working state, leaving Windows waiting for a desktop image. That pointed the investigation toward compatibility between Wayland and the screen capture method used by this version of ToDesk.
 
-[ToDesk's Linux troubleshooting guide](https://todesk.com/faq/110.html) requires an X11 desktop on the remote machine. Switching to an X11 session in Xfce later restored the connection, which supported that diagnosis.
+Switching to an X11 session in Xfce later restored the connection, which supported that diagnosis for the ToDesk versions listed above. For other versions, the [ToDesk Help Center](https://todesk.com/faq/110.html) is a starting point for connection troubleshooting.
 
 ## Switching desktops
 
