@@ -16,8 +16,15 @@ const copy = computed(() =>
           ' lists “living,” “making alive,” and “revival” among its meanings. I like the sense of vitality. I hope to always have something to work on and something to look forward to.',
         outlook:
           'I like Wang Xiaobo, especially his passion for wisdom and his refusal to surrender to nihilism. To me, that means continuing toward my goals. When I want to understand something, I read and ask. When I want to make something, I get to work.',
+        blogIntro: 'This blog is called 无垠 (Boundless). The ',
+        chineseDictionary: 'Revised Mandarin Chinese Dictionary',
+        chineseMeaning:
+          ' defines 無垠 as “遼遠而無邊際,” meaning vast and without boundaries. The ',
+        englishDictionary: 'American Heritage Dictionary',
+        englishMeaning:
+          ' defines boundless as “Being without boundaries or limits; unlimited.”',
         writing:
-          'I write here about technical work and everyday thoughts. Some questions have no answers yet. I write them down anyway.',
+          'I want to leave room for my curiosity. I write code, and I’m interested in things beyond it too. I can take my time learning what I don’t yet understand, and write down questions I haven’t worked out. Understanding a concept, building something, or revising a belief I once felt sure of all help me see a little further. If my interests change, there will still be room for them here.',
         contact: 'Contact',
         email: 'Email',
       }
@@ -30,7 +37,14 @@ const copy = computed(() =>
           '收有“活着”“赋予生命”“复苏”等释义。我喜欢“生机”这层寓意，希望自己始终有事可做，有所向往。',
         outlook:
           '我喜欢王小波，尤其认同他对智慧那份热忱，以及不向虚无投降这句话。对我来说，就是朝着目标持续向前。想弄明白，就去读、去问；想做出来，就动手。',
-        writing: '这里记录技术实践与日常思考。有些问题暂时没有答案，也先记下。',
+        blogIntro: '这里叫「无垠 Boundless」。',
+        chineseDictionary: '《重編國語辭典修訂本》',
+        chineseMeaning: '将“無垠”解释为“遼遠而無邊際”；',
+        englishDictionary: '《美国传统英语词典》',
+        englishMeaning:
+          '对 boundless 的释义是“Being without boundaries or limits; unlimited”，即没有边界或限制。',
+        writing:
+          '我想给自己的好奇心留些余地，写代码，也关心代码之外的事。现在还不懂的，可以慢慢去学；还没想清楚的，也可以先写下来。读懂一个概念、做出一个东西，或是修正一个原先确信的判断，都让自己的理解往外走一点。以后兴趣变了，这里仍然有地方可写。',
         contact: '联系我',
         email: '邮箱',
       }
@@ -53,6 +67,18 @@ const copy = computed(() =>
         {{ copy.nameMeaning }}
       </p>
       <p>{{ copy.outlook }}</p>
+      <p>
+        {{ copy.blogIntro }}
+        <a
+          href="https://dict.revised.moe.edu.tw/dictView.jsp?ID=159386&amp;la=0&amp;powerMode=0">
+          {{ copy.chineseDictionary }}
+        </a>
+        {{ copy.chineseMeaning }}
+        <a href="https://www.ahdictionary.com/word/search.html?q=boundless">
+          {{ copy.englishDictionary }}
+        </a>
+        {{ copy.englishMeaning }}
+      </p>
       <p>{{ copy.writing }}</p>
     </div>
 
