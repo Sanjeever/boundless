@@ -460,12 +460,17 @@ onUnmounted(() => {
   white-space: nowrap;
   font-optical-sizing: auto;
   cursor: pointer;
+  transition:
+    opacity 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 200ms ease;
 }
 
 .artist-name {
   display: inline-block;
   text-decoration-thickness: 1px;
   text-underline-offset: 5px;
+  transform: translateZ(0);
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .artist-weight-2 {
@@ -487,6 +492,7 @@ onUnmounted(() => {
 }
 
 .artist.is-selected {
+  z-index: 1;
   color: var(--vp-c-brand-1);
 }
 
@@ -495,7 +501,38 @@ onUnmounted(() => {
   text-decoration-line: underline;
 }
 
-.artist:focus-visible,
+.artist:active {
+  z-index: 2;
+}
+
+.artist:active .artist-name {
+  transform: scale(0.94);
+  transition-duration: 80ms;
+}
+
+.artist:focus-visible {
+  z-index: 2;
+  border-radius: 2px;
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 4px;
+}
+
+.artist:focus-visible .artist-name {
+  transform: scale(1.06);
+}
+
+.artist-cloud:has(.artist:focus-visible) .artist {
+  opacity: 0.38;
+}
+
+.artist-cloud:has(.artist:focus-visible) .artist.is-selected {
+  opacity: 0.68;
+}
+
+.artist-cloud:has(.artist:focus-visible) .artist:focus-visible {
+  opacity: 1;
+}
+
 .text-button:focus-visible {
   border-radius: 2px;
   outline: 2px solid var(--vp-c-brand-1);
@@ -741,7 +778,20 @@ onUnmounted(() => {
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .artist-cloud:has(.artist:hover) .artist {
+    opacity: 0.38;
+  }
+
+  .artist-cloud:has(.artist:hover) .artist.is-selected {
+    opacity: 0.68;
+  }
+
+  .artist-cloud:has(.artist:hover) .artist:hover {
+    opacity: 1;
+  }
+
   .artist:hover {
+    z-index: 2;
     color: var(--text-primary);
   }
 
@@ -749,7 +799,12 @@ onUnmounted(() => {
     color: var(--vp-c-brand-1);
   }
 
-  .artist:hover .artist-name,
+  .artist:hover .artist-name {
+    text-decoration: underline;
+    text-underline-offset: 5px;
+    transform: scale(1.06);
+  }
+
   .text-button:hover {
     text-decoration: underline;
     text-underline-offset: 5px;
@@ -866,6 +921,7 @@ onUnmounted(() => {
 
   .artist-cloud,
   .artist,
+  .artist-name,
   .expand-artists,
   .filter-summary,
   .cover-grid,
@@ -876,6 +932,9 @@ onUnmounted(() => {
     transition: none;
   }
 
+  .artist:hover .artist-name,
+  .artist:focus-visible .artist-name,
+  .artist:active .artist-name,
   .album:hover .album-cover,
   .album:focus-visible .album-cover,
   .album:active .album-cover,
@@ -883,6 +942,11 @@ onUnmounted(() => {
   .album:hover .external-mark,
   .album:focus-visible .external-mark {
     transform: none;
+  }
+
+  .artist-cloud:has(.artist:hover) .artist,
+  .artist-cloud:has(.artist:focus-visible) .artist {
+    opacity: 1;
   }
 }
 </style>
