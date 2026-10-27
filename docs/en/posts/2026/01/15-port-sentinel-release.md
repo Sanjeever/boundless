@@ -23,36 +23,32 @@ Tired of the tedious process of checking port usage and killing processes on Win
 >
 > Port Sentinel 2.0 rebuilds the app with Go + Wails and adds macOS and Linux desktop support. This post records the original Flutter Windows version. Read [Port Sentinel 2.0](/en/posts/2026/10/23-port-sentinel-2) for the rebuild, or [download the latest release](https://github.com/Sanjeever/port_sentinel/releases/latest).
 
-## Why Reinvent the Wheel?
+## Why Build This Tool
 
-As a backend developer, I often encounter this scenario: starting a local service and getting the error "Port 8080 already in use".
+As a backend developer, I often run into port conflicts when starting a local service, seeing errors like "Port 8080 already in use".
 
-On Windows, the standard solution flow usually looks like this:
+On Windows, the standard resolution flow usually looks like this:
 
 1. Open CMD or PowerShell.
-2. Type `netstat -ano | findstr :8080`, squinting to find the PID in the output.
-3. Open Task Manager, switch to the "Details" tab, and find the corresponding process by PID.
-4. Or directly type `taskkill /PID <PID> /F` in the command line.
+2. Run `netstat -ano | findstr :8080` to find the PID in the output.
+3. Open Task Manager, switch to the "Details" tab, and locate the corresponding process by PID.
+4. Or directly run `taskkill /PID <PID> /F` in the terminal.
 
-The steps are straightforward, but repeating them several times a day is annoying. My needs were narrow: find the process using a port, check what it is, and decide whether to stop it. I wanted an interface that made those steps easier to scan.
+The steps are not difficult, but repeating them multiple times a day is tedious. My requirements were very focused: find which process owns a port, verify what it is, and decide whether to stop it. To bring these steps into a single, easily scannable interface, I built **Port Sentinel**.
 
-I thought, why not build one myself? Simple, good-looking, and intuitive.
+## Key Features
 
-And so, **Port Sentinel** was born.
+Port Sentinel is a Windows desktop application built with Flutter, focused specifically on identifying and managing port conflicts.
 
-## What Does It Do?
+Its primary features include:
 
-Port Sentinel is a Windows desktop application built with Flutter, focused on solving the question "Who is using this port?".
+- **Port List**: Displays current usage for all active TCP and UDP ports.
+- **Process Association**: Shows process names alongside PIDs directly, without needing to open Task Manager.
+- **Search & Filter**: Supports search by port number, PID, or process name, with protocol filtering (TCP/UDP).
+- **Process Termination**: Releases occupied ports with an "End Process" button after verifying the target.
+- **Auto-Refresh**: An optional auto-refresh toggle to track state changes.
 
-It mainly provides the following features:
-
-- **Real-time Monitoring**: Intuitively list the usage status of all current TCP/UDP ports.
-- **Process Association**: See at a glance which program (process name and PID) is occupying the port, without having to dig through Task Manager.
-- **Search & Filter**: Support searching by port number, PID, or process name, and filtering by protocol (TCP/UDP).
-- **End Process**: After confirming the target, use the “End Process” button to release its port.
-- **Auto-Refresh**: Supports optional auto-refresh to keep track of system status in real-time.
-
-In terms of interface design, I tried to keep it simple and modern, hoping to bring a little convenience to developers who are also troubled by port issues.
+The interface is kept simple and uncluttered, providing a straightforward utility for resolving local port conflicts.
 
 ## Tech Stack Choice
 

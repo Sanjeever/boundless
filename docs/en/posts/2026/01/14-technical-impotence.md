@@ -46,20 +46,8 @@ Boredom with “yet another Todo List tutorial” does not, by itself, prove tha
 
 For the situation in this post—wanting to build something without wanting to study more complex techniques—I favor letting the need decide the next step. One commenter likewise suggested going deeper in a relevant area rather than studying many things superficially.
 
-Don’t try to “build an enterprise-grade, high-concurrency, distributed AI Agent platform”.
+Rather than forcing yourself to study an “enterprise-grade, high-concurrency, distributed AI Agent platform,” it is more useful to write a small script that cleans up a messy Downloads folder, build a browser extension to block annoying ads, or help a friend set up a simple bookkeeping page.
 
-Write a small script to automatically clean up your messy Downloads folder.
+These small tasks offer immediate feedback a study list cannot: are the files organized, are the ads blocked, can your friend record an expense? They may not restore enthusiasm immediately, but they at least help you see whether you still care about making a specific thing work better.
 
-Write a browser extension to block those annoying ads.
-
-Help a friend build a simple bookkeeping webpage.
-
-These small tasks offer feedback a study list cannot: are the files organized, are the ads blocked, can your friend record an expense? They may not restore enthusiasm immediately. They can at least help you see whether you still care about making a particular thing work better.
-
-## Epilogue
-
-If you are in this ebb of enthusiasm, do not rush to treat it as failure.
-
-Needing rest and lacking something you want to work on can happen together; they do not form a clean either-or choice. In this post, the author already has a small project they want to build. Continuing it seems more useful than finding a complex technique to prove they are still learning.
-
-You can also have no problem you want to solve for a while. Spare time does not need a technical study plan to justify its value.
+Needing rest and lacking a project you want to build can happen together; they do not form a clean either-or choice. In this post, the author already has a small project they want to build. Continuing it seems far more natural than finding a complex technique just to prove they are still keeping up. It is also fine to have no problem you want to solve for a while. Spare time does not need a technical study plan to justify its value.

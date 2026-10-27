@@ -48,7 +48,7 @@ Saying good night every day, exchanging holiday gifts, promising exclusivity: al
 
 At that point, the way these two people relate may be overwritten by a generic class called “lovers.” The argument shifts from “What do we each need?” to “Are you playing your role properly?”
 
-This is one cost of naming: **when a general script replaces a specific agreement, the name crowds out individual differences.**
+When a general script replaces a specific agreement, the name easily crowds out individual differences.
 
 What concerns me is whether people can still express needs that do not fit the role of “spouse” or “best friend.” If keeping the label requires hiding those needs, the arrangement deserves another conversation.
 
@@ -64,7 +64,7 @@ Now we may quickly call it “depression,” “anxiety,” or “burnout.” A 
 
 When we say “I am anxious,” it is worth asking at the same time: how long has it lasted, is it affecting sleep and daily life, is professional support needed, and are there parts of one’s routines, work environment, or relationships that can change? Medical and situational explanations can both be true; neither replaces the other.
 
-**The second cost of naming: it can make us stop asking too soon.**
+This is another blind spot of naming: it can make us stop asking questions too soon.
 
 The problem is not using diagnostic or psychological vocabulary. It is using it as a universal lid. Treating “social anxiety” or “procrastination” as throwaway labels can hide more specific difficulties too. A good name should help someone see a problem and get help, not excuse everyone else from understanding it.
 
@@ -84,7 +84,7 @@ Suppose a company lays people off because of poor decisions and a cash shortage,
 
 Through naming, brutal reality can become abstract. Decision makers signing documents process “data,” while the people affected must deal with rent, care work, and finding the next job. That distance between two languages is what needs to be seen.
 
-**The third cost of naming: it can soften the consequences and make a decision that deserves scrutiny seem self-evidently reasonable.**
+A third effect of naming is that it can soften consequences, making decisions that deserve scrutiny seem self-evidently reasonable.
 
 Calling compulsory overtime “flexible work” or exploitation a “blessing” works in a similar way. To assess these terms, we need to ask who controls working hours and who pays the extra cost. A more pleasant name has answered neither question.
 
@@ -98,8 +98,4 @@ We gain efficiency. When calling `sort()`, we usually need not care which algori
 
 Inferring a couple's agreements from “lovers,” or assuming a decision deserves support because it is called “optimization,” treats something the interface never promised as a guarantee.
 
-## Epilogue
-
-Next time you are eager to name a feeling, define a relationship, or write those grand and hollow words in a weekly report, pause for one second.
-
-What agreements does “lovers” include? What circumstances lie behind “anxiety”? Who loses what in an “optimization”? Keep the name, and ask for the details it left out. A name earns trust by helping us understand that much.
+What agreements does “lovers” actually include? What circumstances lie behind “anxiety”? Who pays the price in an “optimization”? A name provides a quick entry point, but it often leaves out critical constraints. Keeping the name while asking for the specific details it omitted is what makes that name genuinely trustworthy.
