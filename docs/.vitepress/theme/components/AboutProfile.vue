@@ -10,41 +10,54 @@ const copy = computed(() =>
     ? {
         title: 'About Me',
         intro: 'I’m Sanjeev. I live in Nanning and write code.',
-        nameIntro: 'Sanjeev corresponds to the Sanskrit word saṃjīva. The ',
+        namePrefix: 'My handle comes from the Sanskrit word ',
+        sanskritWord: 'saṃjīva',
+        nameMid: '. Looking it up in the ',
         dictionary: 'Monier-Williams Sanskrit-English Dictionary',
         nameMeaning:
-          ' lists “living,” “making alive,” and “revival” among its meanings. I like the sense of vitality. I hope to always have something to work on and something to look forward to.',
-        outlook:
-          'I like Wang Xiaobo’s passion for wisdom, and I share the resolve not to surrender to nihilism. When I want to understand something, I read and ask. When I want to make something, I get to work.',
-        blogIntro: 'This blog is called 无垠 (Boundless). The ',
+          ', I was drawn to its meanings of “living,” “revival,” and “bringing to life.” That sense of vitality stuck with me, and I’ve used the name ever since.',
+        blogIntro:
+          'This site is called 无垠 (Boundless). The name came from browsing dictionaries: the ',
         chineseDictionary: 'Revised Mandarin Chinese Dictionary',
         chineseMeaning:
-          ' defines 無垠 as “遼遠而無邊際,” meaning vast and without boundaries. The ',
+          ' defines 無垠 as “vast and without boundaries,” mirroring the ',
         englishDictionary: 'American Heritage Dictionary',
         englishMeaning:
-          ' defines boundless as “Being without boundaries or limits; unlimited.”',
+          '’s entry for boundless (“Being without boundaries or limits”). It isn’t meant as a grand claim—just a reminder that there’s always unfamiliar code to read and questions left to figure out.',
         writing:
-          'I want to leave room for my curiosity. I write code, and I’m interested in things beyond it too. I can take my time learning what I don’t yet understand, and write down questions I haven’t worked out. Understanding a concept, building something, or revising a belief I once felt sure of all help me see a little further. If my interests change, there will still be room for them here.',
+          'I mostly write about three things here: bugs and friction from building small tools, interesting things I read, and problems I haven’t resolved yet. Rather than dressing experiments up as achievements, I try to leave verifiable details.',
+        closingPrefix:
+          'I appreciate Wang Xiaobo’s plain-spoken candor in his essays. Outside of coding, I also keep a ',
+        albumsText: 'records wall',
+        albumsUrl: '/en/albums',
+        closingSuffix:
+          '. If something here saves you a little debugging time or gives you a moment to think, it was worth putting down.',
         contact: 'Contact',
         email: 'Email',
       }
     : {
         title: '关于我',
         intro: '我是 Sanjeev，现居南宁，平时写代码。',
-        nameIntro: 'Sanjeev 对应梵语 saṃjīva。',
+        namePrefix: '这个 ID 取自梵语 ',
+        sanskritWord: 'saṃjīva',
+        nameMid: '。当年翻',
         dictionary: '《Monier-Williams 梵英词典》',
         nameMeaning:
-          '收有“活着”“赋予生命”“复苏”等释义。我喜欢“生机”这层寓意，希望自己始终有事可做，有所向往。',
-        outlook:
-          '我喜欢王小波对智慧那份热忱，也认同不向虚无投降的态度。想弄明白，就去读、去问；想做出来，就动手。',
-        blogIntro: '这里叫「无垠 Boundless」。',
+          '，看到它有“活着、复苏、赋予生机”的意思，喜欢这股生气，就一直用到了现在。',
+        blogIntro: '博客叫「无垠 Boundless」，名字也是翻词典定下来的：',
         chineseDictionary: '《重編國語辭典修訂本》',
-        chineseMeaning: '将“無垠”解释为“遼遠而無邊際”；',
+        chineseMeaning: '说“無垠”是“遼遠而無邊際”，对应',
         englishDictionary: '《美国传统英语词典》',
         englishMeaning:
-          '对 boundless 的释义是“Being without boundaries or limits; unlimited”，即没有边界或限制。',
+          '对 boundless 的释义“Being without boundaries or limits”。倒不是要把话说得很大，更像是个提醒：世界还大，总有没读过的代码和没想明白的问题。',
         writing:
-          '我想给自己的好奇心留些余地，写代码，也关心代码之外的事。现在还不懂的，可以慢慢去学；还没想清楚的，也可以先写下来。读懂一个概念、做出一个东西，或是修正一个原先确信的判断，都让自己的理解往外走一点。以后兴趣变了，这里仍然有地方可写。',
+          '这里主要记三件事：写工具踩过的坑、日常读到的好东西，以及暂时还没答案的困惑。不把折腾包装成大成果，尽量留下可复现的细节。',
+        closingPrefix:
+          '喜欢王小波写杂文的那股坦率劲。代码之外，这里还有一面个人',
+        albumsText: '唱片墙',
+        albumsUrl: '/albums',
+        closingSuffix:
+          '。如果某篇记录恰好帮你省了点排查时间，或者让你多琢磨了一会儿，那就没白写。',
         contact: '联系我',
         email: '邮箱',
       }
@@ -60,26 +73,40 @@ const copy = computed(() =>
 
     <div class="about-copy">
       <p>
-        {{ copy.nameIntro }}
-        <a href="https://www.tuninst.net/SED-MW/download-prem/s.htm">
+        {{ copy.namePrefix }}
+        <em>{{ copy.sanskritWord }}</em>
+        {{ copy.nameMid }}
+        <a
+          href="https://www.tuninst.net/SED-MW/download-prem/s.htm"
+          target="_blank"
+          rel="noopener noreferrer">
           {{ copy.dictionary }}
         </a>
         {{ copy.nameMeaning }}
       </p>
-      <p>{{ copy.outlook }}</p>
       <p>
         {{ copy.blogIntro }}
         <a
-          href="https://dict.revised.moe.edu.tw/dictView.jsp?ID=159386&amp;la=0&amp;powerMode=0">
+          href="https://dict.revised.moe.edu.tw/dictView.jsp?ID=159386&amp;la=0&amp;powerMode=0"
+          target="_blank"
+          rel="noopener noreferrer">
           {{ copy.chineseDictionary }}
         </a>
         {{ copy.chineseMeaning }}
-        <a href="https://www.ahdictionary.com/word/search.html?q=boundless">
+        <a
+          href="https://www.ahdictionary.com/word/search.html?q=boundless"
+          target="_blank"
+          rel="noopener noreferrer">
           {{ copy.englishDictionary }}
         </a>
         {{ copy.englishMeaning }}
       </p>
       <p>{{ copy.writing }}</p>
+      <p>
+        {{ copy.closingPrefix }}
+        <a :href="copy.albumsUrl">{{ copy.albumsText }}</a>
+        {{ copy.closingSuffix }}
+      </p>
     </div>
 
     <nav class="contact-links" :aria-label="copy.contact">
