@@ -43,14 +43,10 @@ const copy = computed(() =>
   isEnglish.value
     ? {
         title: 'Archive',
-        summary: (count: number, years: number) =>
-          `${count} articles across ${years} years`,
         jumpToYear: 'Years',
       }
     : {
         title: '文章归档',
-        summary: (count: number, years: number) =>
-          `共收录 ${count} 篇文章 · 跨越 ${years} 个年份`,
         jumpToYear: '年份快速跳转',
       }
 )
@@ -61,9 +57,6 @@ const copy = computed(() =>
     <!-- Header -->
     <header class="archive-header">
       <h1>{{ copy.title }}</h1>
-      <p class="archive-summary">
-        {{ copy.summary(posts.length, availableYears.length) }}
-      </p>
 
       <!-- Year Scrubber -->
       <nav
@@ -80,6 +73,7 @@ const copy = computed(() =>
           <span class="year-count">({{ item.count }})</span>
         </button>
       </nav>
+      <hr class="head-rule" />
     </header>
 
     <!-- Timeline Content -->
@@ -111,32 +105,33 @@ const copy = computed(() =>
 
 <style scoped>
 .archive-index {
-  width: min(1120px, 100%);
+  width: min(780px, 100%);
   min-height: 100dvh;
   margin-inline: auto;
-  padding: calc(var(--vp-nav-height) + 64px) clamp(24px, 4vw, 48px) 120px;
+  padding: calc(var(--vp-nav-height) + 48px) clamp(20px, 4vw, 36px) 112px;
 }
 
 /* Header */
 .archive-header {
-  max-width: 800px;
-  margin-bottom: 72px;
+  margin-bottom: 48px;
 }
 
 .archive-header h1 {
   margin: 0;
   color: var(--vp-c-text-1);
-  font-size: clamp(48px, 6.5vw, 76px);
-  font-weight: 640;
-  letter-spacing: -0.055em;
-  line-height: 1;
+  font-size: clamp(34px, 5vw, 44px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
 }
 
-.archive-summary {
-  margin: 20px 0 0;
-  color: var(--vp-c-text-2);
-  font-size: 16px;
-  line-height: 1.6;
+.head-rule {
+  width: 100%;
+  margin: 24px 0 0;
+  border: 0;
+  height: 1px;
+  background-color: var(--vp-c-text-1);
+  opacity: 0.12;
 }
 
 /* Year Scrubber */
@@ -144,17 +139,17 @@ const copy = computed(() =>
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 24px;
+  margin-top: 20px;
 }
 
 .year-btn {
   display: inline-flex;
   gap: 4px;
   align-items: baseline;
-  padding: 4px 10px;
-  border: 1px solid var(--vp-c-border);
+  padding: 3px 8px;
+  border: 1px solid var(--vp-c-divider);
   border-radius: var(--boundless-radius);
-  background: transparent;
+  background: var(--vp-c-bg-soft);
   color: var(--vp-c-text-2);
   font-family: var(--vp-font-family-mono);
   font-size: 12px;
@@ -174,30 +169,26 @@ const copy = computed(() =>
 
 /* Year Section */
 .archive-year {
-  display: grid;
-  grid-template-columns: minmax(110px, 1.2fr) minmax(0, 8.8fr);
-  gap: clamp(32px, 6vw, 84px);
-  align-items: start;
-  margin-top: 80px;
+  margin-top: 48px;
   scroll-margin-top: calc(var(--vp-nav-height) + 36px);
 }
 
 .year-heading {
-  position: sticky;
-  top: calc(var(--vp-nav-height) + 36px);
   display: flex;
   gap: 8px;
   align-items: baseline;
+  margin-bottom: 16px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--vp-c-divider);
 }
 
 .year-heading h2 {
   margin: 0;
   color: var(--vp-c-brand-1);
   font-family: var(--vp-font-family-mono);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.04em;
 }
 
 .year-badge {
@@ -208,20 +199,25 @@ const copy = computed(() =>
 
 /* Posts List */
 .archive-posts {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px clamp(32px, 4vw, 56px);
+  display: flex;
+  flex-direction: column;
 }
 
 .post-link {
-  display: grid;
-  grid-template-columns: minmax(48px, auto) minmax(0, 1fr);
-  gap: 16px;
+  display: flex;
   align-items: baseline;
+  gap: 16px;
+  padding-block: 8px;
+  border-bottom: 1px dashed var(--vp-c-divider);
   color: var(--vp-c-text-1);
-  font-size: 15px;
-  line-height: 1.55;
+  font-size: 16px;
+  line-height: 1.5;
   text-decoration: none;
+  transition: border-color 150ms ease;
+}
+
+.post-link:hover {
+  border-bottom-color: var(--vp-c-border);
 }
 
 .post-link time {
@@ -229,10 +225,11 @@ const copy = computed(() =>
   font-family: var(--vp-font-family-mono);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .post-title {
-  transition: color 180ms ease;
+  transition: color 150ms ease;
   word-break: break-word;
 }
 
@@ -241,54 +238,10 @@ const copy = computed(() =>
   color: var(--vp-c-brand-1);
 }
 
-/* Animations */
-@media (prefers-reduced-motion: no-preference) {
-  .archive-header {
-    animation: archive-reveal 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-}
-
-@keyframes archive-reveal {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 10px, 0);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-  .archive-posts {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-}
-
-@media (max-width: 767px) {
-  .archive-index {
-    padding: calc(var(--vp-nav-height) + 40px) 18px 80px;
-  }
-
-  .archive-header {
-    margin-bottom: 48px;
-  }
-
-  .archive-header h1 {
-    font-size: clamp(38px, 12vw, 48px);
-  }
-
-  .archive-year {
-    display: block;
-    margin-top: 56px;
-  }
-
-  .year-heading {
-    position: static;
-    margin-bottom: 20px;
+@media (max-width: 640px) {
+  .post-link {
+    flex-direction: column;
+    gap: 4px;
   }
 }
 </style>

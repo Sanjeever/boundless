@@ -9,177 +9,237 @@ const copy = computed(() =>
   isEnglish.value
     ? {
         title: 'About Me',
-        intro: 'I’m Sanjeev. I live in Nanning and write code.',
+        intro:
+          'I’m Sanjeev. I live in Nanning, write code, and build small tools.',
         namePrefix: 'My handle comes from the Sanskrit word ',
         sanskritWord: 'saṃjīva',
         nameMid: '. Looking it up in the ',
-        dictionary: 'Monier-Williams Sanskrit-English Dictionary',
-        nameMeaning:
-          ', I was drawn to its meanings of “living,” “revival,” and “bringing to life.” That sense of vitality stuck with me, and I’ve used the name ever since.',
-        blogIntro:
-          'This site is called 无垠 (Boundless). The name came from browsing dictionaries: the ',
-        chineseDictionary: 'Revised Mandarin Chinese Dictionary',
-        chineseMeaning:
-          ' defines 無垠 as “vast and without boundaries,” mirroring the ',
-        englishDictionary: 'American Heritage Dictionary',
-        englishMeaning:
-          '’s entry for boundless (“Being without boundaries or limits”). It isn’t meant as a grand claim—just a reminder that there’s always unfamiliar code to read and questions left to figure out.',
+        dictSanskrit: 'Monier-Williams Sanskrit-English Dictionary',
+        nameSuffix:
+          ', I was drawn to its meanings of “living,” “revival,” and “bringing to life”—a stubborn vitality that stuck with me ever since.',
+        sitePrefix: 'This site is named ',
+        siteName: 'Boundless (无垠)',
+        siteMid1: '. The name came from browsing dictionaries: the ',
+        dictZh: 'Revised Mandarin Chinese Dictionary',
+        siteMid2: ' defines it as “vast and without boundaries,” echoing the ',
+        dictEn: 'American Heritage Dictionary',
+        siteSuffix:
+          '’s entry for boundless (“Being without boundaries or limits”). It isn’t a grand statement—I just liked the word, and it’s a good reminder that there is always unfamiliar code and plenty of things left to figure out.',
+        candor:
+          'I appreciate the plain-spoken candor in Wang Xiaobo’s essays: speaking frankly without jargon or pretense. In an era saturated with manufactured buzzwords and AI slop, I prefer keeping things simple—documenting tangible issues encountered while writing code or building tools, and how they were worked out.',
         writing:
-          'I mostly write about three things here: bugs and friction from building small tools, interesting things I read, and problems I haven’t resolved yet. Rather than dressing experiments up as achievements, I try to leave verifiable details.',
-        closingPrefix:
-          'I appreciate Wang Xiaobo’s plain-spoken candor in his essays. Outside of coding, I also keep a ',
+          'Blogging easily turns into self-indulgence, so I try to stay grounded by writing down exact conditions, thoughts, and reproducible steps. If something here saves you a bit of troubleshooting time, wonderful. If not, treat it simply as someone else’s raw engineering notes.',
+        albumsPrefix:
+          'Outside of programming, I spend a lot of time listening to music. There is also a ',
         albumsText: 'records wall',
         albumsUrl: '/en/albums',
-        closingSuffix:
-          '. If something here saves you a little debugging time or gives you a moment to think, it was worth putting down.',
+        albumsSuffix:
+          ' here tracking full-length albums I’ve listened through.',
         contact: 'Contact',
         email: 'Email',
       }
     : {
         title: '关于我',
-        intro: '我是 Sanjeev，现居南宁，平时写代码。',
+        intro: '我是 Sanjeev，现居广西南宁，平时写代码、折腾工具。',
         namePrefix: '这个 ID 取自梵语 ',
         sanskritWord: 'saṃjīva',
         nameMid: '。当年翻',
-        dictionary: '《Monier-Williams 梵英词典》',
-        nameMeaning:
-          '，看到它有“活着、复苏、赋予生机”的意思，喜欢这股生气，就一直用到了现在。',
-        blogIntro: '博客叫「无垠 Boundless」，名字也是翻词典定下来的：',
-        chineseDictionary: '《重編國語辭典修訂本》',
-        chineseMeaning: '说“無垠”是“遼遠而無邊際”，对应',
-        englishDictionary: '《美国传统英语词典》',
-        englishMeaning:
-          '对 boundless 的释义“Being without boundaries or limits”。倒不是要把话说得很大，更像是个提醒：世界还大，总有没读过的代码和没想明白的问题。',
+        dictSanskrit: '《Monier-Williams 梵英词典》',
+        nameSuffix:
+          '看到释义里有“活着、复苏、赋予生机”，喜欢这股不肯僵死的生气，就一直用了下来。',
+        sitePrefix: '博客叫「',
+        siteName: '无垠 Boundless',
+        siteMid1: '」，名字也是翻词典定下的：',
+        dictZh: '《重編國語辭典修訂本》',
+        siteMid2: '说它是“遼遠而無邊際”，对应',
+        dictEn: '《美国传统英语词典》',
+        siteSuffix:
+          '对 boundless 的释义“Being without boundaries or limits”。倒不是要把话说得很大，单纯觉得这个词顺眼，也顺便提醒自己：没见过的代码和没折腾明白的问题还多得很。',
+        candor:
+          '喜欢王小波杂文里的坦荡劲儿，有一说一，讨厌故弄玄虚的行话和空洞的通稿。在到处都在量产观点和 AI Slop 的当下，这里只做点朴素的事：记录平时写代码、做工具遇到的具体问题，以及怎么把它们解决掉。',
         writing:
-          '这里主要记三件事：写工具踩过的坑、日常读到的好东西，以及暂时还没答案的困惑。不把折腾包装成大成果，尽量留下可复现的细节。',
-        closingPrefix:
-          '喜欢王小波写杂文的那股坦率劲。代码之外，这里还有一面个人',
+          '写博客容易变成自说自话，我尽量写得实在点，把当时的环境、排查思路和验证过程交代清楚。内容要是碰巧帮到了正在查资料的你，自然最好；要是没帮上，就当翻看了一篇别人的现场工作便签。',
+        albumsPrefix:
+          '除了写代码，平时也经常听歌，这里还整理了一面我听过整张的',
         albumsText: '唱片墙',
         albumsUrl: '/albums',
-        closingSuffix:
-          '。如果某篇记录恰好帮你省了点排查时间，或者让你多琢磨了一会儿，那就没白写。',
-        contact: '联系我',
+        albumsSuffix: '。',
+        contact: '联系方式',
         email: '邮箱',
       }
 )
 </script>
 
 <template>
-  <main class="about-profile">
-    <header class="about-intro">
-      <h1>{{ copy.title }}</h1>
-      <p>{{ copy.intro }}</p>
+  <main class="about-paper">
+    <header class="about-header">
+      <h1 class="about-title">{{ copy.title }}</h1>
+      <p class="about-intro">{{ copy.intro }}</p>
+      <hr class="head-rule" />
     </header>
 
-    <div class="about-copy">
+    <article class="about-content">
       <p>
         {{ copy.namePrefix }}
-        <em>{{ copy.sanskritWord }}</em>
+        <em class="sanskrit">{{ copy.sanskritWord }}</em>
         {{ copy.nameMid }}
         <a
           href="https://www.tuninst.net/SED-MW/download-prem/s.htm"
           target="_blank"
           rel="noopener noreferrer">
-          {{ copy.dictionary }}
+          {{ copy.dictSanskrit }}
         </a>
-        {{ copy.nameMeaning }}
+        {{ copy.nameSuffix }}
       </p>
+
       <p>
-        {{ copy.blogIntro }}
+        {{ copy.sitePrefix }}
+        <strong>{{ copy.siteName }}</strong>
+        {{ copy.siteMid1 }}
         <a
           href="https://dict.revised.moe.edu.tw/dictView.jsp?ID=159386&amp;la=0&amp;powerMode=0"
           target="_blank"
           rel="noopener noreferrer">
-          {{ copy.chineseDictionary }}
+          {{ copy.dictZh }}
         </a>
-        {{ copy.chineseMeaning }}
+        {{ copy.siteMid2 }}
         <a
           href="https://www.ahdictionary.com/word/search.html?q=boundless"
           target="_blank"
           rel="noopener noreferrer">
-          {{ copy.englishDictionary }}
+          {{ copy.dictEn }}
         </a>
-        {{ copy.englishMeaning }}
+        {{ copy.siteSuffix }}
       </p>
-      <p>{{ copy.writing }}</p>
-      <p>
-        {{ copy.closingPrefix }}
-        <a :href="copy.albumsUrl">{{ copy.albumsText }}</a>
-        {{ copy.closingSuffix }}
-      </p>
-    </div>
 
-    <nav class="contact-links" :aria-label="copy.contact">
-      <a href="mailto:hi@sanjeev.top" :aria-label="copy.email">
-        hi@sanjeev.top
-      </a>
-      <a
-        href="https://github.com/Sanjeever"
-        target="_blank"
-        rel="noopener noreferrer">
-        GitHub
-      </a>
-    </nav>
+      <p>{{ copy.candor }}</p>
+
+      <p>{{ copy.writing }}</p>
+
+      <p>
+        {{ copy.albumsPrefix }}
+        <a :href="copy.albumsUrl">{{ copy.albumsText }}</a>
+        {{ copy.albumsSuffix }}
+      </p>
+    </article>
+
+    <hr class="head-rule" />
+
+    <footer class="about-footer">
+      <span class="footer-label">{{ copy.contact }}:</span>
+      <nav class="contact-links" :aria-label="copy.contact">
+        <a href="mailto:hi@sanjeev.top" :aria-label="copy.email">
+          hi@sanjeev.top
+        </a>
+        <span class="sep">/</span>
+        <a
+          href="https://github.com/Sanjeever"
+          target="_blank"
+          rel="noopener noreferrer">
+          GitHub
+        </a>
+        <span class="sep">/</span>
+        <a
+          :href="isEnglish ? '/feed-en.xml' : '/feed.xml'"
+          target="_blank"
+          rel="noopener noreferrer">
+          RSS
+        </a>
+      </nav>
+    </footer>
   </main>
 </template>
 
 <style scoped>
-.about-profile {
-  width: min(760px, 100%);
-  min-height: 100dvh;
+.about-paper {
+  width: min(740px, 100%);
   margin-inline: auto;
-  padding: calc(var(--vp-nav-height) + 80px) 32px 120px;
+  padding: calc(var(--vp-nav-height) + 48px) clamp(20px, 4vw, 36px) 112px;
 }
 
-.about-intro h1 {
-  margin: 0 0 40px;
+.about-header {
+  margin-bottom: 32px;
+}
+
+.about-title {
+  margin: 0 0 16px;
   color: var(--vp-c-text-1);
-  font-size: clamp(40px, 6vw, 56px);
-  font-weight: 640;
-  letter-spacing: -0.04em;
-  line-height: 1.2;
+  font-size: clamp(34px, 5vw, 44px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
 }
 
-.about-intro p,
-.about-copy p {
-  margin: 0 0 28px;
+.about-intro {
+  margin: 0;
+  color: var(--vp-c-text-2);
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.head-rule {
+  width: 100%;
+  margin: 28px 0 0;
+  border: 0;
+  height: 1px;
+  background-color: var(--vp-c-text-1);
+  opacity: 0.12;
+}
+
+.about-content p {
+  margin: 0 0 24px;
   color: var(--vp-c-text-1);
   font-size: 17px;
-  line-height: 1.9;
+  line-height: 1.88;
 }
 
-.about-profile a {
+.sanskrit {
+  font-style: italic;
+  font-family: Georgia, serif;
+}
+
+.about-content a,
+.contact-links a {
   color: var(--vp-c-brand-1);
   text-decoration: underline;
   text-decoration-thickness: 1px;
-  text-underline-offset: 4px;
+  text-underline-offset: 3px;
+  transition: color 150ms ease;
 }
 
-.about-profile a:hover {
+.about-content a:hover,
+.contact-links a:hover {
   color: var(--vp-c-brand-2);
 }
 
-.about-profile a:focus-visible {
-  outline: 2px solid var(--vp-c-brand-1);
-  outline-offset: 4px;
+.about-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 14px;
+  color: var(--vp-c-text-3);
+}
+
+.footer-label {
+  color: var(--vp-c-text-2);
 }
 
 .contact-links {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px 24px;
-  margin-top: 48px;
-  font-size: 15px;
-  line-height: 1.75;
+  align-items: center;
+  gap: 10px;
 }
 
-@media (max-width: 767px) {
-  .about-profile {
-    padding: calc(var(--vp-nav-height) + 48px) 24px 80px;
-  }
+.sep {
+  opacity: 0.4;
+}
 
-  .about-intro h1 {
-    margin-bottom: 32px;
+@media (max-width: 640px) {
+  .about-paper {
+    padding-top: calc(var(--vp-nav-height) + 32px);
   }
 }
 </style>
