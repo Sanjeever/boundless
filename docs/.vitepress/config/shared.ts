@@ -76,6 +76,16 @@ export default defineConfig({
   markdown: {
     math: true,
     config(md) {
+      const fence = md.renderer.rules.fence!
+      md.renderer.rules.fence = (tokens, index, options, env, self) => {
+        const token = tokens[index]
+        if (token.info.trim() === 'mermaid' && env.relativePath) {
+          const source = md.utils.escapeHtml(JSON.stringify(token.content))
+          return `<MermaidDiagram :source="${source}" />\n`
+        }
+        return fence(tokens, index, options, env, self)
+      }
+
       md.core.ruler.after('block', 'article-summary', state => {
         let inSummary = false
 

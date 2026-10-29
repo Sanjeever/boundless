@@ -14,6 +14,7 @@ import ArchiveIndex from './components/ArchiveIndex.vue'
 import ArticleMeta from './components/ArticleMeta.vue'
 import HomeIndex from './components/HomeIndex.vue'
 import ProjectIndex from './components/ProjectIndex.vue'
+import MermaidDiagram from './components/MermaidDiagram.vue'
 import { startDeployUpdateNotifier } from './utils/deployVersion'
 
 export default {
@@ -37,6 +38,7 @@ export default {
     app.component('ArchiveIndex', ArchiveIndex)
     app.component('HomeIndex', HomeIndex)
     app.component('ProjectIndex', ProjectIndex)
+    app.component('MermaidDiagram', MermaidDiagram)
     startDeployUpdateNotifier(siteData.value.base)
   },
 }
