@@ -374,6 +374,10 @@ function dateTime(timestamp: number) {
     padding-block: 8px;
   }
 
+  .post-link {
+    flex: none;
+  }
+
   .post-meta {
     justify-content: flex-start;
     gap: 12px;
