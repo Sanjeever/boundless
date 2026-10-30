@@ -42,6 +42,14 @@ export default defineConfig({
   },
   head: [
     [
+      'script',
+      {
+        defer: '',
+        src: 'https://cloud.umami.is/script.js',
+        'data-website-id': '7d66a0d9-1339-47c1-8cbe-c547cda77526',
+      },
+    ],
+    [
       'link',
       {
         rel: 'icon',
