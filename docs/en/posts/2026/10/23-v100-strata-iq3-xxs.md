@@ -5,7 +5,7 @@ tags:
   - AI
   - Local Deployment
   - GPU
-description: Compile Strata for two V100s and run Qwen3.8-Flash-Next IQ3_XXS with 64GB of host RAM, including deployment steps and long-context latency measurements.
+description: Compiling Strata for two 16GB V100s to run Qwen3.8-Flash-Next IQ3_XXS with 64GB of host RAM, and measuring how long 256K requests actually take.
 outline: deep
 aside: true
 ---
@@ -14,15 +14,17 @@ aside: true
 
 <!-- DESC SEP -->
 
-Two 16GB V100s and 64GB of RAM can run Qwen3.8-Flash-Next IQ3_XXS. This requires compiling Strata for Volta and keeping some experts and KV cache in host memory. Short requests generated about 62 tokens/s, while two concurrent requests near the 256K limit, each with five images, took 12–16 minutes to complete.
+Compiling Strata for two 16GB V100s to run Qwen3.8-Flash-Next IQ3_XXS with 64GB of host RAM, and measuring how long 256K requests actually take.
 
 <!-- DESC SEP -->
 
-The two IQ3_XXS GGUF shards total about 75.84GB, far beyond the GPUs' combined 32GB of VRAM. Strata distributes expert caches across GPU and host memory, with data read from SSD as needed, allowing the model to run on this hardware.
+The two IQ3_XXS weight shards add up to 75.84GB, while two 16GB V100 cards offer only 32GB of VRAM between them.
 
-The V100 architecture presents another hurdle. The prebuilt Strata engine does not cover `sm_70`, so it needs a separate CUDA 12 build. These two constraints shape the deployment below. Commands run as root in Bash on an Ubuntu server. The configuration comes from the running machine; installation commands were assembled from documentation and have not been replayed on a clean system.
+Getting the model running on this older server means letting Strata split the load: active layers and a window of KV cache stay in VRAM, a large share of expert weights lives in the 64GB of host RAM, and the lookup tables stay on the SSD to be mapped on demand.
 
-## Hardware and memory allocation
+The cards themselves add a second hurdle. Because V100s belong to the Volta generation (`sm_70`), prebuilt Strata binaries skip them, so the engine has to be compiled from source against CUDA 12. Below is the complete setup and what the latency looks like in practice.
+
+## Hardware and the memory budget
 
 | Item             | Machine configuration                                                |
 | ---------------- | -------------------------------------------------------------------- |
@@ -37,20 +39,24 @@ The V100 architecture presents another hurdle. The prebuilt Strata engine does n
 | Container tools  | Docker `29.8.1`, Compose `v5.5.1`, NVIDIA Container Toolkit `1.20.1` |
 | Strata           | Application `0.2.1`, engine `0.1.46`                                 |
 
-The shards serve different purposes. The first, about 47.04GB, holds transformer weights. The second, about 28.80GB, holds the per-layer n-gram embedding lookup table and can remain on SSD, accessed through memory mapping. Both shards are required, but the second does not have to fit entirely in VRAM. The [model repository](https://huggingface.co/ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF/blob/ed59f92082b1e93c0e96d60a8b11aab089b52f09/README.md#available-files) describes their contents and sizes.
+The two GGUF shards play different roles. The first shard (47.04GB) holds the transformer weights; the second (28.80GB) stores the per-layer n-gram embedding lookup table, which can stay on the SSD and be accessed via memory mapping without occupying VRAM. Their exact breakdown is listed in the [model repository](https://huggingface.co/ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF/blob/ed59f92082b1e93c0e96d60a8b11aab089b52f09/README.md#available-files).
 
-On this machine, Strata splits layers between the GPUs. GPU 0 runs layers 0–24, GPU 1 runs layers 25–47, and about 30.73GiB of expert data resides in host memory. Long contexts also need KV cache, so this setup uses INT8 KV with 32768 cells per QSA layer resident in VRAM and the rest in host memory. The 64GB of RAM carries a substantial load; available memory fell to about 4.29GiB during the long-context test below.
+On this machine, GPU 0 runs layers 0–24, GPU 1 runs layers 25–47, and roughly 30.73GiB of expert data stays resident in host RAM.
 
-## The V100 needs CUDA 12
+To leave room for a 256K context window, the KV cache is quantized to INT8, keeping 32,768 cells per QSA layer in VRAM and spilling the rest to system memory. That pushes the 64GB of host RAM close to its ceiling—during the full-context stress test below, available system memory dipped to 4.29GiB.
 
-The [NVIDIA support matrix](https://docs.nvidia.com/datacenter/tesla/drivers/cuda-toolkit-driver-and-architecture-matrix.html) lists Volta as compute capability 7.0, with CUDA 12.x as its last supported toolkit series and R580 as its last driver branch. This machine runs driver 580.178.04 and compiles with CUDA 12.8.93 inside a container. The `CUDA Version: 13.0` shown by `nvidia-smi` is the driver's supported maximum; it does not make CUDA 13 suitable for compiling a V100 engine.
+## Why Volta stays on CUDA 12
 
-The host needs the driver, Docker, and NVIDIA Container Toolkit. The build image supplies the CUDA toolchain. If GPU containers already work, skip to the check at the end of this section. Installation steps for a fresh environment are folded below. Downloads default to mirrors accessible from mainland China, with official sources retained in code comments.
+According to the [NVIDIA support matrix](https://docs.nvidia.com/datacenter/tesla/drivers/cuda-toolkit-driver-and-architecture-matrix.html), Volta sits at compute capability 7.0, with CUDA 12.x as its final supported toolkit series and R580 as its last driver branch.
+
+Even though `nvidia-smi` on driver 580.178.04 prints `CUDA Version: 13.0` in the header, that only reflects the driver's ceiling—compiling `sm_70` kernels still requires a CUDA 12 toolchain. Here we compile inside a container running CUDA 12.8.93.
+
+The host only needs the NVIDIA driver, Docker, and the NVIDIA Container Toolkit. If your machine already runs GPU containers, jump to the one-line check at the end of this section; fresh host setup steps are tucked into the block below.
 
 <details>
 <summary>Ubuntu 26.04 base environment installation</summary>
 
-Installation media is available from [Ubuntu](https://releases.ubuntu.com/26.04/) or the [Tsinghua mirror](https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/26.04/). The repository configuration below targets a fresh Ubuntu 26.04 x86_64 installation; adapt it if custom sources already exist. Following [Tsinghua's guidance](https://mirrors.tuna.tsinghua.edu.cn/help/ubuntu/), security updates retain the official source.
+Install media can be pulled from [Ubuntu Releases](https://releases.ubuntu.com/26.04/) or the [Tsinghua mirror](https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/26.04/). Following [Tsinghua's repository notes](https://mirrors.tuna.tsinghua.edu.cn/help/ubuntu/), security updates point directly to the official archive.
 
 ```bash
 UBUNTU_ARCHIVE=https://mirrors.tuna.tsinghua.edu.cn/ubuntu
@@ -77,13 +83,13 @@ apt-cache policy nvidia-driver-580
 apt-get install -y nvidia-driver-580
 ```
 
-Check that the driver package still belongs to the 580 branch. Reboot after installation; this disconnects SSH.
+Confirm the driver is on the 580 branch and reboot:
 
 ```bash
 reboot
 ```
 
-After reconnecting, install Docker from the [Tsinghua Docker CE mirror](https://mirrors4.tuna.tsinghua.edu.cn/help/docker-ce/) or the [official repository](https://docs.docker.com/engine/install/ubuntu/). If Docker is already installed, check the official documentation for conflicting packages first.
+After reconnecting, install Docker from the [Tsinghua Docker CE mirror](https://mirrors4.tuna.tsinghua.edu.cn/help/docker-ce/) or the [official Docker repository](https://docs.docker.com/engine/install/ubuntu/):
 
 ```bash
 DOCKER_REPO=https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/ubuntu
@@ -110,7 +116,7 @@ docker --version
 docker compose version
 ```
 
-NVIDIA Container Toolkit is available from the [USTC mirror](https://mirrors.ustc.edu.cn/help/libnvidia-container.html) or the [official source](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
+Install the NVIDIA Container Toolkit from the [USTC mirror](https://mirrors.ustc.edu.cn/help/libnvidia-container.html) or the [official NVIDIA repository](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html):
 
 ```bash
 NVIDIA_REPO=https://mirrors.ustc.edu.cn/libnvidia-container
@@ -136,7 +142,7 @@ apt-get install -y nvidia-container-toolkit
 nvidia-ctk runtime configure --runtime=docker
 ```
 
-Restarting Docker affects existing containers, so arrange downtime first.
+Restart Docker to apply the runtime hook:
 
 ```bash
 systemctl restart docker
@@ -145,7 +151,7 @@ nvidia-ctk --version
 
 </details>
 
-Check that a CUDA container can see both GPUs. `docker.1ms.run` is the download endpoint used on this machine; the official source is Docker Hub.
+Verify that a minimal CUDA container can see both V100 cards:
 
 ```bash
 CUDA_IMAGE=docker.1ms.run/nvidia/cuda:12.8.1-runtime-ubuntu24.04
@@ -153,11 +159,9 @@ CUDA_IMAGE=docker.1ms.run/nvidia/cuda:12.8.1-runtime-ubuntu24.04
 docker run --rm --gpus all "${CUDA_IMAGE}" nvidia-smi
 ```
 
-Continue with downloads and compilation once both V100s are visible inside the container.
+## Downloading both shards and the vision projector
 
-## Download both weight shards
-
-The host uses uv to run the Hugging Face CLI. Choose a GitHub download endpoint first; both uv installation and source downloads use `GITHUB_PREFIX`. The example uses [GH-Proxy](https://gh-proxy.com/). Leave the prefix empty for direct access. If uv is already installed, skip the installation commands after setting the prefix. Binary releases are described in the [official documentation](https://docs.astral.sh/uv/getting-started/installation/#github-releases).
+We use `uv` on the host to run the Hugging Face CLI. If `uv` is not installed yet, grab the prebuilt binary from GitHub Releases (or through [GH-Proxy](https://gh-proxy.com/)); see the [official uv docs](https://docs.astral.sh/uv/getting-started/installation/#github-releases) for details:
 
 ```bash
 GITHUB_PREFIX=https://gh-proxy.com/
@@ -172,7 +176,7 @@ install -m 0755 /tmp/uv-x86_64-unknown-linux-gnu/uvx /usr/local/bin/uvx
 uv --version
 ```
 
-The model and vision files total about 76.75GB. Allow additional space for the pack, about 1.5GiB, MTP, about 6.5GiB, and build images and caches. Create the directories and download both GGUF shards and `mmproj`. Python packages use Tsinghua PyPI, while model files use [HF-Mirror](https://hf-mirror.com/). Official endpoints remain in the comments.
+The two GGUF shards and the vision projector take about 76.75GB, and the first launch will pull another ~1.5GiB for the pack and ~6.5GiB for MTP. Make sure you have plenty of disk headroom, then download the pinned revision via [HF-Mirror](https://hf-mirror.com/) (or Hugging Face directly):
 
 ```bash
 mkdir -p /srv/llm/models/qwen/Qwen3.8-Flash-Next-GSQ-RCO \
@@ -193,7 +197,7 @@ UV_PYTHON_DOWNLOADS=never uvx --python /usr/bin/python3 \
   --local-dir /srv/llm/models/qwen/Qwen3.8-Flash-Next-GSQ-RCO
 ```
 
-The revision matches the pin in the Strata source version used below. Keep both shards' original filenames and point the startup configuration at the first one. Copy the vision file into Strata's data directory so the installer can reuse it.
+Keep the original shard filenames intact and point Strata at the first shard. Copy `mmproj` into Strata's data directory so the installer reuses the local file on startup:
 
 ```bash
 install -D -m 0644 \
@@ -201,11 +205,11 @@ install -D -m 0644 \
   /srv/llm/strata-data/Strata-data/models/mmproj-Qwen3.8-Flash-Next-BF16.gguf
 ```
 
-## Compile the sm_70 engine
+## Compiling the sm_70 engine
 
-The [Strata V100 documentation](https://github.com/Niko1221/Strata/blob/a7bdbfdabc9a/docs/NVIDIA_V100.md) describes the experimental community build. The essential settings are CUDA 12, architecture `70`, and `STRATA_EXPERIMENTAL_SM60=ON`. Despite its name, that switch also admits Volta.
+The [Strata V100 guide](https://github.com/Niko1221/Strata/blob/a7bdbfdabc9a/docs/NVIDIA_V100.md) outlines what the community build needs: CUDA 12, architecture `70`, and `STRATA_EXPERIMENTAL_SM60=ON` (which, despite the flag's name, unlocks Volta as well).
 
-Download pinned Strata and llama.cpp sources so the build does not follow changes on their main branches. `GITHUB_PREFIX` still selects direct access or the download proxy.
+Fetch the pinned archives for Strata and llama.cpp:
 
 ```bash
 cd /srv/llm/strata-build
@@ -225,7 +229,7 @@ tar -xzf llama-3cf03257.tar.gz \
   --strip-components=1 -C Strata-a7bdbfdabc9a/third_party/llama.cpp
 ```
 
-Save the following as `/srv/llm/strata-build/Dockerfile.v100`. The build stage reuses CUDA 12.8.93 and GCC 11.4.0 from the 1Cat-vLLM image; the runtime stage uses Strata `0.2.1-cuda12`. Both digests come from the machine's build log.
+Save the following as `/srv/llm/strata-build/Dockerfile.v100`. The build stage borrows CUDA 12.8.93 and GCC 11.4.0 from the 1Cat-vLLM image, while the runtime stage layers the compiled `sm_70` engine and `strata-vision` binary onto Strata `0.2.1-cuda12`:
 
 ```dockerfile
 ARG BUILD_IMAGE=shig249/1cat-vllm-1.5.0@sha256:013c033c7e088fe6d4eb95887d0a617eca4a38c73fa66423ec81fe3c4b90e576
@@ -264,9 +268,7 @@ LABEL com.strata.engine="0.1.46-linux-x86_64-cuda-cuda12-sm70" \
       com.strata.build="a7bdbfdabc9a-cuda12.8-sm70"
 ```
 
-`strata-vision` handles image encoding and must also be copied into the new component directory.
-
-This machine pulls images through `docker.1ms.run` and `ghcr.1ms.run`. To use Docker Hub and GHCR directly, omit the two `--build-arg` lines below and use the Dockerfile defaults.
+Build the image (omit the two `--build-arg` lines if pulling directly from Docker Hub and GHCR):
 
 ```bash
 docker build --progress=plain \
@@ -276,11 +278,11 @@ docker build --progress=plain \
   -t local/strata:0.2.1-cuda12-sm70 /srv/llm/strata-build
 ```
 
-Look for `CUDA enabled, arch 70` in the build log. If a proxy returns `manifest unknown`, check its image availability or switch to the official source while retaining the same digest.
+Once `CUDA enabled, arch 70` scrolls by in the build output, the engine is ready.
 
-## Configure and start the model
+## Starting the service and tuning vision
 
-The model directory mounts at `/models`, and persistent data at `/data`. Create an API key, reusing any existing key.
+Generate an API key for the server:
 
 ```bash
 cd /srv/llm
@@ -290,7 +292,7 @@ if [ ! -f /srv/llm/strata-data/state/api-key ]; then
 fi
 ```
 
-Save the following as `/srv/llm/docker-compose-strata-qwen3.8-flash-next-iq3-xxs.yml`. For LAN access, replace `127.0.0.1` in the port binding with the server's LAN IP and adjust subsequent request URLs accordingly.
+Save the Compose definition to `/srv/llm/docker-compose-strata-qwen3.8-flash-next-iq3-xxs.yml` (swap `127.0.0.1` for a LAN IP if you want to reach it from another machine):
 
 ```yaml
 services:
@@ -348,19 +350,17 @@ configs:
       {"reasoning_effort":"high"}
 ```
 
-The first start also prepares the pack and MTP. Choose their download source in Compose.
+On first launch, Strata fetches its pack and MTP files from the configured source:
 
 | Download source       | Compose environment variables                                           |
 | --------------------- | ----------------------------------------------------------------------- |
 | Official Hugging Face | `STRATA_SOURCE: huggingface`                                            |
 | HF-Mirror             | `STRATA_SOURCE: huggingface`, plus `HF_ENDPOINT: https://hf-mirror.com` |
-| ModelScope            | `STRATA_SOURCE: modelscope`, as above                                   |
+| ModelScope            | `STRATA_SOURCE: modelscope` (shown above)                               |
 
-Host environment variables do not automatically enter the container. The Hugging Face path uses pinned revisions, while ModelScope serves current files, so account for version differences when switching.
+The `STRATA_SET` string encodes the memory layout we walked through earlier: `resident-budget-gib=32` caps the host RAM expert cache, `kv-resident=32768` bounds the VRAM KV window, and `1536MiB` stays reserved per card. Vision encoding runs on the CPU, and batch MTP is enabled. Full parameter descriptions live in the [Strata Docker documentation](https://github.com/Niko1221/Strata/blob/a7bdbfdabc9a/docs/DOCKER.md).
 
-For memory allocation, `resident-budget-gib=32` controls the host expert cache, `kv-resident=32768` limits the KV window resident in VRAM, and each GPU reserves another 1536MiB. Image encoding runs on the CPU, batch MTP is enabled, and both automatic tuning and expert skipping are disabled. These settings come from the running machine. The [Strata Docker documentation](https://github.com/Niko1221/Strata/blob/a7bdbfdabc9a/docs/DOCKER.md) covers the full configuration.
-
-`256k` sets a per-session limit of 262144 tokens shared by input, images, reasoning, and output. Reduce context and concurrency if RAM is lower or other processes use the GPUs. Free both cards before starting.
+Make sure both GPUs are clear and bring the container up:
 
 ```bash
 cd /srv/llm
@@ -372,15 +372,15 @@ docker compose -f docker-compose-strata-qwen3.8-flash-next-iq3-xxs.yml \
 docker logs -f --tail 100 strata-qwen38-flash-next-iq3-xxs
 ```
 
-Loading the host expert cache takes time too; that stage alone took about 149 seconds on this machine. Press `Ctrl+C` to stop following logs, then check readiness through the health endpoint.
+Populating over 30GiB of expert cache in host RAM takes a moment—about 149 seconds on this server. Once the logs settle, exit with `Ctrl+C` and query the health endpoint:
 
 ```bash
 curl --noproxy '*' --max-time 10 -fsS http://127.0.0.1:8080/health | jq .
 ```
 
-Confirm `loaded=true`, `images=true`, and `max_context=262144`.
+Look for `loaded=true`, `images=true`, and `max_context=262144`.
 
-CPU image encoding defaults to a budget of 300 visual tokens. This machine uses 1024 and 16 threads. To reproduce those settings, stop the service after its configuration has first been generated, change the budget, and start it again.
+By default, CPU image encoding budgets only 300 visual tokens. To raise that ceiling to 1024 tokens across 16 CPU threads, stop the container after its initial config file is generated, patch the JSON, and start it back up:
 
 ```bash
 cd /srv/llm
@@ -394,11 +394,9 @@ jq '.vision.max_tokens = 1024 | .vision.threads = 16' \
 docker compose -f docker-compose-strata-qwen3.8-flash-next-iq3-xxs.yml up -d
 ```
 
-Wait for the health check again. Recheck the image budget if the generated configuration is deleted or the model is reinstalled.
+## First request and routine checks
 
-## Send the first request
-
-Once the health check passes, read the API key and send a short request from the server.
+With the health check passing, read the API key and send a short prompt:
 
 ```bash
 STRATA_API_KEY=$(cat /srv/llm/strata-data/state/api-key)
@@ -416,11 +414,9 @@ curl --noproxy '*' --fail-with-body -sS \
   }' | jq .
 ```
 
-Reasoning defaults to `high`; add `"reasoning_effort": "none"` to the request to turn it off. The output budget includes reasoning, so check whether the answer is complete when `finish_reason=length` appears.
+Reasoning effort defaults to `high`; pass `"reasoning_effort": "none"` in the payload if you want a direct reply without thinking tokens.
 
-Strata includes a web UI for chat and image uploads. After binding to a LAN IP, open `http://SERVER_LAN_IP:8080/` in a browser to test images. The machine passed a tool-call round trip and two five-image digit-recognition tests. Five is the tested count; the configuration does not impose a five-image hard limit.
-
-After editing Compose, use `up -d` to apply changes; a plain `restart` does not recreate the configuration. Keep the model directory, local image, and `/srv/llm/strata-data`, which holds the pack, MTP, vision component, and key. For runtime problems, start with logs, RAM, and VRAM.
+When checking on memory pressure or container health, these four commands tell the story:
 
 ```bash
 docker logs --tail 100 strata-qwen38-flash-next-iq3-xxs
@@ -429,7 +425,9 @@ nvidia-smi
 docker stats --no-stream strata-qwen38-flash-next-iq3-xxs
 ```
 
-## How long do long inputs take?
+## How long do 256K inputs actually take?
+
+Short prompts feel snappy, but pushing the context window near its 256K ceiling makes the wait unmistakable.
 
 | Scenario                         | Input tokens | Result                                                                         |
 | -------------------------------- | ------------ | ------------------------------------------------------------------------------ |
@@ -438,8 +436,8 @@ docker stats --no-stream strata-qwen38-flash-next-iq3-xxs
 | Long request 1, with five images | 257861       | All three text codes and five image numbers correct; about 931.5 seconds total |
 | Long request 2, with five images | 257868       | All three text codes and five image numbers correct; about 738.7 seconds total |
 
-The long-context test placed verification codes near the beginning, middle, and end of the text and attached five number cards to each request. Neither independent new request hit the cache. Both returned the target answers correctly but ended with `length` as subsequent output exhausted the budget. The short tests also used fixed output budgets; their engine-reported generation rates include reasoning and answer tokens. Throughput and total request duration measure different stages and cannot be converted directly into each other.
+In the long-context test, three verification codes were buried near the start, middle, and end of a ~258K-token prompt alongside five number cards. Neither concurrent request hit a warm cache. Both recovered every code and image digit accurately, yet between CPU image encoding, massive prompt prefill, and reasoning generation, each request took 12 to 16 minutes from start to finish.
 
-Follow-up requests were not consistently fast either. One reused 257856 cached tokens and took about 100.9 seconds; the other reported `cached_tokens=0` and took about 365.5 seconds. Check `usage.prompt_tokens_details.cached_tokens` to see whether a long history was reused.
+Even follow-up turns depend heavily on whether the prefix stays cached: one follow-up reused 257,856 cached tokens and finished in 100.9 seconds, while the other missed (`cached_tokens=0`) and took 365.5 seconds.
 
-During the long test, available RAM fell to about 4.29GiB, free VRAM was about 1GiB per card, and swap was in use. The records show no OOM or automatic container restart, but resource headroom remained tight. These results cover verification codes and number-card images; they do not establish long-term multi-user stability or performance on real codebase tasks.
+During that run, free host RAM dropped to 4.29GiB, free VRAM hovered around 1GiB per V100, and swap began to see light use. Offloading to system memory lets two aging 16GB cards hold a 256K multimodal model upright without crashing, but the wall-clock cost of prefilling a quarter-million tokens on Volta hardware remains very real.

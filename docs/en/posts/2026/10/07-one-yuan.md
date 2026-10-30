@@ -5,7 +5,7 @@ tags:
   - Short Fiction
   - Urbanization
   - Family
-description: A short story following three generations of the Chen family as their village becomes a city over forty years, while Chen Musheng still charges one yuan to hem a pair of trousers.
+description: As rice paddies give way to factories and three generations of the Chen family drift into wider worlds, Chen Musheng still hems trousers for one yuan.
 outline: false
 aside: false
 ---
@@ -14,7 +14,7 @@ aside: false
 
 <!-- DESC SEP -->
 
-Rice paddies give way to factories. A village disappears from the map. Three generations of the Chen family find their lives reaching farther afield. Chen Musheng still hems trousers for one yuan.
+As rice paddies give way to factories and three generations of the Chen family drift into wider worlds, Chen Musheng still hems trousers for one yuan.
 
 <!-- DESC SEP -->
 

@@ -5,7 +5,7 @@ tags:
   - AI
   - 本地部署
   - GPU
-description: 为双 V100 编译 Strata，借助 64GB 主机内存运行 Qwen3.8-Flash-Next IQ3_XXS，记录部署过程与长上下文等待时间。
+description: 为两张 16GB V100 编译 Strata 引擎，借助 64GB 主机内存跑起 Qwen3.8-Flash-Next IQ3_XXS，并记录 256K 长上下文的真实耗时。
 outline: deep
 aside: true
 ---
@@ -14,15 +14,17 @@ aside: true
 
 <!-- DESC SEP -->
 
-双 V100 16GB 加 64GB 内存，可以运行 Qwen3.8-Flash-Next IQ3_XXS。需要为 Volta 编译 Strata，并把部分专家与 KV 缓存放进主机内存。短请求生成约 62 tokens/s，两条近满 256K 输入各带五图，请求耗时却达到 12～16 分钟。
+为两张 16GB V100 编译 Strata 引擎，借助 64GB 主机内存跑起 Qwen3.8-Flash-Next IQ3_XXS，并记录 256K 长上下文的真实耗时。
 
 <!-- DESC SEP -->
 
-IQ3_XXS 两片 GGUF 合计约 75.84GB，双卡显存总共 32GB，无法容纳完整权重。Strata 把专家缓存分布在 GPU 和主机内存，再按需读取 SSD，让模型能在这套硬件上运行。
+两片 IQ3_XXS 权重合计 75.84GB，而手头两张 V100 的显存加起来只有 32GB。
 
-另一个门槛来自 V100 架构。现成 Strata 引擎未覆盖 `sm_70`，需要用 CUDA 12 单独编译。下面围绕这两个问题展开，命令在 Ubuntu 服务器 Bash 中以 root 执行。配置取自实机，安装命令按文档整理，尚未在空系统上完整重装。
+想在这台旧服务器上把模型跑起来，得靠 Strata 把专家缓存拆开：一部分留在显存，大头放进 64GB 主机内存，剩下的留在 SSD 里按需读取。
 
-## 硬件与内存分配
+另一道门槛在卡本身。V100 属于 Volta 架构（`sm_70`），预编译的 Strata 引擎没有带上它，必须退回 CUDA 12 手工编译一份。下面记下这套配置在 Ubuntu 服务器上的折腾过程与实测表现。
+
+## 硬件与内存账本
 
 | 项目        | 实机配置                                                             |
 | ----------- | -------------------------------------------------------------------- |
@@ -37,20 +39,24 @@ IQ3_XXS 两片 GGUF 合计约 75.84GB，双卡显存总共 32GB，无法容纳�
 | 容器工具    | Docker `29.8.1`，Compose `v5.5.1`，NVIDIA Container Toolkit `1.20.1` |
 | Strata      | 应用 `0.2.1`，引擎 `0.1.46`                                          |
 
-两片文件承担不同任务。第一片约 47.04GB，保存 transformer 权重；第二片约 28.80GB，保存 per-layer n-gram embedding 查找表，可以留在 SSD，通过内存映射按需访问。第二片不能省略，也不必全部装进显存。[模型仓库](https://huggingface.co/ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF/blob/ed59f92082b1e93c0e96d60a8b11aab089b52f09/README.md#available-files)给出文件用途与体积。
+模型的两片 GGUF 分工不同。第一片 47.04GB，装着核心的 transformer 权重；第二片 28.80GB，存着 per-layer n-gram embedding 查找表，可以留在 SSD 上通过内存映射按需翻阅，不必硬塞进显存。[模型仓库文档](https://huggingface.co/ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF/blob/ed59f92082b1e93c0e96d60a8b11aab089b52f09/README.md#available-files)里写明了两者的体积和用途。
 
-本机按层分配双卡，GPU 0 运行第 0～24 层，GPU 1 运行第 25～47 层，约 30.73GiB 专家数据驻留主机内存。长上下文还要占用 KV 缓存，因此采用 INT8，每个 QSA 层在显存保留 32768 个 cells，其余放在主机内存。64GB 内存在这里承担实际负载，后文长测期间可用内存最低约 4.29GiB。
+在这台机器上，GPU 0 跑第 0～24 层，GPU 1 跑第 25～47 层，另有约 30.73GiB 的专家数据常驻主机内存。
 
-## V100 需要 CUDA 12
+为了省下空间给 256K 长上下文，KV 缓存压到了 INT8，每个 QSA 层在显存里只留 32768 个 cells，其余全部溢到主机内存。64GB 内存在这里被吃得很紧——后面跑满长上下文测试时，系统可用内存一度跌到只剩 4.29GiB。
 
-[NVIDIA 支持矩阵](https://docs.nvidia.com/datacenter/tesla/drivers/cuda-toolkit-driver-and-architecture-matrix.html)列出 Volta 计算能力为 7.0，最后支持 CUDA 12.x，最后驱动分支为 R580。本机采用 580.178.04 驱动，容器内使用 CUDA 12.8.93 编译。`nvidia-smi` 顶部显示 `CUDA Version: 13.0`，表示驱动支持上限，不能据此改用 CUDA 13 编译 V100 引擎。
+## 为什么退回 CUDA 12
 
-宿主机需要驱动、Docker 和 NVIDIA Container Toolkit，CUDA 编译环境由镜像提供。已有 GPU 容器环境可以直接看本节末尾检查命令；新环境安装放在下面。下载默认使用国内入口，代码注释保留官方源。
+翻看 [NVIDIA 支持矩阵](https://docs.nvidia.com/datacenter/tesla/drivers/cuda-toolkit-driver-and-architecture-matrix.html)，Volta 架构的计算能力停在 7.0，最后支持的 Toolkit 是 CUDA 12.x，驱动定格在 R580 分支。
+
+哪怕宿主机的 580.178.04 驱动在 `nvidia-smi` 右上角标着 `CUDA Version: 13.0`，那也只是驱动层面的兼容上限，真拿 CUDA 13 去编译 `sm_70` 是行不通的。这里我们在容器里用 CUDA 12.8.93 编译。
+
+宿主机只要装好驱动、Docker 和 NVIDIA Container Toolkit 即可。如果你手头已经有现成的 GPU 容器环境，直接跳到本节末尾跑一行检查命令就行；新机器的初始化脚本折在下面。
 
 <details>
 <summary>Ubuntu 26.04 基础环境安装</summary>
 
-安装介质可从 [Ubuntu 官方站](https://releases.ubuntu.com/26.04/)或[清华镜像站](https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/26.04/)下载。下面源配置用于新装 Ubuntu 26.04 x86_64，已有自定义源时按实际情况调整。安全更新遵循[清华建议](https://mirrors.tuna.tsinghua.edu.cn/help/ubuntu/)，保留官方入口。
+安装介质可从 [Ubuntu 官方站](https://releases.ubuntu.com/26.04/)或[清华镜像站](https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/26.04/)获取。安全更新遵循[清华镜像建议](https://mirrors.tuna.tsinghua.edu.cn/help/ubuntu/)，保留官方源。
 
 ```bash
 UBUNTU_ARCHIVE=https://mirrors.tuna.tsinghua.edu.cn/ubuntu
@@ -77,13 +83,13 @@ apt-cache policy nvidia-driver-580
 apt-get install -y nvidia-driver-580
 ```
 
-确认驱动包仍属 580 分支。安装后重启，SSH 会断开。
+确认驱动属于 580 分支后重启机器。
 
 ```bash
 reboot
 ```
 
-重新登录后安装 Docker。软件包采用[清华 Docker CE 镜像](https://mirrors4.tuna.tsinghua.edu.cn/help/docker-ce/)，也可切换[官方仓库](https://docs.docker.com/engine/install/ubuntu/)。已有 Docker 时先核对官方文档中冲突包说明。
+重连后安装 Docker，可按网络环境选用[清华 Docker CE 镜像](https://mirrors4.tuna.tsinghua.edu.cn/help/docker-ce/)或[官方源](https://docs.docker.com/engine/install/ubuntu/)。
 
 ```bash
 DOCKER_REPO=https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/ubuntu
@@ -110,7 +116,7 @@ docker --version
 docker compose version
 ```
 
-NVIDIA Container Toolkit 使用[中科大镜像](https://mirrors.ustc.edu.cn/help/libnvidia-container.html)或[官方源](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)。
+接着配置 NVIDIA Container Toolkit（[中科大镜像](https://mirrors.ustc.edu.cn/help/libnvidia-container.html)或[官方源](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)）：
 
 ```bash
 NVIDIA_REPO=https://mirrors.ustc.edu.cn/libnvidia-container
@@ -136,7 +142,7 @@ apt-get install -y nvidia-container-toolkit
 nvidia-ctk runtime configure --runtime=docker
 ```
 
-重启 Docker 会影响现有容器，需提前安排停机。
+重启 Docker 让运行时配置生效：
 
 ```bash
 systemctl restart docker
@@ -145,7 +151,7 @@ nvidia-ctk --version
 
 </details>
 
-用 CUDA 容器检查双卡是否可见。`docker.1ms.run` 沿用实机下载入口，官方源为 Docker Hub。
+拉起一个最小 CUDA 容器，确认里面能同时看到两张 V100：
 
 ```bash
 CUDA_IMAGE=docker.1ms.run/nvidia/cuda:12.8.1-runtime-ubuntu24.04
@@ -153,11 +159,9 @@ CUDA_IMAGE=docker.1ms.run/nvidia/cuda:12.8.1-runtime-ubuntu24.04
 docker run --rm --gpus all "${CUDA_IMAGE}" nvidia-smi
 ```
 
-容器内能看到两张 V100，再继续下载和编译。
+## 下载两片权重与视觉投影
 
-## 两片权重都要下载
-
-宿主机通过 uv 调用 Hugging Face CLI。先选 GitHub 下载入口，安装 uv 和获取源码都会用到 `GITHUB_PREFIX`。下面采用 [GH-Proxy](https://gh-proxy.com/)，直连时留空。已有 uv 可以略过后续安装命令，二进制发布方式见[官方文档](https://docs.astral.sh/uv/getting-started/installation/#github-releases)。
+宿主机通过 `uv` 调起 Hugging Face CLI 下载模型。若机器上还没有 `uv`，可以先从 GitHub Releases（或经由 [GH-Proxy](https://gh-proxy.com/)）装好二进制文件，细节见 [uv 安装文档](https://docs.astral.sh/uv/getting-started/installation/#github-releases)：
 
 ```bash
 GITHUB_PREFIX=https://gh-proxy.com/
@@ -172,7 +176,7 @@ install -m 0755 /tmp/uv-x86_64-unknown-linux-gnu/uvx /usr/local/bin/uvx
 uv --version
 ```
 
-模型与视觉文件约 76.75GB，另外还有 pack 约 1.5GiB、MTP 约 6.5GiB，以及构建镜像和缓存。留足磁盘空间后创建目录，下载两片 GGUF 和 `mmproj`。Python 包用清华 PyPI，模型用 [HF-Mirror](https://hf-mirror.com/)，注释中保留官方入口。
+两片权重加上视觉文件约 76.75GB，后续首次启动还要下载约 1.5GiB 的 pack 和 6.5GiB 的 MTP，磁盘上最好预留 100GB 以上的余量。下面通过 [HF-Mirror](https://hf-mirror.com/) 拉取固定 revision 的文件：
 
 ```bash
 mkdir -p /srv/llm/models/qwen/Qwen3.8-Flash-Next-GSQ-RCO \
@@ -193,7 +197,7 @@ UV_PYTHON_DOWNLOADS=never uvx --python /usr/bin/python3 \
   --local-dir /srv/llm/models/qwen/Qwen3.8-Flash-Next-GSQ-RCO
 ```
 
-revision 与下文固定版本 Strata 源码一致。两片保留原文件名，启动时指向第一片。把视觉文件复制到 Strata 数据目录，安装器会复用本地文件。
+保持两片 GGUF 的原始文件名不变，启动时只传第一片路径即可。顺手把 `mmproj` 复制一份到 Strata 数据目录，免去启动时重复下载：
 
 ```bash
 install -D -m 0644 \
@@ -203,9 +207,9 @@ install -D -m 0644 \
 
 ## 编译 sm_70 引擎
 
-[Strata V100 文档](https://github.com/Niko1221/Strata/blob/a7bdbfdabc9a/docs/NVIDIA_V100.md)给出社区实验构建入口。关键是 CUDA 12、架构参数 `70` 和 `STRATA_EXPERIMENTAL_SM60=ON`。这个开关虽然名为 SM60，也负责放行 Volta。
+[Strata 的 V100 文档](https://github.com/Niko1221/Strata/blob/a7bdbfdabc9a/docs/NVIDIA_V100.md)里藏着编译要领：CUDA 12、架构填 `70`，再打开 `STRATA_EXPERIMENTAL_SM60=ON`。这个开关名字写着 SM60，实际上也管着 Volta 的放行。
 
-下载固定版本 Strata 与 llama.cpp 源码，避免编译结果随主分支变化。`GITHUB_PREFIX` 仍可选择直连或国内代理。
+先把固定 commit 的 Strata 与 llama.cpp 源码拉下来：
 
 ```bash
 cd /srv/llm/strata-build
@@ -225,7 +229,7 @@ tar -xzf llama-3cf03257.tar.gz \
   --strip-components=1 -C Strata-a7bdbfdabc9a/third_party/llama.cpp
 ```
 
-保存下面内容为 `/srv/llm/strata-build/Dockerfile.v100`。构建阶段借用 1Cat-vLLM 镜像内 CUDA 12.8.93 和 GCC 11.4.0，运行阶段使用 Strata `0.2.1-cuda12`。两个 digest 来自实机构建日志。
+接着写入 `/srv/llm/strata-build/Dockerfile.v100`。构建阶段借用了 1Cat-vLLM 镜像里现成的 CUDA 12.8.93 与 GCC 11.4.0，运行阶段则切回 Strata `0.2.1-cuda12`，顺带把负责图片编码的 `strata-vision` 拷进新组件目录：
 
 ```dockerfile
 ARG BUILD_IMAGE=shig249/1cat-vllm-1.5.0@sha256:013c033c7e088fe6d4eb95887d0a617eca4a38c73fa66423ec81fe3c4b90e576
@@ -264,9 +268,7 @@ LABEL com.strata.engine="0.1.46-linux-x86_64-cuda-cuda12-sm70" \
       com.strata.build="a7bdbfdabc9a-cuda12.8-sm70"
 ```
 
-`strata-vision` 负责图片编码，也要复制到新组件目录。
-
-本机通过 `docker.1ms.run` 与 `ghcr.1ms.run` 拉取镜像。使用官方 Docker Hub 和 GHCR 时，省略下面两行 `--build-arg`，Dockerfile 默认值就会生效。
+开始构建镜像（直连 Docker Hub 与 GHCR 时可去掉两行 `--build-arg`）：
 
 ```bash
 docker build --progress=plain \
@@ -276,11 +278,11 @@ docker build --progress=plain \
   -t local/strata:0.2.1-cuda12-sm70 /srv/llm/strata-build
 ```
 
-构建日志应出现 `CUDA enabled, arch 70`。若代理返回 `manifest unknown`，核对镜像同步状态或切回官方源，保留相同 digest。
+看到日志里打出 `CUDA enabled, arch 70`，这一步就算稳了。
 
-## 配置并启动模型
+## 启动与视觉配置
 
-模型目录挂载到 `/models`，持久数据挂载到 `/data`。先创建 API Key，已有密钥继续复用。
+先生成一份本地 API Key：
 
 ```bash
 cd /srv/llm
@@ -290,7 +292,7 @@ if [ ! -f /srv/llm/strata-data/state/api-key ]; then
 fi
 ```
 
-保存为 `/srv/llm/docker-compose-strata-qwen3.8-flash-next-iq3-xxs.yml`。局域网访问时，将端口绑定中 `127.0.0.1` 改成服务器内网 IP，后文请求地址同步调整。
+将下面的配置保存为 `/srv/llm/docker-compose-strata-qwen3.8-flash-next-iq3-xxs.yml`（如需局域网访问，把 `127.0.0.1` 换成内网 IP）：
 
 ```yaml
 services:
@@ -348,19 +350,17 @@ configs:
       {"reasoning_effort":"high"}
 ```
 
-首次启动还需准备 pack 和 MTP，下载入口在 Compose 中选择。
+首次启动会自动补齐 pack 和 MTP，下载源可通过环境变量切换：
 
 | 下载入口            | Compose 环境变量                                                        |
 | ------------------- | ----------------------------------------------------------------------- |
 | Hugging Face 官方源 | `STRATA_SOURCE: huggingface`                                            |
 | HF-Mirror           | `STRATA_SOURCE: huggingface`，另加 `HF_ENDPOINT: https://hf-mirror.com` |
-| ModelScope          | `STRATA_SOURCE: modelscope`，即上面示例                                 |
+| ModelScope          | `STRATA_SOURCE: modelscope`（示例默认）                                 |
 
-宿主机环境变量不会自动进入容器。Hugging Face 路径使用固定 revision，ModelScope 使用当前文件，切换时留意版本差异。
+`STRATA_SET` 里的几项数字就是前面算过的内存账：`resident-budget-gib=32` 划出主机内存里的专家缓存预算，`kv-resident=32768` 限制显存内的 KV 窗口，每张卡再留出 1536MiB 余量。图片编码放在 CPU 上跑，批量 MTP 开启。完整参数表可以查阅 [Strata Docker 文档](https://github.com/Niko1221/Strata/blob/a7bdbfdabc9a/docs/DOCKER.md)。
 
-资源配置中，`resident-budget-gib=32` 控制主机专家缓存，`kv-resident=32768` 缩小 KV 显存驻留窗口，每卡另预留 1536MiB。图片放在 CPU，开启批量 MTP，自动调优与专家跳过均关闭。这组参数沿用实机，[Strata Docker 文档](https://github.com/Niko1221/Strata/blob/a7bdbfdabc9a/docs/DOCKER.md)可查完整说明。
-
-`256k` 是每会话 262144 tokens 上限，输入、图片、思考和输出共用这份预算。内存较少或另有 GPU 进程时，先降低上下文和并发。释放双卡后启动。
+确认双卡空闲后拉起容器：
 
 ```bash
 cd /srv/llm
@@ -372,15 +372,15 @@ docker compose -f docker-compose-strata-qwen3.8-flash-next-iq3-xxs.yml \
 docker logs -f --tail 100 strata-qwen38-flash-next-iq3-xxs
 ```
 
-加载主机专家缓存也需要时间，本机仅这一阶段就约 149 秒。按 `Ctrl+C` 退出日志跟随，用健康接口判断是否就绪。
+把 30 多 GiB 的专家缓存搬进主机内存需要一点耐心，实机光是这一步就花了约 149 秒。等日志平稳后，按 `Ctrl+C` 退出来查一下健康接口：
 
 ```bash
 curl --noproxy '*' --max-time 10 -fsS http://127.0.0.1:8080/health | jq .
 ```
 
-确认 `loaded=true`、`images=true`、`max_context=262144`。
+看到 `loaded=true`、`images=true`、`max_context=262144` 就说明就绪了。
 
-CPU 图片编码默认预算为 300 个视觉 tokens，本机改为 1024，使用 16 线程。要复现图片设置，在首次生成配置后停止服务，修改预算，再启动。
+CPU 视觉编码默认只给 300 个视觉 tokens。想看清细节，可以在首次生成配置文件后停掉容器，把预算调到 1024、线程设为 16，再重新启动：
 
 ```bash
 cd /srv/llm
@@ -394,11 +394,9 @@ jq '.vision.max_tokens = 1024 | .vision.threads = 16' \
 docker compose -f docker-compose-strata-qwen3.8-flash-next-iq3-xxs.yml up -d
 ```
 
-重新等待健康检查通过。删除生成配置或重新安装模型后，需要再次核对图片预算。
+## 第一条请求与日常巡检
 
-## 发出第一条请求
-
-健康检查通过后，读取 API Key，在服务器上发送短请求。
+服务就绪后，读出密钥发一条短请求试试水：
 
 ```bash
 STRATA_API_KEY=$(cat /srv/llm/strata-data/state/api-key)
@@ -416,11 +414,9 @@ curl --noproxy '*' --fail-with-body -sS \
   }' | jq .
 ```
 
-默认思考为 `high`，请求中增加 `"reasoning_effort": "none"` 可以关闭。输出预算包含思考，返回 `finish_reason=length` 时需检查正文是否完整。
+配置里默认把思考强度设成了 `high`，如果只想要简短回复，可以在请求体里加上 `"reasoning_effort": "none"`。
 
-Strata 自带 Web UI，支持对话和图片上传。绑定内网 IP 后，在浏览器打开 `http://服务器内网IP:8080/` 即可验证图片。本机通过工具调用往返和两组五图数字识别；五张是验证数量，当前配置没有五图硬上限。
-
-修改 Compose 后用 `up -d` 应用参数，普通 `restart` 不会重建配置。模型目录、本地镜像和 `/srv/llm/strata-data` 都需保留，数据目录保存 pack、MTP、视觉组件与密钥。运行异常时先看日志、内存和显存。
+需要排查运行状态或观察内存水位时，通常看这四条输出：
 
 ```bash
 docker logs --tail 100 strata-qwen38-flash-next-iq3-xxs
@@ -429,7 +425,9 @@ nvidia-smi
 docker stats --no-stream strata-qwen38-flash-next-iq3-xxs
 ```
 
-## 长输入会等多久
+## 256K 长输入要等多久
+
+短对话很快，但一旦把上下文推到 256K 边缘，等待时间就会陡增。
 
 | 场景             | 输入 tokens | 结果                                              |
 | ---------------- | ----------- | ------------------------------------------------- |
@@ -438,8 +436,8 @@ docker stats --no-stream strata-qwen38-flash-next-iq3-xxs
 | 长请求 1，附五图 | 257861      | 文本三处校验码和五图数字均正确，总耗时约 931.5 秒 |
 | 长请求 2，附五图 | 257868      | 文本三处校验码和五图数字均正确，总耗时约 738.7 秒 |
 
-长测在文本前、中、后部埋入校验码，每条附五张数字卡片。两条独立新请求均未命中缓存，目标答案正确，但都以 `length` 结束，后续输出触及预算上限。短测速率取自引擎生成统计，也使用固定输出预算，包含思考和正文。表中吞吐与请求总耗时衡量不同阶段，不能直接互算。
+长上下文测试在接近 258K tokens 的文本头、中、尾各埋了一处校验码，同时附上五张数字图片。两条并发请求都没有命中缓存，虽然找出了全部校验码和图片数字，但算上图片编码、长文本预填充和思考生成，整条请求足足跑了 12 到 16 分钟。
 
-追问也未必快。一路命中 257856 tokens 缓存，总耗时约 100.9 秒；另一路 `cached_tokens=0`，耗时约 365.5 秒。长历史是否复用，需要查看 `usage.prompt_tokens_details.cached_tokens`。
+紧接着追问一轮，命中 257856 tokens 缓存的那一路用了约 100.9 秒；另一路 `cached_tokens=0` 重新计算，又花了 365.5 秒。
 
-长测期间可用内存最低约 4.29GiB，双卡显存余量约 1GiB，Swap 同时存在占用。记录中没有 OOM 或容器自动重启，资源余量仍然紧张。这些结果来自校验码与数字图片样例，尚未覆盖长期多用户运行和真实代码仓库任务。
+长测期间，主机可用内存最低只剩 4.29GiB，每张 V100 的显存余量也只有 1GiB 左右，Swap 开始轻微介入。靠着内存卸载，两张老卡确实能把 256K 的多模态大模型稳稳端起来，但面对几十万字的长文预填充，算力与带宽的物理边界依然诚实。

@@ -7,7 +7,7 @@ tags:
   - macOS
   - Command Line
   - Dev Tools
-description: Starting from a real need to reuse a Codex project setup in Claude Code, this post explains hard links, symlinks, Junctions, shortcuts, and how to choose safely across platforms.
+description: Starting from reusing a Codex project setup in Claude Code, here is how hard links, symlinks, Junctions, and desktop shortcuts actually differ.
 outline: deep
 aside: true
 ---
@@ -16,289 +16,141 @@ aside: true
 
 <!-- DESC SEP -->
 
-To let Claude Code reuse a project's `AGENTS.md` and `.agents/skills`, I needed more than a shortcut I could double-click. I needed a filesystem link that development tools could follow transparently. This post uses that problem to explain when to choose a hard link, symlink, Junction, or desktop shortcut.
+Starting from reusing a Codex project setup in Claude Code, here is how hard links, symlinks, Junctions, and desktop shortcuts actually differ.
 
 <!-- DESC SEP -->
 
-I use Codex for most projects, so my repositories already contain `AGENTS.md`
-and `.agents/skills`. Copying both into a separate Claude Code setup would leave
-two versions that would eventually drift apart.
+Most of my repositories already carry `AGENTS.md` and `.agents/skills` for Codex. When I open the same project in Claude Code, duplicating those files into a second directory guarantees they will drift apart within a week.
 
-This sounds like a job for a “shortcut,” but Windows alone offers several
-similar-looking mechanisms: hard links, symbolic links, Junctions, and `.lnk`
-files. Some share file data, some store a target path, and some only make sense
-to Explorer. Pick the wrong one and a person may be able to open it while Git,
-the command line, or another development tool cannot.
+It sounds like a job for a simple “shortcut,” yet Windows alone has four mechanisms that look similar from a distance: hard links, symbolic links, Junctions, and `.lnk` files. Some share raw file data, some store a path, and some only make sense to Explorer. Pick the wrong one and double-clicking works fine while Git and CLI tools hit a wall.
 
-## The Short Answer
+## Which One to Reach For
 
-For development work, choose by what you need the link to do.
+For development work, the dividing line is whether a program can open the link path as if it were the real thing:
 
-| Need                                                 | Use                   | Why                                                                 |
-| ---------------------------------------------------- | --------------------- | ------------------------------------------------------------------- |
-| Reference another file or directory inside a project | Symbolic link         | Works for both files and directories, and Git can store it          |
-| Map one local Windows directory to another           | Junction              | Needs no symlink creation privilege, but only works for directories |
-| Give several file names the same data                | Hard link             | Every name resolves to the same file data                           |
-| Give a user something to double-click                | `.lnk` / Finder Alias | The desktop environment opens the target                            |
+| Need | Choice | Why |
+| --- | --- | --- |
+| Point to a file or folder inside a repo | Symbolic link | Works for files and folders, and travels cleanly through Git |
+| Map a local folder on Windows | Junction | Needs no admin privilege or Developer Mode, for local folders only |
+| Give multiple filenames the exact same data | Hard link | Every name points straight to the same underlying file data |
+| Give a human an icon to double-click | `.lnk` / Finder Alias | Resolved by the desktop shell, not by CLI tools or libraries |
 
-The important question is not which command looks familiar. It is whether a
-tool can treat the link path as the target path. Symlinks, hard links, and
-Junctions are transparent to filesystem access. Windows `.lnk` files and Finder
-Aliases need the desktop environment to resolve them. Code, configuration,
-Docker mounts, and IDE workspaces need the former behavior.
+Whenever the consumer is Git, a compiler, Docker, or an IDE, you need one of the first three filesystem links—never a desktop shortcut.
 
-For the setup in this post, `CLAUDE.md` uses Claude Code's import syntax to read
-`AGENTS.md`, while `.claude/skills` is a relative symlink to `.agents/skills`.
-The first is an application-level reference; only the second is a filesystem
-link.
-
-## What Each Link Actually Points To
-
-The four mechanisms reduce to three useful mental models.
+## Three Mental Models
 
 ```text
-Hard link:          several names → the same file data
-Symlink / Junction: one entry      → another path
-Shortcut / Alias:  desktop app    → reads shortcut file → opens target
+Hard link:          multiple names → the same file data
+Symlink / Junction: one path       → redirects to another path
+Shortcut / Alias:   desktop shell  → reads shortcut file → opens target
 ```
 
-### Hard Links: One File, Several Names
+### Hard Links: One File, Multiple Names
 
-A hard link is not “one file pointing to another file.” It is another file name
-for the same underlying file data.
-
-```text
-report.txt ─┐
-            ├── the same file content
-backup.txt ─┘
-```
-
-An in-place edit to the data is visible through either name. Some editors save
-by writing a new file and replacing the old path, however; that detaches the
-replaced name from the original hard-link relationship. Removing
-one name only removes one entry; the data is freed after the final hard link is
-gone.
-
-Create one in Windows PowerShell:
+A hard link does not point one filename at another filename; it binds an equal filename to the same underlying data on disk.
 
 ```powershell
+# Windows PowerShell
 New-Item -ItemType HardLink -Path .\backup.txt -Target .\report.txt
 ```
 
-On macOS, use `ln` without `-s`:
-
 ```bash
+# macOS / Linux
 ln report.txt backup.txt
 ```
 
-Hard links work for files, cannot cross filesystems or volumes, and are not
-independent backups. They solve “several names for the same data,” not “jump
-from one path to another.”
+Delete one name and the data stays put until the last link is removed. Hard links only work for files on the same volume, though, and editors that save by writing a temp file and renaming it will quietly sever the link.
 
 ### Symbolic Links: Storing a Target Path
 
-A symlink is a special file that stores a target path. When a program accesses
-the link, the filesystem continues resolving that path. If the target is moved,
-renamed, or deleted, the link dangles.
-
-Windows PowerShell can create symlinks to both files and directories:
+A symlink is a tiny special file that holds a target path. Programs reading the symlink follow that path transparently; if the target is moved or deleted, the symlink dangles.
 
 ```powershell
-New-Item -ItemType SymbolicLink `
-  -Path .\config.json `
-  -Target D:\app\config\config-prod.json
-
-New-Item -ItemType SymbolicLink `
-  -Path C:\workspace\.claude `
-  -Target $HOME\.claude
+# Windows PowerShell (requires Developer Mode or an elevated shell)
+New-Item -ItemType SymbolicLink -Path .\config.json -Target D:\app\config\config-prod.json
+New-Item -ItemType SymbolicLink -Path C:\workspace\.claude -Target $HOME\.claude
 ```
 
-Creating a symlink on Windows normally requires an elevated terminal or
-Developer Mode. That privilege is needed to create the link, not to access its
-target afterward.
-
-On macOS, files and directories use the same command:
-
 ```bash
+# macOS / Linux
 ln -s ~/.claude ~/workspace/.claude
 ```
 
-A symlink target may be absolute or relative. Relative targets resolve from the
-directory containing the link, so they work well for paths that keep the same
-relationship inside a project. Absolute targets are often clearer for a home
-directory or a fixed system location.
+Symlinks work for both files and directories and accept relative paths. Inside a repository, a relative target keeps working no matter where the repo is cloned.
 
-### Junctions: Local Directory Mapping on Windows
+### Junctions: Local Folder Redirection on Windows
 
-A Junction is a Windows directory redirection mechanism. It only works for
-directories and is useful for mapping one local directory to another. Creating
-one normally requires neither elevation nor Developer Mode.
+A Junction is a Windows-specific directory link. It only targets local directories, with the nice perk that creating one requires no special permissions:
 
 ```powershell
-New-Item -ItemType Junction `
-  -Path C:\workspace\.codex `
-  -Target $HOME\.codex
+New-Item -ItemType Junction -Path C:\workspace\.codex -Target $HOME\.codex
 ```
 
-Use a symlink when the target is a file or a network UNC path, or when the link
-itself needs to travel through Git across platforms. Junctions are best kept as
-local Windows directory mappings.
+For local machine folder mappings that stay outside Git, a Junction is often the most frictionless choice on Windows.
 
-### Shortcuts: For People to Click, Not Programs to Resolve
+## In Practice: Sharing a Codex Setup with Claude Code
 
-Windows `.lnk` files and macOS Finder Aliases are interpreted by the desktop
-environment. Explorer or Finder opens the target when a user double-clicks the
-shortcut. A command-line program reading `config.lnk`, however, receives the
-shortcut file itself.
-
-That makes shortcuts useful for application launchers and favorite folders, but
-not for code, configuration, Docker mounts, or IDE workspaces. If the consumer
-is a program rather than a person, do not use a desktop shortcut.
-
-## Reusing a Codex Project Setup in Claude Code
-
-The original problem needs two references at different layers:
+To share my Codex configuration with Claude Code, the two pieces live at different layers:
 
 ```text
-CLAUDE.md        --Claude Code import syntax--> AGENTS.md
-.claude/skills   --filesystem symlink---------> .agents/skills
+CLAUDE.md        --Claude Code @import--> AGENTS.md
+.claude/skills   --relative symlink-----> .agents/skills
 ```
 
-### Import `AGENTS.md` from `CLAUDE.md`
+### Importing `AGENTS.md` from `CLAUDE.md`
 
-Claude Code reads `CLAUDE.md` and supports `@path` imports. The project-root
-`CLAUDE.md` only needs one line:
+Claude Code supports `@path` imports out of the box, so `CLAUDE.md` in the project root only needs a single line:
 
 ```markdown
 @AGENTS.md
 ```
 
-Create it in Git Bash or on macOS:
+Keeping `CLAUDE.md` as a regular file is handier than symlinking it—if I ever need a note specific to Claude Code, I can append it right below the import.
 
-```bash
-printf '@AGENTS.md' > CLAUDE.md
-```
+### Linking the `skills` Directory
 
-The PowerShell equivalent is:
+For `.claude/skills`, Claude Code needs to traverse into `.agents/skills` transparently, which calls for a relative symlink.
 
-```powershell
-Set-Content `
-  -Path .\CLAUDE.md `
-  -Value '@AGENTS.md' `
-  -Encoding utf8NoBOM `
-  -NoNewline
-```
-
-Keeping this as a regular file is more flexible than using a symlink. You can
-append Claude-specific instructions later without copying the contents of
-`AGENTS.md`.
-
-### Point Both Skills Directories at the Same Content
-
-Claude Code must see the real content inside `.agents/skills` when it reads
-`.claude/skills`, so this relationship uses a relative symlink.
-
-In Git Bash or on macOS:
+On macOS or Linux:
 
 ```bash
 mkdir -p .claude
 ln -s ../.agents/skills .claude/skills
 ```
 
-[PowerShell 7.1 and later](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/new-item#example-7-create-a-symbolic-link-to-a-file-or-folder) support relative targets for directory symlinks on Windows:
+On Windows ([PowerShell 7.1+](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/new-item#example-7-create-a-symbolic-link-to-a-file-or-folder)):
 
 ```powershell
 New-Item -ItemType Directory -Path .\.claude -Force | Out-Null
-
-New-Item -ItemType SymbolicLink `
-  -Path .\.claude\skills `
-  -Target ..\.agents\skills
+New-Item -ItemType SymbolicLink -Path .\.claude\skills -Target ..\.agents\skills
 ```
 
-The target `../.agents/skills` resolves from the directory containing
-`.claude/skills`. Moving the whole repository preserves that relationship, so
-the link continues to work.
+Watch out for Git Bash on Windows: unless `MSYS=winsymlinks:nativestrict` is enabled, `ln -s` defaults to copying the directory instead of creating a real symlink (see the [MSYS symlinks docs](https://www.msys2.org/docs/symlinks/)). Running `New-Item` in PowerShell avoids that trap.
 
-In Git Bash, also check the [MSYS symlink mode](https://www.msys2.org/docs/symlinks/): `ln -s` may copy the target
-instead of creating a native Windows symlink. You can use the PowerShell
-command above instead. To stay with Git Bash, check the
-`winsymlinks:nativestrict` setting in `MSYS` and your creation privileges, then
-verify `LinkType` and the Git mode as described below.
+### Keeping the Symlink Intact in Git
 
-### Make Sure Git Preserves the Symlink
-
-On Windows, inspect the repository setting first:
-
-```bash
-git config --get core.symlinks
-```
-
-If it prints `false`, enable symlink handling before creating and staging the
-link:
+On Windows, make sure [`core.symlinks`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-coresymlinks) is enabled before staging:
 
 ```bash
 git config core.symlinks true
-```
-
-[`core.symlinks`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-coresymlinks) controls whether Git checks out a real symlink or a small plain
-file containing the target path. It does not grant Windows permission to create
-symlinks; an elevated terminal or Developer Mode remains a separate
-prerequisite.
-
-After creating the link, inspect what the filesystem and Git see:
-
-```powershell
-Get-Item .\.claude\skills | Select-Object LinkType, Target
-```
-
-```bash
 git add AGENTS.md CLAUDE.md .agents .claude
 git ls-files -s .claude/skills
 ```
 
-The `git ls-files` output should begin with mode `120000`, which means Git has
-staged a symlink instead of ordinary files from the target directory. Once that
-looks right, commit the setup:
+When `git ls-files -s` prints mode `120000`, Git has recorded the symlink itself rather than a duplicate tree of files.
 
-```bash
-git commit -m "chore: share agent configuration"
-```
+## Removing Links Safely
 
-## Inspect Before Removing a Link
-
-Removing a symlink or Junction only requires removing the link object. There is
-no need to recursively clear a directory.
-
-In Windows PowerShell:
+To remove a symlink or Junction, delete the link entry itself without recursive flags or a trailing slash:
 
 ```powershell
-Get-Item .\.claude\skills | Select-Object LinkType, Target
+# PowerShell
 Remove-Item .\.claude\skills
 ```
 
-On macOS or in Git Bash:
-
 ```bash
-ls -ld .claude/skills
+# macOS / Linux (no trailing slash)
 rm .claude/skills
 ```
 
-Do not aim a recursive removal command at a linked directory with a trailing
-slash before confirming what the path is. Inspect the target, then remove the
-link itself with a non-recursive command. That makes the intent clear and keeps
-“remove this entry” distinct from “empty this directory.”
-
-Hard links have no original-versus-copy hierarchy. Removing any one name only
-removes that entry; the remaining names still access the same data.
-
-## Three Things to Remember
-
-- A hard link gives the same file data several names.
-- A symlink or Junction redirects one path to another path.
-- A shortcut or Alias relies on the desktop environment and is meant for people
-  to click.
-
-For development projects, start with a symlink unless you have a specific
-constraint. Reach for a hard link, Junction, or desktop shortcut only when the
-requirement is specifically shared file data on one volume, local Windows
-directory mapping, or a double-clickable desktop entry.
+Check the entry with `Get-Item` or `ls -ld` first, remove the pointer, and the target directory stays untouched.

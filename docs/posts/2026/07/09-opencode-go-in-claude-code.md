@@ -6,7 +6,7 @@ tags:
   - OpenCode
   - OpenCode Go
   - 踩坑
-description: 记录 2026-07-09 在 Claude Code v2.1.205 接入 OpenCode Go 时遇到的两个坑：BASE_URL 的 /v1 与鉴权头。
+description: 记录在 Claude Code v2.1.205 接入 OpenCode Go 时踩到的两个坑：BASE_URL 多写的 /v1 与鉴权头格式。
 outline: deep
 aside: true
 ---
@@ -15,19 +15,17 @@ aside: true
 
 <!-- DESC SEP -->
 
-本文记录我在 2026-07-09、Claude Code v2.1.205 中接入 OpenCode Go 时遇到的两个坑：BASE_URL 的 `/v1` 和鉴权头。模型、价格、端点与客户端行为都可能变化；动手前请先核对官方文档。
+记录在 Claude Code v2.1.205 接入 OpenCode Go 时踩到的两个坑：BASE_URL 多写的 `/v1` 与鉴权头格式。
 
 <!-- DESC SEP -->
 
-## OpenCode Go 是什么，为什么想接到 Claude Code
+## 为什么想把 OpenCode Go 接到 Claude Code
 
-[OpenCode Go](https://opencode.ai/docs/zh-cn/go) 是 OpenCode 的模型订阅服务。本文记录的方案是首月 5 美元，之后每月 10 美元；当时的服务说明称，模型托管在美国、欧盟和新加坡，不保留数据、不用于训练。这些是服务方的说明，不是本文独立验证的结果。
+[OpenCode Go](https://opencode.ai/docs/zh-cn/go) 是 OpenCode 推出的模型订阅服务，在它自家的 TUI 里接入很顺手：`/connect` 选 `OpenCode Go`，贴上 API Key，`/models` 就能拉出列表。
 
-它在 OpenCode 自己的 TUI 里当然是一等公民：`/connect` 选 `OpenCode Go`，粘 API key，`/models` 就能看到清单。
+不过我平时顺手的 CLI 还是 Claude Code。麻烦在于，Claude Code 原生只认 Anthropic 的 Messages API，而 OpenCode Go 里大多数模型走的是 OpenAI 兼容的 `chat/completions`。
 
-但我日常主用的 CLI 还是 Claude Code。问题来了：Claude Code 原生只认 Anthropic 的 Messages API，而 OpenCode Go 的模型列表里大部分走的是 OpenAI 兼容的 `chat/completions`。这两套协议不通用。
-
-在当时的 OpenCode Go 模型列表中，有 **6 个模型同时提供 Anthropic 格式的 `/v1/messages` 端点**：
+翻看当时的模型列表，有 **6 个模型同时提供了 Anthropic 格式的 `/v1/messages` 端点**：
 
 | 模型 | 模型 ID | 端点 |
 |---|---|---|
@@ -38,13 +36,11 @@ aside: true
 | Qwen3.7 Plus | qwen3.7-plus | `https://opencode.ai/zen/go/v1/messages` |
 | Qwen3.6 Plus | qwen3.6-plus | `https://opencode.ai/zen/go/v1/messages` |
 
-这张表记录当时列出的 6 个兼容端点；下文展示的实际会话使用 qwen3.7-max，不能据此推定每个模型的工具调用与上下文能力。其它模型是否可用，请以当前 OpenCode 文档为准；若协议不兼容，需要增加转换层，本文不覆盖。
+以为把端点填进去就能跑，结果连踩了两个坑，而且界面报错全都指错了方向。
 
-本文要记的是：**端点兼容还不够，base URL 和鉴权头也必须对上。我在这两处踩了坑，界面提示却没有直接指出原因。**
+## 坑一：报“模型不存在”，其实是 URL 多了 `/v1`
 
-## 坑一：报"模型不存在"，其实是 URL 多了一个 `/v1`
-
-我一开始按官方端点照搬，写成：
+起初我照着官方端点原样填进配置：
 
 ```json
 {
@@ -57,58 +53,48 @@ aside: true
 }
 ```
 
-跑起来，Claude Code 给我一句：
+一启动，Claude Code 报：
 
 ```text
 There's an issue with the selected model (qwen3.7-max). It may not exist
 or you may not have access to it. Run /model to pick a different model.
 ```
 
-第一反应是去查模型。`curl` 打 `/zen/go/v1/models`，模型列表里有 qwen3.7-max；打 `/zen/go/v1/messages`，streaming 也正常返回。后端一切看着都没问题，但 Claude Code 还在报同一句话。
-
-直到我用 `claude -p "hi" --debug` 把真实请求抓出来，才看见这一行：
+用 `curl` 测了一圈 `/zen/go/v1/models` 和 `/zen/go/v1/messages`，模型在，流式返回也正常。直到跑了 `claude -p "hi" --debug` 把真实请求抓出来，才看到病根：
 
 ```text
 post https://opencode.ai/zen/go/v1/v1/messages?beta=true failed with status 404
 ```
 
-`/zen/go/v1` 后面跟了个 `/v1/messages`——**多了一个 `/v1`。**
+路径变成了 `/zen/go/v1/v1/messages`——多了一截 `/v1`。
 
-原因很简单：Claude Code 会自动在 `ANTHROPIC_BASE_URL` 后面拼接 `/v1/messages`。所以 base URL 不能带 `/v1`，要么带，要么它带，两边只能带一个。我照着官方端点原样写，于是两边都带了。
+Claude Code 会自动在 `ANTHROPIC_BASE_URL` 后面拼接 `/v1/messages`。打到不存在的路径后，对端返回了站点的 404 HTML 页面，被客户端笼统地展示成了“模型不存在或无权限”。
 
-那条打到不存在路径上的请求，返回的是 opencode 网站的 **404 HTML 页**（`<title>404 - Page Not Found</title>`），不是 JSON 错误。界面最后显示了“模型不存在或没权限”。这能说明本次错误被笼统呈现，不能说明客户端内部怎样解析了响应，或所有错误都会得到同一提示。
-
-修复就一行，把 base URL 末尾的 `/v1` 去掉：
+把末尾的 `/v1` 去掉即可：
 
 ```json
 "ANTHROPIC_BASE_URL": "https://opencode.ai/zen/go"
 ```
 
-让拼接交给 Claude Code 自己做。
+## 坑二：报 `Missing API key`，其实是鉴权头不对
 
-## 坑二：报 "Missing API key"，其实是鉴权头不对
-
-路径修对之后，错误变了：
+路径改对后，报错换成了 401：
 
 ```text
 ✻ 401 Missing API key. · Retrying in 22s · attempt 7/10
 ```
 
-这次信息还算诚实——确实是鉴权不对。
+查阅 Claude Code 的[环境变量文档](https://code.claude.com/docs/en/env-vars)，两个鉴权变量发出的请求头并不一样：
 
-Claude Code 的[环境变量文档](https://code.claude.com/docs/en/env-vars)区分了两种鉴权头：
-
-| 环境变量 | 发送的头 |
+| 环境变量 | 发送的请求头 |
 |---|---|
 | `ANTHROPIC_API_KEY` | `x-api-key: ...` |
 | `ANTHROPIC_AUTH_TOKEN` | `Authorization: Bearer ...` |
 
-我之前写的是 `ANTHROPIC_AUTH_TOKEN`，于是 Claude Code 只发 `Authorization`，**不发 `x-api-key`**。而 OpenCode Go 的网关认的是 `x-api-key`，对 `Authorization: Bearer` 直接回 401 Missing API key。
-
-若要单独比较鉴权方式，可以在 Bash 中使用下面两个请求，替换为自己的 key 和仍可用的模型 ID。它们是请求结构示例，携带相同的 Messages 请求体，区别在鉴权头；模型可用性、账号额度等也会影响响应，状态码和错误原因以实际响应为准。
+我配的是 `ANTHROPIC_AUTH_TOKEN`，客户端只发 `Authorization: Bearer`；而 OpenCode Go 网关只认 `x-api-key`。用 `curl` 对比一眼就能看清：
 
 ```bash
-# 比较 Authorization
+# Authorization: Bearer -> 401
 curl -sS -w "\nHTTP %{http_code}\n" \
   https://opencode.ai/zen/go/v1/messages \
   -H "Authorization: Bearer sk-..." \
@@ -116,7 +102,7 @@ curl -sS -w "\nHTTP %{http_code}\n" \
   -H "content-type: application/json" \
   -d '{"model":"qwen3.7-max","max_tokens":16,"messages":[{"role":"user","content":"hi"}]}'
 
-# 比较 x-api-key
+# x-api-key -> 200
 curl -sS -w "\nHTTP %{http_code}\n" \
   https://opencode.ai/zen/go/v1/messages \
   -H "x-api-key: sk-..." \
@@ -125,17 +111,11 @@ curl -sS -w "\nHTTP %{http_code}\n" \
   -d '{"model":"qwen3.7-max","max_tokens":16,"messages":[{"role":"user","content":"hi"}]}'
 ```
 
-修复同样是改名，把变量名换成 `ANTHROPIC_API_KEY`，值不变：
+把环境变量名改成 `ANTHROPIC_API_KEY`，交互模式下首次启动确认使用该 Key，会话就顺利接通了。
 
-```json
-"ANTHROPIC_API_KEY": "sk-..."
-```
+## 可用配置
 
-> 顺带一提：设置了 `ANTHROPIC_API_KEY` 之后，Claude Code 在交互模式下首次会提示你确认"用这个 key 而不是订阅"。没订阅的人直接确认即可。
-
-## 一份能跑的完整配置
-
-两个坑都填完，我用的是这个：
+最终放进 `~/.claude/settings.json` 的完整配置：
 
 ```json
 {
@@ -150,8 +130,6 @@ curl -sS -w "\nHTTP %{http_code}\n" \
 }
 ```
 
-放进 `~/.claude/settings.json`。`model` 用 `opus` 别名，配合 `ANTHROPIC_DEFAULT_OPUS_MODEL`，实际打到 qwen3.7-max。
-
 ```text
 ▐▛███▜▌   Claude Code v2.1.205
 ▝▜█████▛▘  qwen3.7-max with high effort
@@ -160,50 +138,14 @@ curl -sS -w "\nHTTP %{http_code}\n" \
 ● 你好！有什么可以帮你的吗？
 ```
 
-通了。
+[Claude Code 模型配置文档](https://code.claude.com/docs/en/model-config)里还提供了 `CLAUDE_CODE_SUBAGENT_MODEL` 以及一组 `*_MODEL_NAME` 显示名称变量，需要细分主模型与子代理模型时可以按需加上。
 
-## 模型映射和其他变量
+## 小结
 
-**2026 年 10 月 23 日补注：** [Claude Code 官方文档](https://code.claude.com/docs/en/model-config)现在明确列出了 `_NAME` 等变量，用于区分模型映射与显示名称。下面列出当前文档中的用途，不能据此推定 v2.1.205 已支持所有变量；前面的接入配置仍对应 7 月 9 日的记录。
-
-| 变量 | 用途与版本范围 | 备注 |
-|---|---|---|
-| `ANTHROPIC_DEFAULT_OPUS_MODEL` | 模型映射 | 控制别名 `opus` 映射到哪个模型 |
-| `ANTHROPIC_DEFAULT_SONNET_MODEL` | 模型映射 | 控制别名 `sonnet` |
-| `ANTHROPIC_DEFAULT_HAIKU_MODEL` | 模型映射 | 控制别名 `haiku` |
-| `CLAUDE_CODE_SUBAGENT_MODEL` | 子代理模型 | 控制子代理用什么模型 |
-| `ANTHROPIC_DEFAULT_OPUS_MODEL_NAME` | 较新文档列出 | 设置固定模型的显示名称，不改变模型 ID |
-| `ANTHROPIC_DEFAULT_SONNET_MODEL_NAME` | 较新文档列出 | 同上，按客户端版本核对支持情况 |
-| `ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME` | 较新文档列出 | 同上 |
-| `ANTHROPIC_DEFAULT_FABLE_MODEL` | 较新文档列出 | 控制 `fable` 映射，不能据此推定旧版本支持 |
-| `ANTHROPIC_DEFAULT_FABLE_MODEL_NAME` | 较新文档列出 | 对应固定模型的显示名称 |
-| `ANTHROPIC_REASONING_MODEL` | 本文未确认用途 | 不作为这次接入的配置依据 |
-
-对这次接入，先保留完整配置里实际使用的变量即可。使用其他版本时，应重新核对变量的用途与支持情况。
-
-## 为什么报错一直这么 misleading
-
-回头看，这两条提示都不足以单独定位原因：
-
-- 坑一明明是 404，但提示是"模型不存在或无权限"；
-- 坑二明明只发了 `Authorization`，但提示是"Missing API key"——网关要的是另一种 key，说"missing"也不能算错，但对用户来说它把方向带偏了。
-
-两条提示分别指向模型和 key，却都省略了定位所需的信息：实际请求路径，以及网关接受哪一种鉴权头。直接检查这两项，比反复换模型更接近问题。
-
-抓真实请求的方式：
+回看这两个坑，终端面上的报错一个怪模型、一个怪缺 Key，都没直接说出 URL 拼接和请求头格式的差异。遇到第三方兼容网关连不上时，先跑一行：
 
 ```bash
 claude -p "hi" --debug 2> debug.log
 ```
 
-`-p` 是非交互模式。这次记录通过 `--debug` 找到了上面的请求路径与状态码；不同版本记录的字段和日志位置可能变化，可查[CLI 参数文档](https://code.claude.com/docs/en/cli-reference)。定位这类问题时，先找实际请求 URL，再看状态码和可用的响应信息。
-
-## 一点边界
-
-OpenCode Go 不是 Anthropic，模型也不是 Claude。这两套协议只在 `messages` 这一层接口上对齐了形状，能力上并不等价：
-
-- `messages` 请求成功不等于工具调用、长上下文等行为都已兼容，还要按具体模型检查；
-- 当时列表中只提供 `chat/completions` 的模型（GLM、Kimi、DeepSeek、MiMo）不能按本文配置直接接入，本文不覆盖协议转换；
-- 这是第三方网关，不是 Anthropic 官方，出问题找 OpenCode，不是找 Anthropic。
-
-这次记录确认的是 qwen3.7-max 的会话能够接通。排查时，URL 和鉴权头是两个独立条件，修好一个之后出现新错误，正好说明请求走到了下一步。
+看一眼实际发出去的 URL 和状态码（更多参数见 [CLI 参考文档](https://code.claude.com/docs/en/cli-reference)），往往比来回换模型省事得多。至于列表里只提供 `chat/completions` 的模型（如 GLM、Kimi、DeepSeek、MiMo），就得靠协议转换层中转，不能直接填进这套配置了。

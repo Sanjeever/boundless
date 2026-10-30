@@ -1,5 +1,5 @@
 ---
-title: I gave up mirror registries for official sources behind a proxy
+title: I Gave Up Mirror Registries for Official Sources Behind a Proxy
 date: 2026-08-05
 tags:
   - Development tools
@@ -7,37 +7,37 @@ tags:
   - Windows
   - macOS
   - CLI
-description: Restoring official sources and configuring FlClash proxies for Windows and macOS development tools, with checks that distinguish source addresses, network paths, and cached results.
+description: Resetting Windows and macOS developer tools to their official upstream registries and routing traffic through a local FlClash proxy.
 outline: deep
 aside: true
 ---
 
-# I gave up mirror registries for official sources behind a proxy
+# I Gave Up Mirror Registries for Official Sources Behind a Proxy
 
 <!-- DESC SEP -->
 
-I used to configure a different mirror for each tool, then had to recall those choices before debugging. Now these tools use official sources with proxy connections handled by FlClash. Configuring the source and network path separately at least gives me a way to tell which layer is failing.
+Resetting Windows and macOS developer tools to their official upstream registries and routing traffic through a local FlClash proxy.
 
 <!-- DESC SEP -->
 
-After using mirrors for a while, I had encountered synchronization delays and stale versions. Each tool pointed at a different registry, so debugging started with recalling those choices. I restored these tools to their official sources, then configured their proxy connections to FlClash. This post covers npm, pnpm, uv, pip, Maven, Go, Cargo, Dart/Flutter, Git over HTTP and SSH, Homebrew, and Docker Desktop. If something won't connect, start with the troubleshooting notes at the end.
+For a long time I configured a separate mirror registry for every package manager on my machine. Eventually one mirror would lag behind upstream, another tool would rename a config key, and debugging any failed install started with hunting down which mirror I had pointed that tool at months ago.
 
-## Mirror sources and proxies are two different things
+I finally reset everything to its official upstream source and routed the traffic through FlClash instead. Here are my notes for `npm`, `pnpm`, `uv`, `pip`, `Maven`, `Go`, `Cargo`, `Dart/Flutter`, `Git`, `Homebrew`, and `Docker Desktop`.
 
-Before you start, separate two things that are often conflated:
+## Mirrors and Proxies Solve Different Problems
 
-- A **mirror source** answers "where the request goes" — it redirects downloads to a third-party server.
-- A **proxy** answers "how the request travels" — it leaves the target address alone and just routes traffic through a local port.
+It helps to keep two layers separate:
 
-A mirror's usefulness depends on synchronization and service quality; being a third-party service does not make it inherently unreliable. My problem was maintaining too many different source settings. Restoring official sources reduces that variation. Proxy connectivity, official service status, and each tool's configuration still need separate checks.
+- A **mirror** changes *where* the request goes by pointing downloads at a third-party server.
+- A **proxy** changes *how* the request gets there, leaving the official destination untouched while forwarding traffic through a local port.
 
-The setup below follows two steps: **restore the official source/registry/index**, then **configure the proxy path**. Some tools have their own proxy options; others read environment variables. FlClash then applies its own rules to choose a direct or forwarded connection. Check existing project settings, corporate repositories, and private sources before clearing anything.
+Once the source address is always the official upstream and the network path goes through one local proxy, a broken download is much easier to diagnose.
 
-## Shared proxy environment variables
+## Shared Proxy Environment Variables
 
-My FlClash setup exposes a mixed HTTP/SOCKS proxy on port `7897`. The examples use that port; substitute yours if it differs. **uv, pip, Go, Dart/Flutter, and Homebrew** can use proxy environment variables to configure their network path:
+My FlClash instance listens on `127.0.0.1:7897` with a mixed HTTP/SOCKS port. Tools like `uv`, `pip`, `Go`, `Dart/Flutter`, and `Homebrew` pick up standard proxy environment variables directly.
 
-Windows (PowerShell, sets user-level variables):
+Windows (PowerShell, saved at the user level):
 
 ```powershell
 $proxy = "http://127.0.0.1:7897"
@@ -49,7 +49,7 @@ $env:HTTP_PROXY = $proxy
 $env:HTTPS_PROXY = $proxy
 ```
 
-macOS (in `~/.zshrc`):
+macOS (`~/.zshrc`):
 
 ```bash
 export HTTP_PROXY="http://127.0.0.1:7897"
@@ -58,37 +58,25 @@ export http_proxy="$HTTP_PROXY"
 export https_proxy="$HTTPS_PROXY"
 ```
 
-Verify:
+Using `http://127.0.0.1:7897` for `HTTPS_PROXY` works because HTTPS clients tunnel through the HTTP proxy via `CONNECT`.
 
-```bash
-source ~/.zshrc
-printf '%s\n' "$HTTP_PROXY"
-printf '%s\n' "$HTTPS_PROXY"
-```
-
-Writing `HTTPS_PROXY=http://127.0.0.1:7897` works because you treat it as an HTTP proxy; for HTTPS targets the proxy forwards through a CONNECT tunnel, so no separate SOCKS setting is needed.
-
-## Official source, network via the shared proxy variables
+## Tools Using the Shared Environment Variables
 
 ### uv
 
-uv's default index is PyPI. Set it explicitly to `https://pypi.org/simple` and remove the deprecated `UV_INDEX_URL` so it doesn't conflict with `UV_DEFAULT_INDEX`.
+uv defaults to PyPI. Set `UV_DEFAULT_INDEX` explicitly and clear the deprecated `UV_INDEX_URL`:
 
 Windows:
 
 ```powershell
 [Environment]::SetEnvironmentVariable("UV_INDEX_URL", $null, "User")
-[Environment]::SetEnvironmentVariable(
-    "UV_DEFAULT_INDEX",
-    "https://pypi.org/simple",
-    "User"
-)
+[Environment]::SetEnvironmentVariable("UV_DEFAULT_INDEX", "https://pypi.org/simple", "User")
 
 Remove-Item Env:UV_INDEX_URL -ErrorAction SilentlyContinue
 $env:UV_DEFAULT_INDEX = "https://pypi.org/simple"
 ```
 
-macOS: remove the old `UV_INDEX_URL` from `~/.zshrc`, keep and apply:
+macOS (after updating `~/.zshrc`):
 
 ```bash
 export UV_DEFAULT_INDEX="https://pypi.org/simple"
@@ -96,50 +84,32 @@ unset UV_INDEX_URL
 source ~/.zshrc
 ```
 
-Check the variable in the current terminal. In PowerShell:
-
-```powershell
-$env:UV_DEFAULT_INDEX
-```
-
-On macOS:
-
-```bash
-printf '%s\n' "$UV_DEFAULT_INDEX"
-```
-
-Then run this on either platform:
+Verify:
 
 ```bash
 uvx --refresh --verbose ruff --version
 ```
 
-Inspect the verbose log for the index and download URLs, then check whether ruff starts. A version number alone may come from cached content and does not establish that this request reached PyPI through the proxy.
-
 ### pip
 
-pip uses PyPI as its default index, just like uv. Restoring the official source means setting `global.index-url` explicitly; the network goes through the shared proxy variables.
-
-Same on Windows and macOS:
+Point the global index back to PyPI (same on Windows and macOS):
 
 ```bash
 pip config set global.index-url https://pypi.org/simple
 ```
 
-On Windows, pip's user configuration normally lives at `%APPDATA%\pip\pip.ini`. On macOS, it may use `~/Library/Application Support/pip/pip.conf` or `~/.config/pip/pip.conf` depending on which directories exist; newer versions also consider XDG data directories. Use `pip config debug` to see the actual loaded paths. Verify:
+Verify:
 
 ```bash
 pip config list
 pip index versions pip
 ```
 
-If `pip index versions pip` lists versions, the effective configuration can retrieve version information. Environment variables can override [pip configuration](https://pip.pypa.io/en/stable/topics/configuration/); inspect `pip config debug`, `PIP_INDEX_URL`, and verbose request logs to confirm the source. Use FlClash's connection records to confirm the proxy path.
+If an old environment variable still overrides it, `pip config debug` will show where it comes from.
 
 ### Go
 
-`GOPROXY` configures a [module proxy service](https://go.dev/ref/mod#goproxy-protocol), **not** an HTTP network proxy. It determines where modules come from; settings such as the shared environment variables determine the network path for HTTP requests.
-
-Same on Windows and macOS:
+`GOPROXY` configures the [Go module proxy](https://go.dev/ref/mod#goproxy-protocol) rather than the network proxy; the underlying HTTP requests automatically use `HTTP_PROXY` / `HTTPS_PROXY`:
 
 ```bash
 go env -w GOPROXY="https://proxy.golang.org,direct"
@@ -149,18 +119,15 @@ go env -w GOSUMDB="sum.golang.org"
 Verify:
 
 ```bash
-go env GOPROXY
-go env GOSUMDB
+go env GOPROXY GOSUMDB
 go list -m -versions golang.org/x/text
 ```
 
-If `go list` prints versions, this version query succeeded; it does not establish that every module download path works. Here, `direct` means accessing the source repository when the preceding module proxy returns particular statuses, such as 404 or 410. That path may invoke Git as well.
-
 ### Dart / Flutter
 
-Dart and Flutter share pub.dev as their package repository, and Flutter's engine artifacts come from Google's storage. The former is controlled by `PUB_HOSTED_URL`, the latter by `FLUTTER_STORAGE_BASE_URL`; restoring official sources means removing the two variables that point at a mirror. If `FLUTTER_GIT_URL` (the mirror address used when cloning the Flutter SDK repo) still lingers, remove that too.
+Dart and Flutter use `pub.dev` and Google storage by default. Clearing the three mirror variables restores upstream defaults.
 
-Windows (removes user-level variables):
+Windows:
 
 ```powershell
 [Environment]::SetEnvironmentVariable("PUB_HOSTED_URL", $null, "User")
@@ -172,128 +139,53 @@ Remove-Item Env:FLUTTER_STORAGE_BASE_URL -ErrorAction SilentlyContinue
 Remove-Item Env:FLUTTER_GIT_URL -ErrorAction SilentlyContinue
 ```
 
-macOS: remove these three variables from `~/.zshrc` and clean the current shell:
+macOS (remove from `~/.zshrc`, then run):
 
 ```bash
-unset PUB_HOSTED_URL
-unset FLUTTER_STORAGE_BASE_URL
-unset FLUTTER_GIT_URL
+unset PUB_HOSTED_URL FLUTTER_STORAGE_BASE_URL FLUTTER_GIT_URL
 source ~/.zshrc
 ```
 
-Network goes through the shared proxy variables. Verify:
-
-```bash
-env | grep -E '^PUB_HOSTED_URL=|^FLUTTER_STORAGE_BASE_URL=|^FLUTTER_GIT_URL='
-```
-
-No output is expected. In a Flutter project run:
-
-```bash
-flutter pub get
-```
-
-Check the download log to confirm access to pub.dev. With cached packages, successful dependency resolution does not necessarily involve a network download.
-
 ### Homebrew
 
-macOS only. Homebrew has no separate proxy configuration; it uses the shared variables, so the only thing to do is clear the mirror variables.
-
-Remove from `~/.zshrc`, `~/.zprofile`, `~/.bash_profile`:
-
-```text
-HOMEBREW_API_DOMAIN
-HOMEBREW_ARTIFACT_DOMAIN
-HOMEBREW_BOTTLE_DOMAIN
-HOMEBREW_BREW_GIT_REMOTE
-HOMEBREW_CORE_GIT_REMOTE
-HOMEBREW_PIP_INDEX_URL
-```
-
-Clean the current shell:
+macOS only. Remove `HOMEBREW_API_DOMAIN`, `HOMEBREW_BOTTLE_DOMAIN`, and related mirror variables from `~/.zshrc` or `~/.zprofile`, then unset them in the active shell:
 
 ```bash
-unset HOMEBREW_API_DOMAIN
-unset HOMEBREW_ARTIFACT_DOMAIN
-unset HOMEBREW_BOTTLE_DOMAIN
-unset HOMEBREW_BREW_GIT_REMOTE
-unset HOMEBREW_CORE_GIT_REMOTE
-unset HOMEBREW_PIP_INDEX_URL
-```
-
-Verify:
-
-```bash
+unset HOMEBREW_API_DOMAIN HOMEBREW_ARTIFACT_DOMAIN HOMEBREW_BOTTLE_DOMAIN
+unset HOMEBREW_BREW_GIT_REMOTE HOMEBREW_CORE_GIT_REMOTE HOMEBREW_PIP_INDEX_URL
 brew config
 brew update
-env | grep -E '^HOMEBREW_(API_DOMAIN|ARTIFACT_DOMAIN|BOTTLE_DOMAIN|BREW_GIT_REMOTE|CORE_GIT_REMOTE|PIP_INDEX_URL)='
 ```
 
-The last command should produce no output.
-
-## Package managers with their own proxy settings
+## Package Managers with Dedicated Proxy Settings
 
 ### npm
 
-npm's official registry is `https://registry.npmjs.org/`, and it supports `proxy`, `https-proxy`, and the standard proxy environment variables. Restore the official source and set the proxy (same on Windows and macOS):
+Restore the official registry and set the user-level proxy (Windows and macOS):
 
 ```bash
 npm config set registry "https://registry.npmjs.org/" --location=user
 npm config set proxy "http://127.0.0.1:7897" --location=user
 npm config set https-proxy "http://127.0.0.1:7897" --location=user
-```
-
-Verify:
-
-```bash
-npm config get registry --location=user
-npm config get proxy --location=user
-npm config get https-proxy --location=user
 npm ping
 ```
 
-`npm ping` prints `PONG` on success.
-
 ### pnpm
 
-This records the [pnpm 11/12 configuration](https://pnpm.io/settings), where the network options are `httpProxy` and `httpsProxy`. Restore the official source and set the proxy (same on Windows and macOS):
+Per the [pnpm settings docs](https://pnpm.io/settings), the proxy keys are `httpProxy` and `httpsProxy`:
 
 ```bash
 pnpm config set registry "https://registry.npmjs.org/" --global
 pnpm config set httpProxy "http://127.0.0.1:7897" --global
 pnpm config set httpsProxy "http://127.0.0.1:7897" --global
-```
-
-Verify:
-
-```bash
-pnpm config get registry --global
-pnpm config get httpProxy --global
-pnpm config get httpsProxy --global
 pnpm ping
 ```
 
-`pnpm ping` prints `PONG` on success.
-
 ### Maven
 
-Config file location: `$HOME\.m2\settings.xml` on Windows, `~/.m2/settings.xml` on macOS.
+Edit `$HOME\.m2\settings.xml` (Windows) or `~/.m2/settings.xml` (macOS).
 
-**Restore the official source:** remove `<mirror>` entries such as Aliyun, Tencent, or Huawei's, for example:
-
-```diff
-- <mirrors>
--     <mirror>
--         <id>aliyun</id>
--         <mirrorOf>*</mirrorOf>
--         <url>https://maven.aliyun.com/repository/public</url>
--     </mirror>
-- </mirrors>
-```
-
-With no third-party `<mirror>` override, Maven uses Maven Central by default.
-
-**Set the proxy:** add inside the existing `<settings>`; if a `<proxies>` block already exists, merge into it rather than creating a duplicate:
+Remove any third-party `<mirrors>` entries so Maven falls back to Maven Central, and add the local proxy under `<settings>`:
 
 ```xml
 <proxies>
@@ -311,31 +203,12 @@ With no third-party `<mirror>` override, Maven uses Maven Central by default.
 Verify:
 
 ```bash
-mvn help:effective-settings
 mvn -U dependency:get "-Dartifact=org.apache.commons:commons-lang3:3.18.0"
-```
-
-The download log should show:
-
-```text
-Downloading from central: https://repo.maven.apache.org/maven2/...
 ```
 
 ### Rust / Cargo
 
-Cargo uses crates.io by default. Config file location: `$HOME\.cargo\config.toml` on Windows, `~/.cargo/config.toml` on macOS.
-
-**Restore official crates.io:** remove the third-party source override, for example:
-
-```diff
-- [source.crates-io]
-- replace-with = "rsproxy"
--
-- [source.rsproxy]
-- registry = "sparse+https://rsproxy.cn/index/"
-```
-
-**Set the proxy:** if an `[http]` section already exists, just add `proxy`:
+In `$HOME\.cargo\config.toml` or `~/.cargo/config.toml`, delete any `replace-with` mirror blocks under `[source.crates-io]` and keep only the HTTP proxy:
 
 ```toml
 [http]
@@ -348,58 +221,37 @@ Verify:
 cargo search serde --limit 1
 ```
 
-If `cargo search` returns results, crates.io and the network both work.
+## Git over HTTPS and SSH
 
-## Git's two channels
+Scoping Git’s proxy settings to `github.com` keeps internal corporate Git servers on a direct connection.
 
-Git remotes can use HTTPS or SSH, and the paths are handled separately. The settings below define a GitHub-specific proxy. Other HTTPS requests may still read the shared proxy environment variables set earlier, so this does not guarantee that only GitHub traffic uses a proxy.
+### Git HTTPS
 
-### Git: HTTPS
-
-Windows: clear any global generic proxy, then proxy only GitHub:
+Windows:
 
 ```powershell
 git config --global --unset-all http.proxy 2>$null
-git config --global `
-    "http.https://github.com.proxy" `
-    "http://127.0.0.1:7897"
+git config --global "http.https://github.com.proxy" "http://127.0.0.1:7897"
 ```
 
 macOS:
 
 ```bash
 git config --global --unset-all http.proxy 2>/dev/null || true
-git config --global \
-    "http.https://github.com.proxy" \
-    "http://127.0.0.1:7897"
-```
-
-Restore the current repo's GitHub official URL:
-
-```bash
-git remote get-url origin
-git remote set-url origin "https://github.com/OWNER/REPOSITORY.git"
+git config --global "http.https://github.com.proxy" "http://127.0.0.1:7897"
 ```
 
 Verify:
 
 ```bash
-git config --global --get "http.https://github.com.proxy"
 git ls-remote "https://github.com/git/git.git" HEAD
 ```
 
-### Git: SSH
+### Git SSH
 
-GitHub's SSH endpoint over port 443 is `ssh.github.com:443`. For SSH, the connection goes out through `ssh.github.com` on port 443, and a system tool forwards the connection to the local proxy.
+Route SSH connections to `ssh.github.com:443` through the local HTTP proxy.
 
-Windows: restore the GitHub SSH URL, and confirm Git for Windows ships the `connect` helper:
-
-```powershell
-git remote set-url origin "git@github.com:OWNER/REPOSITORY.git"
-Test-Path "$env:ProgramFiles\Git\mingw64\bin\connect.exe"
-```
-
-Edit `$HOME\.ssh\config`, adding:
+Windows (`$HOME\.ssh\config`, using `connect.exe` bundled with Git for Windows):
 
 ```sshconfig
 Host github.com
@@ -409,11 +261,7 @@ Host github.com
     ProxyCommand "C:/Program Files/Git/mingw64/bin/connect.exe" -H 127.0.0.1:7897 %h %p
 ```
 
-macOS: restore the GitHub SSH URL, then edit `~/.ssh/config`:
-
-```bash
-git remote set-url origin "git@github.com:OWNER/REPOSITORY.git"
-```
+macOS (`~/.ssh/config`, using built-in `nc`):
 
 ```sshconfig
 Host github.com
@@ -423,7 +271,7 @@ Host github.com
     ProxyCommand /usr/bin/nc -X connect -x 127.0.0.1:7897 %h %p
 ```
 
-Set permissions and verify:
+Verify:
 
 ```bash
 chmod 600 ~/.ssh/config
@@ -432,26 +280,10 @@ ssh -T git@github.com
 
 ## Docker Desktop
 
-These steps record the macOS setup. [Docker's documentation](https://docs.docker.com/engine/daemon/proxy/) states that Docker Desktop ignores proxy settings in `daemon.json`; configure them through Desktop settings. This limitation concerns proxy fields. The `registry-mirrors` setting below is still managed through the Docker Engine configuration.
+As noted in [Docker’s proxy docs](https://docs.docker.com/engine/daemon/proxy/), Docker Desktop manages proxies through its GUI:
 
-**Restore the official source:** go to `Docker Desktop → Settings → Docker Engine`, remove config like:
-
-```diff
-{
--  "registry-mirrors": [
--    "https://some-mirror-url"
--  ]
-}
-```
-
-Click **Apply & Restart**.
-
-**Set the proxy:** go to `Docker Desktop → Settings → Resources → Proxies`, choose **Manual configuration**:
-
-```text
-HTTP Proxy:  http://127.0.0.1:7897
-HTTPS Proxy: http://127.0.0.1:7897
-```
+1. In `Settings → Docker Engine`, remove `"registry-mirrors"` from the JSON config and click **Apply & Restart**.
+2. In `Settings → Resources → Proxies`, enable **Manual configuration** and set both HTTP and HTTPS Proxy to `http://127.0.0.1:7897`.
 
 Verify:
 
@@ -460,15 +292,10 @@ docker info --format '{{json .RegistryConfig.Mirrors}}'
 docker pull hello-world
 ```
 
-The first command should print `[]`, meaning no leftover mirrors.
+## Quick Troubleshooting Checklist
 
-## Troubleshooting
+When a tool fails to fetch packages:
 
-- Make sure FlClash is running and port 7897 is listening.
-- Tell apart "wrong source" from "proxy not working": print the registry/index config to confirm it's official, then test the network once (e.g. `npm ping`, `docker pull`).
-- Temporary variables apply only to the current shell. Windows user-level variables are inherited by new processes, while new macOS terminals load shell configuration. Existing terminals need a separate update.
-- Before removing mirrors, confirm there are no leftover third-party source address overrides.
-
-## Summary
-
-This setup reduces variation in source addresses; it does not eliminate network failures. An unavailable proxy, an official service outage, and a tool reading unexpected settings remain different problems. Check the effective source first, then the proxy path, and use download logs to confirm where requests went. That is easier to reason about than changing the source and proxy at the same time.
+1. Confirm FlClash is running and listening on `127.0.0.1:7897`.
+2. Check the tool’s active config to make sure no leftover mirror variable is overriding the upstream URL.
+3. Open a fresh terminal window after changing user-level environment variables.

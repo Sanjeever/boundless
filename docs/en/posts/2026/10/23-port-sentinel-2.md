@@ -6,7 +6,7 @@ tags:
   - Go
   - Wails
   - Tools
-description: Port Sentinel 2.0 rebuilds the app with Go + Wails, adds macOS and Linux desktop packages, and explains scanning, authorization, process operations, and the hands-on checks still needed.
+description: Rebuilding Port Sentinel with Go and Wails for Windows, macOS, and Linux, with careful boundaries around port scanning, elevation, and process termination.
 outline: deep
 aside: true
 ---
@@ -15,62 +15,62 @@ aside: true
 
 <!-- DESC SEP -->
 
-Port Sentinel 2.0 rebuilds the app with Go + Wails and adds macOS and Linux desktop packages. This post covers scanning, authorization, and process operations, along with the scope of build checks and hands-on desktop validation.
+Rebuilding Port Sentinel with Go and Wails for Windows, macOS, and Linux, with careful boundaries around port scanning, elevation, and process termination.
 
 <!-- DESC SEP -->
 
-In January, I built a Flutter Windows desktop tool that brought port lookup, process identification, and process termination into one interface. The [original release post](/en/posts/2026/01/15-port-sentinel-release) records the frustration of repeatedly looking up PIDs to resolve port conflicts.
+Back in January, I built a small Flutter desktop utility for Windows to put port lookup, process inspection, and termination into a single window. The [original release post](/en/posts/2026/01/15-port-sentinel-release) captured the mild irritation of chasing down PIDs every time a local port collided.
 
-This time, I rewrote Port Sentinel with Go + Wails v2, using React, TypeScript, and HeroUI for the interface, and added macOS and Linux desktop packages. The tool still centers on the same problem. When a service cannot start, which process is using its port, and how should that process be stopped once you have checked it?
+Ten months later, I rewrote it from scratch with Go and Wails v2.
+
+The interface now runs on React, TypeScript, and HeroUI, and the release targets include macOS and Linux desktops alongside Windows. The question at the center of the app has not changed: when a local service refuses to start, who is holding its port, and how do you stop that process cleanly once you are sure?
 
 ![Port Sentinel 2.0 on macOS in Simplified Chinese and light mode, showing listening ports, process names, local addresses, and the authorized scan control](https://raw.githubusercontent.com/Sanjeever/port_sentinel/main/assets/screenshot/main-macos.png)
 
-## From port conflicts to connection details
+## From listening ports to connection details
 
-For a port conflict, the listening-port view is usually enough. To inspect local connections more broadly, switch to all connections and view local addresses, remote addresses, and connection states. The table covers TCP/UDP and IPv4/IPv6, with search by port, PID, or process name.
+For everyday port conflicts, the listening-ports view is usually all you need.
 
-Click a process name to open its details and check the executable path, when readable, and associated ports. Search, filters, numeric sorting, and copying all work around this table. A process can occupy several ports at once, and its details help establish whether those rows belong to the same service.
+When you want to trace local traffic further, you can switch to all connections to inspect local addresses, remote endpoints, and connection states. TCP and UDP across IPv4 and IPv6 sit in the same table, filterable by port number, PID, or process name.
 
-The new version also supports Simplified Chinese and English, light and dark themes, and system preferences. Settings such as the refresh interval and window size stay on the local machine. Closing the window exits the app; open it again when you need to inspect a port.
+Clicking a process name opens a detail panel showing its executable path and every port tied to it. A single daemon often binds several ports at once; seeing them grouped together makes it obvious whether three mysterious rows belong to the same service.
 
-## Go for system access, web technologies for the interface
+The app supports Simplified Chinese and English, light and dark themes, and local preferences for refresh intervals and window dimensions. Close the window and the process exits cleanly—ready to be opened again the next time a port is blocked.
 
-The rebuild separates responsibilities. Go handles connection scanning, process operations, system authorization, settings, and updates. React displays data and handles interaction. Wails connects the two and manages the desktop window lifecycle.
+## Go close to the OS, web for the panel
 
-[Wails](https://wails.io/docs/introduction/) reuses the system WebView and lets the frontend call Go methods. Tables, search, and settings can use web technologies while system access stays on the Go side. This also makes the system WebView version part of frontend compatibility. Targeting macOS 12, for example, requires accounting for its WebKit capabilities and checking the actual interface after a successful build.
+The rewrite draws a clean line between system work and UI. Go handles socket scanning, process operations, privilege elevation, settings, and updates; React renders the table and dialogs; [Wails](https://wails.io/docs/introduction/) bridges the two on top of the operating system's native WebView.
 
-Connection scanning still needs a separate implementation on each platform. Windows reads connection tables through `GetExtendedTcpTable` and `GetExtendedUdpTable`. macOS runs `lsof` and parses its machine-readable output. Linux reads `/proc/net` and uses process file descriptors to associate sockets with PIDs. These implementations live in the [platform scanning module](https://github.com/Sanjeever/port_sentinel/tree/v2.0.1/internal/ports).
+Reusing the system WebView keeps the binary light, though it also means respecting older rendering engines. Targeting macOS 12, for instance, means keeping CSS and scripts within the limits of that system's WebKit rather than assuming every machine behaves like the latest browser.
 
-The results feed the same search, filtering, and process-operation flow. The interface can be shared, while system APIs, visibility, and authorization need platform-specific handling.
+Under the hood, connection scanning has to speak each platform's native dialect.
+
+Windows reads kernel tables via `GetExtendedTcpTable` and `GetExtendedUdpTable`. macOS invokes `lsof` and parses its machine-readable output. Linux reads `/proc/net` and walks file descriptors to link sockets back to PIDs. All of that platform-specific plumbing lives in the [scanning package](https://github.com/Sanjeever/port_sentinel/tree/v2.0.1/internal/ports), handing a uniform structure up to the UI.
 
 ## Before stopping a process
 
-The table displays connections, but termination affects an entire process. Suppose a service listens on both 8080 and 8081. Selecting 8080 and stopping the process also closes 8081. The confirmation therefore needs to show the process and its associated ports, and batch selection must deduplicate by process. Three selected rows may represent a single target.
+The table lists individual connections, but termination acts on a whole process.
 
-PID reuse adds another concern. Between a table refresh and a button click, the original process might exit and the system might assign its PID to another process. The new version stores both the PID and creation time, then checks the identity again before acting. If the target has changed, that operation stops. The logic is in the [process-operation implementation](https://github.com/Sanjeever/port_sentinel/blob/v2.0.1/internal/ports/process.go).
+If a server listens on both 8080 and 8081, killing the process behind 8080 takes 8081 down with it. The confirmation dialog therefore spells out the target process along with all of its bound ports, and batch selection deduplicates by process first—three checked rows may point to a single target.
 
-The default action requests a graceful exit. If the target remains running, or the platform cannot request a graceful exit for it, the interface reports that result. Force termination requires separate confirmation. On Windows, graceful exit depends on the target receiving a window-close request. A process without a suitable window is explicitly reported as unsupported for graceful exit.
+There is a subtler hazard too: operating systems recycle PIDs.
 
-After sending an exit request, the app checks the process state and rescans actual connections. A target that stays running, or a partial failure during a batch operation, remains visible in the results so the user can decide what to do next.
+In the few seconds between a table refresh and a mouse click, the original process might exit on its own while the OS assigns the exact same PID to a brand-new process. To avoid shooting a bystander, Port Sentinel 2.0 records both the PID and the process creation timestamp during a scan, then verifies that identity again right before acting. If the timestamp no longer matches, it aborts. The details live in the [process module](https://github.com/Sanjeever/port_sentinel/blob/v2.0.1/internal/ports/process.go).
 
-Authorization is scoped to an operation as well. The main interface runs without elevation. An explicit authorized scan, or an already confirmed termination that encounters insufficient permissions, starts a temporary helper through Windows UAC, the macOS administrator dialog, or Linux polkit. Elevated access is limited to that request. Auto-refresh does not repeatedly prompt for authorization, and the app does not store administrator passwords.
+By default, the app asks the target to exit gracefully. If the process stays alive—or if the platform cannot send it a graceful close signal, such as a headless background process on Windows without a message window—the UI reports back clearly and lets you decide whether to force-kill it.
 
-An authorized scan can increase visibility, but system protections may still prevent some information from being read. The interface distinguishes permission failures, exited processes, and scan failures so missing information is not mistaken for an absence of connections.
+Elevation is equally temporary. The main window runs as a standard user so background refreshes never nag for passwords. Only when you explicitly request an authorized scan, or try to stop a protected process that rejects normal permissions, does the app launch a one-shot helper through Windows UAC, the macOS administrator prompt, or Linux polkit.
 
-## Downloads and migration
+## Downloads and current boundaries
 
-The supported targets are listed below. Packages are available from [GitHub Releases](https://github.com/Sanjeever/port_sentinel/releases/latest).
+Prebuilt archives are available on [GitHub Releases](https://github.com/Sanjeever/port_sentinel/releases/latest). Extract the archive to a writable directory before launching; Flutter 1.x users will need to install v2 manually.
 
 | Platform                         | Package and runtime requirements                                                                         |
 | -------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | Windows 10/11 amd64              | ZIP; requires Microsoft Edge WebView2 Runtime                                                            |
-| macOS 12+ Intel / Apple Silicon  | Universal ZIP; keep the complete `.app` after extraction                                                 |
+| macOS 12+ Intel / Apple Silicon  | Universal ZIP; keep the complete `.app` bundle after extraction                                          |
 | Ubuntu 22.04/24.04 amd64 desktop | TAR.GZ; requires GTK 3 and WebKitGTK 4.1; elevation requires polkit and a graphical authentication agent |
 
-Extract the complete package to a writable location before running it. Flutter 1.x users need to install v2 manually. Official builds of the new app can check for subsequent updates. Download, replacement, and restart require confirmation, and downloads can be canceled.
+Current Windows builds are unsigned, and macOS builds use an ad-hoc signature without notarization, so first-launch gatekeeper prompts may appear. Linux package dependencies are documented in the [README](https://github.com/Sanjeever/port_sentinel/blob/v2.0.1/README.md), and the remaining hardware/desktop validation checklist is tracked openly in the [development notes](https://github.com/Sanjeever/port_sentinel/blob/v2.0.1/docs/development.md#历史验证记录与待验收边界).
 
-Current Windows packages are unsigned. macOS packages use an ad hoc signature and are not notarized, so operating-system security checks may block installation. Other Linux distributions have not been verified. See the [README](https://github.com/Sanjeever/port_sentinel/blob/v2.0.1/README.md) for dependencies and installation details.
-
-The repository records a native macOS window check and successful CI builds across the three platforms. Successful real administrator authentication, Windows/Linux graphical desktops, execution on macOS 12 and Intel hardware, and installed-app update and restart still need hands-on validation. The [validation record](https://github.com/Sanjeever/port_sentinel/blob/v2.0.1/docs/development.md#历史验证记录与待验收边界) lists the remaining scope.
-
-The project remains open source under the [MIT license](https://github.com/Sanjeever/port_sentinel/blob/v2.0.1/LICENSE). The [source](https://github.com/Sanjeever/port_sentinel) and [release notes](https://github.com/Sanjeever/port_sentinel/tree/v2.0.1/docs/releases) are in the repository. If you encounter a problem, please include the operating-system version, steps, and actual result in an Issue.
+Port Sentinel remains open source under the [MIT license](https://github.com/Sanjeever/port_sentinel/blob/v2.0.1/LICENSE). Both the [source code](https://github.com/Sanjeever/port_sentinel) and [release notes](https://github.com/Sanjeever/port_sentinel/tree/v2.0.1/docs/releases) are in the repository—if you run into an edge case, feel free to open an Issue.

@@ -6,7 +6,7 @@ tags:
   - iOS
   - H5
   - OAuth
-description: Tracing the bottom toolbar after WeChat OAuth on iOS and moving authorization ahead of the first page render.
+description: Returning from WeChat OAuth on iOS triggered a bottom navigation bar that clipped our full-screen H5 page, until we moved the redirect ahead of the first render.
 outline: deep
 aside: true
 ---
@@ -15,48 +15,42 @@ aside: true
 
 <!-- DESC SEP -->
 
-After WeChat authorization, a back-and-forward toolbar appeared at the bottom of my H5 page. I traced the redirects one step at a time, then moved authorization ahead of the first page render. The page filled the screen again.
+Returning from WeChat OAuth on iOS triggered a bottom navigation bar that clipped our full-screen H5 page, until we moved the redirect ahead of the first render.
 
 <!-- DESC SEP -->
 
-I've been working on a campaign for a WeChat Official Account. Visitors watch an opening sequence that fills the screen, then tap “开始征途” (Start the Journey) to sign in.
+While building a full-screen H5 campaign for a WeChat Official Account, the flow started with an opening poster: visitors watched the intro, then tapped “Start the Journey” to sign in via WeChat OAuth.
 
-The page looked fine when first opened. After authorization returned to the app, a toolbar appeared along the bottom. It cut off part of the button and half a line of text near the top. The logs showed the viewport height dropping from 774 to 691, a difference of 83 CSS pixels.
+On first load, the layout filled the screen. The moment WeChat OAuth redirected back, however, a white back-and-forward toolbar popped up along the bottom, slicing off the call-to-action button and shrinking the viewport height from `774px` to `691px`—an `83px` bite out of a fixed screen.
 
-I started with the navigation code. The router already used `router.replace()`, and sign-in began with `location.replace()`. The Go backend returned a 302 both when sending users to WeChat and when handling the authorization callback, with nginx acting as a reverse proxy. Everything looked reasonable. Back on the phone, the toolbar kept appearing.
+I checked our navigation code first: Vue Router used `router.replace()`, the login trigger used `location.replace()`, and the Go backend returned `302` redirects on both ends. Calling `WeixinJSBridge.call('hideToolbar')`—both automatically on bridge ready and from a test button—did nothing at all.
 
-Another common suggestion was `WeixinJSBridge.call('hideToolbar')`. I called it when the Bridge became ready and added a button for a manual call. The automatic call had no effect. I waited more than ten seconds and pressed the button, but the toolbar didn't move. The logs confirmed that the call had run without explaining why the screen stayed the same.
+## Catching the Extra History Entry
 
-## One extra history entry
+Since WeChat’s WebView shows the bottom toolbar whenever back-navigation is possible, I wanted to see where `history.length` ticked up.
 
-Next, I wanted to find where the history count increased.
+Because `302` redirects flash past too quickly to inspect on a phone, I temporarily replaced the login and callback endpoints with pause pages that printed `history.length` and waited for a tap before calling `location.replace()`.
 
-The login endpoint and callback both returned a 302, so there was no page where I could pause and read the values on my phone. I temporarily changed both responses into diagnostic pages. Each page recorded `history.length` and waited for me to press Continue.
+The numbers told the story right away:
 
-The first leg behaved as expected. The campaign page and login entry both had a history length of 1. After the trip through WeChat, the callback page reported 2, and the toolbar appeared there. Returning to the app kept the count at 2.
+- Opening the campaign page and moving to the login page kept `history.length` at `1`.
+- Returning from WeChat OAuth to the callback page bumped `history.length` to `2`, and the bottom toolbar appeared on the spot.
+- Continuing back to the campaign page left `history.length` stuck at `2`.
 
-The extra entry appeared during the authorization round trip. Both Continue buttons used `location.replace()`, but the count went up anyway.
+As long as the WebView rendered a page *before* jumping to WeChat’s OAuth URL, the round trip added a history entry even when every client transition used `replace()`.
 
-I tried going back too. The callback page returned to the login entry. The back arrow turned gray, the forward arrow became available, and the toolbar stayed on screen. Pressing Forward ran the old callback again and triggered a `state` validation error. The forward entry remained in history, but that authorization state had already been consumed.
+What if the very first HTTP request never rendered a page at all, and instead returned a `302` straight to WeChat OAuth—rendering the H5 app only after the callback returned?
 
-Changing the redirects, calling the hide API, and going back had all failed to restore the screen. I began looking at how the page was opened.
+I wired up a test endpoint, sent the link to a WeChat chat, and tapped it fresh. The server generated the OAuth `state` and immediately returned a `302`. When WeChat redirected back to the callback page, `history.length` stayed at `1`, and the bottom toolbar never appeared.
 
-The app displayed its opening sequence before sending the visitor to WeChat. What would happen if the first request went straight to authorization, with the page appearing after the return?
-
-I added a temporary link and sent it to a WeChat chat. Then I closed the current page and opened the link from the message. The server generated the authorization state and immediately returned a 302. This time, neither the opening sequence nor the login diagnostic page appeared first.
-
-On return, the callback page had a history length of 1. There was no toolbar. I pressed Continue to return to the app. The count stayed at 1, and the whole button was visible.
-
-| How the page was opened | At the callback | Back in the app | Toolbar |
+| Entry Flow | `history.length` at Callback | `history.length` in App | Bottom Toolbar |
 | --- | --- | --- | --- |
-| Render the page, then authorize | 2 | 2 | Present |
-| Authorize on the first request | 1 | 1 | Absent |
+| Render page first, then redirect to OAuth | 2 | 2 | Appears |
+| Return 302 to OAuth on the very first request | 1 | 1 | Hidden |
 
-The numbers are `history.length`. On this phone, omitting the page before authorization avoided the toolbar, which supported changing the entry point first. The test did not establish how WeChat manages history internally or whether every iOS WeChat version behaves the same way. Go was already returning 302 responses, and I left nginx unchanged.
+## Moving OAuth Ahead of First Render
 
-## Changing the entry point
-
-The production code adds a server entry point that checks the login session. A valid session goes straight to the H5 page. A missing or expired session starts WeChat authorization. The handler reuses the existing session validation and authorization functions.
+With the cause clear, the fix was a small entry handler in Go: if the user already has a valid session cookie, redirect to `/h5/`; if not, kick off the OAuth `302` right on the initial request:
 
 ```go
 func (a *Auth) entry(w http.ResponseWriter, r *http.Request) {
@@ -74,18 +68,12 @@ func (a *Auth) entry(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Within the same request, `login` prepares the authorization parameters and returns a 302 to WeChat. The callback validates the response, creates a session, and redirects to `/h5/`. The browser starts displaying the campaign page at that point.
-
-The Official Account menu and external links should all use this entry point. With an example domain, the address is:
+Official Account menu items and shared links now point to this server entry point:
 
 ```text
 https://activity.example.com/api/h5/auth/entry
 ```
 
-The path matters too. The login cookie in this project uses `Path=/api/h5/`, so the browser doesn't send it when requesting the root path `/`. Putting the entry at `/api/h5/auth/entry` lets it read the existing cookie. The root path can redirect there. [Cookie path documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#pathpath-value)
+One small detail to watch is the cookie’s [`Path` attribute](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#pathpath-value): because our session cookie was scoped to `Path=/api/h5/`, placing the entry route under `/api/h5/auth/entry` ensured the browser sent existing session cookies on the initial hit.
 
-This changes when visitors authorize. They now complete authorization as they enter from the Official Account link, then watch the opening sequence. The Start the Journey button stays in place, but no longer starts sign-in. A project that requires visitors to finish the opening sequence before authorizing would need a different arrangement.
-
-I also removed the code that could start another authorization flow from within the H5 page. If the session expires, the page asks the visitor to close it and reopen the app from the Official Account entry, avoiding the earlier redirect path.
-
-Finally, I removed the temporary diagnostic pages and buttons, restored the callback's automatic 302, and opened the production entry from a fresh WeChat message. This time, authorization flowed into the opening sequence and on to the route map. The button was fully visible. The toolbar never appeared.
+After removing the diagnostic pages and opening the production entry link from WeChat, OAuth completed before the first paint, `/h5/` opened with `history.length === 1`, and the full-screen layout stayed intact.

@@ -6,7 +6,7 @@ tags:
   - AI
   - Programming
   - Tools
-description: How patches and exact text replacement locate edits, handle changes across files, and fail when context does not match.
+description: Codex describes changes as patches while Claude Code replaces exact strings, and the two editing models trade off context matching and failure modes in distinct ways.
 outline: deep
 aside: true
 ---
@@ -15,17 +15,15 @@ aside: true
 
 <!-- DESC SEP -->
 
-Codex describes edits as patches; Claude Code uses exact text replacement or whole-file writes. How these approaches locate text, fail, and leave reviewable changes deserves a closer look.
+Codex describes changes as patches while Claude Code replaces exact strings, and the two editing models trade off context matching and failure modes in distinct ways.
 
 <!-- DESC SEP -->
 
-On the surface, both Claude Code and Codex can “read code, modify code, run commands, fix problems.” In the tool shapes observed when this post was written, however, they express edits differently: Codex describes changes as patches, while Claude Code uses precise text replacement or whole-file writes. Clients evolve, so this is a discussion of two editing models—not a permanent promise about any version.
+From a distance, Claude Code and Codex do the same job: read code, make edits, and run commands. Look closely at the moment an edit hits the disk, though, and they take different paths—Codex speaks in patches, while Claude Code uses exact string replacement or full-file writes.
 
-## Codex: Patch-Oriented Editing Centered on apply_patch
+## Codex: Thinking in Patches
 
-The Codex setup observed here uses `apply_patch`, which receives patch text resembling a unified diff to add, delete, update, or move files. OpenAI's [Codex Prompting Guide](https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide) also provides the format and implementation examples for this tool.
-
-A typical structure looks like:
+Codex centers its editing around `apply_patch`, which accepts a unified-diff-like patch to add, delete, update, or move files. OpenAI’s [Codex Prompting Guide](https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide) shows its standard shape:
 
 ```text
 *** Begin Patch
@@ -36,56 +34,33 @@ A typical structure looks like:
 *** End Patch
 ```
 
-`apply_patch` resembles Git diff: deleted and added lines are explicit in the patch, making its scope easy to inspect. But a patch can also rewrite most of a file. The format cannot guarantee a minimal diff; unrelated formatting and refactoring still have to be caught in the final changes.
+This format sits close to `git diff`. Deleted and added lines are visible right in the tool call, and small edits across several files—or a rename paired with a code change—fit naturally inside a single patch.
 
-That said, patch-based editing also has its own requirements. A patch must contain enough context; otherwise it may fail to match the target location or create ambiguity in files with many similar code blocks. If the file contains Chinese characters, tabs, special indentation, or invisible characters, the patch may also fail due to imperfect context matching. In such cases, Codex typically re-locates content via shell commands first, then generates a more precise patch.
+The trade-off is sensitivity to surrounding lines. Give it too little context in a file full of repetitive blocks, and the patch cannot tell which one to touch; mix tabs, non-ASCII text, or mismatched line endings, and the context check fails. When that happens, Codex usually drops back to `rg` or a file read to re-anchor itself before trying again.
 
-Thus, Codex's common workflow is: first understand the project structure and code context using shell commands like `rg`, `rg --files`, `Get-Content`, `Get-ChildItem`, then apply precise modifications with `apply_patch`, and optionally run formatting, tests, or service commands to verify the result.
+## Claude Code: Thinking Like a Text Editor
 
-## Claude Code: A Text-Editing Model Centered on Edit and Write
+Claude Code separates local edits from full writes with two tools: `Edit` and `Write`.
 
-Claude Code's file-editing approach draws a clearer distinction between two kinds of operations: partial modification and complete writing.
+`Edit` performs exact string replacement: pass a file path, `old_string`, and `new_string`. As long as `old_string` appears once in the file and matches every space, tab, and newline, the swap happens cleanly. The [official tools reference](https://code.claude.com/docs/en/tools-reference#edit-tool-behavior) pairs this with read-before-edit checks.
 
-It primarily uses two tools: `Edit` and `Write`.
+The mental model is familiar—it works like Find and Replace in an editor, nudging the model to read the actual file before touching it rather than editing from memory.
 
-`Edit` performs precise string replacement: it takes a file path, the original string, and the replacement. Read the file first and make `old_string` exactly match it, including indentation, spaces, and line breaks. The newer [official tools reference](https://code.claude.com/docs/en/tools-reference#edit-tool-behavior) distinguishes matching and uniqueness requirements from read-before-edit checks that vary by model version.
+Its strictness cuts both ways: miss one trailing space, or target a snippet that appears twice without setting `replace_all`, and the call fails immediately. Creating a new file or replacing an entire file belongs to `Write`.
 
-The advantage of this approach is that it's intuitive, strict, and controllable. As long as `old_string` is unique, the replacement behavior is unambiguous. It also naturally encourages the AI to look at the original file before modifying, rather than acting from memory or guesswork.
+## Where the Two Paths Diverge
 
-But the constraints are equally apparent: the original string must match exactly. If the file contains multiple identical fragments, you need to ensure uniqueness or explicitly use `replace_all`. If indentation, line endings, tabs, or special characters aren't handled properly, the replacement will fail. For complex files, Claude Code may need `cat -A`, PowerShell scripts, or other commands to verify invisible characters and precise formatting.
+Placed side by side, the two models differ in four practical ways:
 
-`Write`, on the other hand, is used for creating new files or completely overwriting existing ones. Creating a new file is straightforward; before overwriting an existing file, read it first, because whole-file writes are especially likely to create large diffs or overwrite user work.
+1. **Readability at call time**: `apply_patch` reads like a code review diff; `Edit` reads like an editor command (“replace this block with that block”).
+2. **Multi-file changes**: A single patch can thread small edits across several files at once, whereas `Edit` works file by file, site by site.
+3. **Failure modes**: Patches fail when context is too thin or has drifted; `Edit` fails when `old_string` is not unique or whitespace is slightly off.
+4. **Full rewrites**: `Write` makes overwriting a whole file effortless, which also makes it the easiest way to accidentally clobber existing work.
 
-## The Fundamental Differences
+## Discipline Beyond the Tool
 
-Codex's `apply_patch` leans toward a "patch mindset." It describes change fragments within a file, emphasizing the difference before and after modification. Claude Code's `Edit` / `Write` leans toward a "text editor mindset." It emphasizes reading the file first, then modifying specific strings or the entire content.
+In the end, tool shape is only the first guardrail.
 
-This leads to several notable differences.
+A patch can still rewrite half a file in one go, and an exact string match can still replace the wrong function if the model misunderstood the task.
 
-First, Codex's modifications are more like Git diffs. The output is naturally suited for review — developers can directly see added and deleted lines. Claude Code's modifications are more like editor operations, focused on "replace this exact block of text with that block of text."
-
-Second, `Edit` takes the old text as an explicit parameter, so its caller needs the exact content. Patches need reliable context too. Tool constraints can help enforce reading before editing, but they cannot replace that discipline.
-
-Third, Codex feels natural when handling multi-file, small-scope changes. A single patch can update multiple files simultaneously and also add, delete, or move files. Claude Code can handle multiple files too, but its mental model leans more toward reading files one by one and replacing text position by position.
-
-Fourth, the failure modes differ. Codex's patches may fail due to insufficient context or context drift; Claude Code's `Edit` may fail because `old_string` isn't unique or doesn't match exactly. Both rely on precise context — they just express that context differently.
-
-## Which Approach Is Better?
-
-There's no absolute answer to this question; it depends more on the type of task.
-
-For small additions and deletions across several files, `apply_patch` can express the entire change in one patch, making the combined scope visible at invocation.
-
-For replacing a unique block of text, `Edit` has straightforward inputs. It fails when the original text does not match, but strict matching alone does not establish a lower overall error rate. Neither tool can decide whether the chosen target or the understanding of the requirement is correct.
-
-For creating new files, both handle it well. Codex can express file creation via `Add File`; Claude Code can create files directly with `Write`.
-
-For rewriting an entire file, Claude Code's `Write` is more direct but also demands more caution, since a full-file overwrite can easily produce a large diff. Codex can also perform large-scale modifications through patches, but readability declines when patches grow too big.
-
-## Common Ground: What Really Matters Is Editing Discipline
-
-Although their tool models differ, Claude Code and Codex share many principles when it comes to editing.
-
-Whether or not a tool enforces it, both should follow the same editing discipline: understand context first, make the smallest relevant change, avoid unrelated refactors or formatting, never run destructive commands such as `git reset --hard` without explicit authorization, and treat existing worktree changes as user assets rather than temporary content to overwrite.
-
-The diff on disk still needs review. Patch input and replacement arguments show what a tool was asked to change; they do not establish that it targeted the right location, preserved existing work, or met the requirement.
+What keeps a working tree clean is the habit behind the tool: read the surrounding code first, touch only the lines that matter, leave formatting alone, and inspect `git diff` when the dust settles.

@@ -6,7 +6,7 @@ tags:
   - AI
   - Go
   - 协议网关
-description: 模汇（Model Confluence）是一个面向个人私有部署的 AI 协议网关，为 Codex、Claude Code 和 OpenAI 兼容客户端提供统一入口。
+description: 我开源了模汇（Model Confluence），一个面向个人自部署的 AI 协议网关，在三种主流协议之间双向转换并记录每次请求的完整轨迹。
 outline: deep
 aside: true
 ---
@@ -15,34 +15,30 @@ aside: true
 
 <!-- DESC SEP -->
 
-我开源了模汇（Model Confluence）。它为 Codex、Claude Code 和 OpenAI 兼容客户端提供统一入口，在 Chat Completions、Responses 与 Messages 之间转换协议，并记录每一次请求的上游、Token 用量和延迟。
+我开源了模汇（Model Confluence），一个面向个人自部署的 AI 协议网关，在三种主流协议之间双向转换并记录每次请求的完整轨迹。
 
 <!-- DESC SEP -->
 
-我经常在 Codex、Claude Code 和普通脚本之间切换。Codex 使用 OpenAI Responses。Claude Code 使用 Anthropic Messages。很多脚本还在使用 OpenAI Chat Completions。
+日常在 Codex、Claude Code 和各种脚本之间切换时，协议总是对不上：Codex 走 OpenAI Responses，Claude Code 走 Anthropic Messages，不少老脚本还在调 OpenAI Chat Completions。
 
-上游供应商也不统一。有的提供 Chat Completions，有的提供 Responses 或 Messages。多把 API Key 放进不同客户端后，配置很快就会变得零散。Key 被限流后，我要重新改配置。请求失败后，我常常不知道它用了哪个上游。
+上游供应商同样五花八门，几把 API Key 散落在不同客户端的配置里。哪天一把 Key 触发了限流，就得挨个改配置；要是请求报错，也很难一眼看清它到底打到了哪个上游、倒在了哪一步。
 
-所以我做了模汇。客户端只保存一个地址、一个访问密钥和一个虚拟模型。供应商、真实模型、协议和 Key 池都在网关里配置。每次请求经过了什么路径，也能在后台查到。
+为此我写了 **模汇（Model Confluence）**。客户端只需填一个本地地址、一把访问密钥和一个虚拟模型名；供应商、真实模型、协议转换和 Key 池都收进网关里统一打理。
 
-## 模汇是什么？
+## 它是怎样工作的
 
-模汇面向个人私有部署。它提供四个入口：
+模汇面向个人私有部署，对外提供四个入口：
 
-- `/v1/chat/completions`：OpenAI Chat Completions；
-- `/v1/responses`：OpenAI Responses；
-- `/v1/messages`：Anthropic Messages；
-- `/v1/models`：返回已配置的虚拟模型。
+- `/v1/chat/completions`（OpenAI Chat Completions）
+- `/v1/responses`（OpenAI Responses）
+- `/v1/messages`（Anthropic Messages）
+- `/v1/models`（返回已配置的虚拟模型）
 
-后台把虚拟模型映射到供应商、真实模型和协议入口。客户端不需要知道真实模型名。
+整个项目用 Go、React 和 TypeScript 编写，前端管理界面直接打包进单个 Go 可执行文件里，配置与请求记录存在本地 SQLite，不需要额外部署 Node.js 或外部数据库。
 
-项目使用 Go、React 和 TypeScript。管理后台会嵌入 Go 可执行文件。运行时不需要 Node.js，也不需要额外部署数据库。配置和使用记录保存在 SQLite 中。项目提供原生可执行文件和 Docker 镜像。
+## 三种协议，九种组合
 
-模汇不提供公共中转、充值、计费和多租户运营。它只处理个人部署中的协议、路由和请求记录。
-
-## 三种协议
-
-三个客户端入口都可以连接三种上游协议，共有九种组合：
+三个客户端入口与三种上游协议两两组合，分成两条路径处理：
 
 | 客户端入口 | 上游 Chat Completions | 上游 Responses | 上游 Messages |
 | --- | --- | --- | --- |
@@ -50,101 +46,36 @@ aside: true
 | `/v1/responses` | 双向转换 | 治理式透传 | 双向转换 |
 | `/v1/messages` | 双向转换 | 双向转换 | 治理式透传 |
 
-同协议请求使用治理式透传。跨协议请求执行双向转换。
+- **同协议透传**：尽量不动原始请求体和流式事件，只替换鉴权头与模型名，保留上游供应商的扩展字段。
+- **跨协议转换**：先解析成内部统一结构，再编码成目标协议，支持文本、多轮对话、工具调用和流式输出；遇到目标协议无法表达的字段则提前报错，绝不静默丢弃内容。
 
-### 同协议：尽量原样转发
+## 虚拟模型与多 Key 轮换
 
-同协议请求会经过网关。网关只处理必要内容：
+客户端只认虚拟模型名（比如 `coding-main`），背后可以挂载多个有序的上游候选。路由时会先按请求所需的能力（流式、工具调用、推理强度等）筛掉不匹配的候选，再优先挑选同协议入口。
 
-- 替换上游鉴权信息；
-- 将虚拟模型名替换为真实模型名；
-- 合并供应商配置的静态请求头；
-- 记录请求、响应、Token 和延迟；
-- 将响应中的真实模型名改回虚拟模型名。
+同一个供应商下可以挂多把 API Key：
 
-请求体、响应和流式事件尽量保持原样。供应商的私有字段也能保留下来。
+- 遇到 `401` 或额度耗尽，自动切下一把 Key；
+- 遇到 `429`，按冷却时间避让；
+- 遇到连接超时或 `5xx`，切往下一个候选上游；
+- 流式响应一旦写出首个有效内容，就不再中途切换，避免把两个上游的半截话拼在一起。
 
-### 跨协议：双向转换
+## 看得见的请求轨迹
 
-跨协议请求先解析为内部统一结构，再编码成上游协议。响应和 SSE 事件按相反方向处理。
+模汇把每次客户端请求（`request`）和每次上游尝试（`attempt`）分开记录。遇到跨协议转换时，后台会同时存下四份报文：客户端原始请求、转换后的上游请求、上游原始响应、转换后的客户端响应。
 
-下面是几个例子：
+当 Claude Code 突然报错时，点开后台就能直接看到它用了哪个虚拟模型、试过哪几把 Key、转换成了什么格式，以及上游返回的原始报错。
 
-- Codex 使用 `/v1/responses`，上游只有 Chat Completions；
-- Claude Code 使用 `/v1/messages`，上游只有 OpenAI 兼容接口；
-- Chat Completions 客户端调用只提供 Messages 的供应商。
+## 部署与使用
 
-转换范围包括三种协议的公共能力。模汇会处理文本、多轮消息、工具调用和流式响应。无法对应的字段会在调用上游前返回错误。网关不会静默丢掉内容。
-
-## 一个虚拟模型，连接多个上游
-
-客户端使用虚拟模型名。供应商使用真实模型名。两者分开配置。
-
-一个虚拟模型可以配置多个有序候选。每个候选包含供应商、真实模型和协议入口，供网关选择实际请求路径。
-
-候选还可以声明这些能力：
-
-- 是否支持流式响应；
-- 是否支持工具调用和并行工具调用；
-- 支持哪些推理强度；
-- 默认和最大的输出 Token 数；
-- 协议入口的后备顺序。
-
-路由时，模汇先过滤能力不匹配的候选，再按候选顺序选择。候选支持客户端协议时，优先使用同协议入口。否则使用配置好的后备协议。
-
-更换供应商、调整真实模型和增加后备路径，都不需要修改客户端配置。
-
-## 多把 API Key
-
-一个供应商可以配置多把上游 API Key。模汇按顺序管理这些 Key，并根据错误类型决定是否切换。
-
-处理规则很简单：
-
-- `401`：当前 Key 鉴权失效，尝试下一把 Key；
-- 额度耗尽：标记当前 Key，尝试下一把 Key；
-- `429`：按供应商配置和冷却时间处理；
-- 连接失败、超时和 `5xx`：尝试下一个候选；
-- 普通参数错误：直接返回客户端。
-
-流式请求在首个有效内容写出前可以切换。写出首个有效内容后，网关停止切换。它不会拼接两个上游的响应。
-
-这套规则能减少客户端改配置的次数。请求记录也会保存切换原因。
-
-## 请求记录
-
-模汇把一次客户端请求和每一次上游尝试分开保存。一条 `request` 对应一次入站请求。一条 `attempt` 对应一次供应商和 Key 的尝试。
-
-后台可以查看：
-
-- 请求 ID、状态和时间；
-- 入站协议、上游协议和端点；
-- 虚拟模型、真实模型、供应商和上游 Key；
-- 每次尝试的顺序、错误和完成时间；
-- 输入、输出和缓存 Token；
-- 总耗时和首内容延迟；
-- 流式与非流式的原始载荷。
-
-发生协议转换时，后台会保存四份数据：
-
-1. 客户端原始请求；
-2. 转换后的上游请求；
-3. 上游原始响应；
-4. 转换后的客户端响应。
-
-Claude Code 的请求失败后，可以查到它使用的虚拟模型、尝试过的 Key、实际使用的上游协议和原始错误。
-
-我希望后台能回答三个问题：请求去了哪里，为什么切换，实际返回了什么。
-
-## 运行和配置
-
-管理后台会嵌入 Go 可执行文件。运行时只需要一个文件和一个数据目录：
+可以直接跑单文件二进制：
 
 ```powershell
 $env:MODEL_CONFLUENCE_ADMIN_PASSWORD = '请替换为管理员密码'
 ./model-confluence.exe --listen 127.0.0.1:8080 --data-dir ./data
 ```
 
-也可以使用 Docker：
+也可以用 Docker 启动：
 
 ```bash
 docker run -d --name model-confluence \
@@ -154,14 +85,7 @@ docker run -d --name model-confluence \
   ghcr.io/sanjeever/model-confluence:latest
 ```
 
-进入管理后台后，配置分四步：
-
-1. 创建供客户端使用的访问密钥；
-2. 添加供应商、协议端点和上游 Key；
-3. 创建虚拟模型并配置候选顺序；
-4. 让客户端使用统一地址和虚拟模型名发起请求。
-
-配置完成后，可以用 Chat Completions 请求验证入口：
+打开管理后台后，按顺序建好客户端访问密钥、上游供应商和虚拟模型，就能用 `curl` 验证：
 
 ```powershell
 curl.exe http://127.0.0.1:8080/v1/chat/completions `
@@ -170,30 +94,20 @@ curl.exe http://127.0.0.1:8080/v1/chat/completions `
   -d '{"model":"your-virtual-model","messages":[{"role":"user","content":"你好"}],"stream":false}'
 ```
 
-原生版本和 Docker 镜像见项目的 [GitHub Releases](https://github.com/Sanjeever/model-confluence/releases/latest)。源码在 [Sanjeever/model-confluence](https://github.com/Sanjeever/model-confluence)。
+注意 `./data` 目录下的 SQLite 数据库里存有明文密钥与完整的请求载荷，请务必限制好目录读取权限，不要把数据目录提交进 Git。
 
-当前版本会在 SQLite 中保存访问密钥、供应商密钥、请求头、请求体和响应体原文。管理员界面也可以查看完整凭据。数据目录需要按高敏感数据保护。只允许受信任的系统用户读取。公网部署时，请放在 HTTPS 反向代理之后。不要把数据库和带真实密钥的导出文件提交到 Git。不要让多个进程共享同一个数据目录。
+## 与常见同类项目的侧重点对比
 
-原始载荷便于追查转换问题，也让数据目录同时包含凭据和对话内容。是否保留这类记录，需要结合部署环境决定。
-
-## 和其他项目的区别
-
-下面按截至 2026 年 10 月 23 日的各项目文档列出主要用途，作为选型入口。表格没有比较同一任务下的配置时间、性能或协议覆盖完整性。
-
-| 项目 | 主要用途 | 关注重点 |
+| 项目 | 定位 | 侧重点 |
 | --- | --- | --- |
-| [模汇](https://github.com/Sanjeever/model-confluence) | 私有部署的 AI 协议网关 | 三种协议、虚拟模型、多供应商、多 Key、请求记录 |
-| [new-api](https://github.com/QuantumNous/new-api) | 模型聚合与分发平台 | 多模型、多渠道、组织管理、使用分析和成本管理 |
-| [one-api](https://github.com/songquanpeng/one-api) | LLM API 管理与二次分发 | 多供应商渠道、Key、用户、额度和分组 |
-| [sub2api](https://github.com/Wei-Shaw/sub2api) | 订阅接入与中转 | Claude、OpenAI、Gemini、Grok 等订阅和共享 |
-| [cc-switch](https://github.com/farion1231/cc-switch) | AI 编程客户端配置管理 | 客户端配置切换、本地代理 |
-| [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) | CLI 账号代理服务 | CLI 接入、OAuth、多账号和兼容 API |
-| [GT AI Gateway](https://github.com/alexazhou/gt_ai_gateway) | 轻量协议网关 | 协议转换、多上游、请求可视化、缓存和多种部署 |
+| [模汇](https://github.com/Sanjeever/model-confluence) | 个人自部署协议网关 | 三协议双向转换、虚拟模型路由、每次尝试的原始报文追踪 |
+| [new-api](https://github.com/QuantumNous/new-api) / [one-api](https://github.com/songquanpeng/one-api) | 模型聚合与分发平台 | 多渠道分发、多用户额度、计费与团队管理 |
+| [sub2api](https://github.com/Wei-Shaw/sub2api) | 订阅接入与中转 | 围绕订阅账号的共享与转换 |
+| [cc-switch](https://github.com/farion1231/cc-switch) | 客户端配置管理 | 桌面端快速切换客户端配置与本地代理 |
+| [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) | CLI 账号代理 | OAuth 账号接入与兼容接口 |
+| [GT AI Gateway](https://github.com/alexazhou/gt_ai_gateway) | 轻量协议网关 | 协议转换、缓存与可视化 |
 
-cc-switch 除了切换客户端配置，也提供本地代理等功能，不能把这些项目严格分成互不重叠的类别。对我自己的需求，模汇优先解决的是追查一次请求的去向、转换内容和失败前的尝试路径。
+如果你需要的不是多租户分发和计费，而是想在自己的机器上把散乱的协议、供应商和排错日志归拢到一处，欢迎试试模汇：
 
-## 写在最后
-
-“模汇”这个名字来自一个简单的想法。模型、供应商、Key 池和协议在一个入口汇合。请求再按配置流向上游。
-
-项目地址：[Sanjeever/model-confluence](https://github.com/Sanjeever/model-confluence)。欢迎试用、提 Issue，或者直接查看代码。
+- **GitHub 仓库**：[Sanjeever/model-confluence](https://github.com/Sanjeever/model-confluence)
+- **安装包与镜像**：[GitHub Releases](https://github.com/Sanjeever/model-confluence/releases/latest)

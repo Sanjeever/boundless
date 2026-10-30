@@ -6,7 +6,7 @@ tags:
   - Go
   - Wails
   - 工具
-description: Port Sentinel 2.0 使用 Go + Wails 重构，新增 macOS 与 Linux 桌面分发包，整理端口扫描、系统授权和进程操作，并说明尚待实测的范围。
+description: 用 Go 与 Wails 重写端口哨兵，新增 macOS 与 Linux 桌面版本，整理端口扫描、系统提权与进程退出的边界。
 outline: deep
 aside: true
 ---
@@ -15,62 +15,62 @@ aside: true
 
 <!-- DESC SEP -->
 
-Port Sentinel 2.0 使用 Go + Wails 重构，新增 macOS 与 Linux 桌面分发包。这篇介绍扫描、授权与进程操作的实现，以及构建和桌面实测分别覆盖到了哪里。
+用 Go 与 Wails 重写端口哨兵，新增 macOS 与 Linux 桌面版本，整理端口扫描、系统提权与进程退出的边界。
 
 <!-- DESC SEP -->
 
-今年 1 月，我用 Flutter 写过一个 Windows 桌面工具，把查端口、找进程和结束进程放进同一个界面。[首发文章](/posts/2026/01/15-port-sentinel-release)记录着当时遇到端口冲突、反复查找 PID 时那点烦躁。
+今年一月，我用 Flutter 写过一个 Windows 桌面小工具，把查端口、找进程和结束进程放进同一个窗口。[首发那篇文章](/posts/2026/01/15-port-sentinel-release)记下了当时遇到端口冲突、反复翻找 PID 时的烦躁。
 
-这次，我用 Go + Wails v2 重写端口哨兵，界面采用 React、TypeScript 和 HeroUI，并增加 macOS、Linux 桌面分发包。工具仍然围绕同一个问题展开。服务启动失败，端口被谁占用，确认之后怎样结束目标进程？
+十个月过去，我用 Go 和 Wails v2 把它重写了一遍。
+
+前端换成了 React、TypeScript 与 HeroUI，打包目标也加上了 macOS 和 Linux 桌面。工具要回答的还是老问题：服务起不来，端口到底被谁占着，看清之后怎么体面地请它退场？
 
 ![Port Sentinel 2.0 macOS 中文浅色界面，展示监听端口、进程名称、本地地址与授权扫描入口](https://raw.githubusercontent.com/Sanjeever/port_sentinel/main/assets/screenshot/main-macos.png)
 
-## 从端口占用到连接详情
+## 从监听列表到连接详情
 
-日常排查端口冲突，先看监听端口就够。需要追踪本机连接时，可以切换到全部连接，查看本地地址、远端地址与连接状态。TCP/UDP、IPv4/IPv6 都在同一张表里，搜索支持端口号、PID 和进程名称。
+日常排查端口冲突，看一眼监听列表就够了。
 
-找到目标后，点击进程名称打开详情，核对可读取的执行文件路径与关联端口。搜索、筛选、数值排序和复制都围绕这张表展开。一个进程可能同时占用多个端口，详情能帮助判断这些记录是否属于同一个服务。
+需要顺藤摸瓜排查本机连接时，可以切到“全部连接”，查看本地地址、远端地址与连接状态。TCP 与 UDP、IPv4 与 IPv6 都在同一张表里，输入端口号、PID 或进程名就能直接过滤。
 
-新版也支持简体中文与英文、浅色与深色主题，以及跟随系统设置。刷新间隔和窗口大小等偏好保存在本机。关闭窗口就退出，需要查端口时再打开。
+点开进程名称，右侧会列出可执行文件路径和它名下的关联端口。一个服务常常同时绑着好几个端口，放到一起看，更容易分清这些记录是不是同一套程序。
 
-## Go 处理系统能力，Web 构建界面
+窗口支持中英文切换，深浅主题可以跟随系统。刷新间隔和窗口尺寸留在本地配置里。用完关掉窗口就退出，下次端口冲突时再叫醒它。
 
-这次实现把职责分开。Go 负责连接扫描、进程操作、系统授权、设置与更新，React 负责展示数据和处理交互，Wails 连接两端并管理桌面窗口生命周期。
+## Go 贴着系统，Web 负责面板
 
-[Wails](https://wails.io/docs/introduction/)复用系统 WebView，并让前端调用 Go 方法。于是，表格、搜索和设置界面可以采用 Web 技术，系统访问留在 Go 侧。随之而来，系统 WebView 版本也会影响前端兼容范围。比如面向 macOS 12，就需要顾及其 WebKit 能力，打包成功之后还要检查真实界面。
+这次重写把前后端的边界划得很清楚。Go 负责连接扫描、进程操作、系统提权、配置与更新；React 负责表格渲染与交互；[Wails](https://wails.io/docs/introduction/) 在中间搭桥，复用系统自带的 WebView。
 
-跨平台扫描也需要分别实现。Windows 通过 `GetExtendedTcpTable`、`GetExtendedUdpTable` 读取连接；macOS 调用 `lsof`，解析机器可读输出；Linux 读取 `/proc/net`，再结合进程文件描述符关联 socket 与 PID。相关实现集中在[平台扫描模块](https://github.com/Sanjeever/port_sentinel/tree/v2.0.1/internal/ports)。
+借用系统 WebView 的好处是包体轻，代价是要顾及不同系统的内核版本。比如面向 macOS 12 打包时，前端样式和脚本得迁就那一版 WebKit 的脾气，不能只看本地浏览器能跑就算数。
 
-这些数据最后进入同一套搜索、筛选和进程操作流程。界面可以统一，系统接口、可见范围和授权方式仍需逐个平台处理。
+底层的连接扫描更是各走各的路。
 
-## 结束进程之前
+Windows 调用 `GetExtendedTcpTable` 和 `GetExtendedUdpTable` 直接读表；macOS 调起 `lsof` 解析机器可读输出；Linux 则去读 `/proc/net`，再顺着进程文件描述符把 socket 和 PID 串起来。这些脏活都收在[平台扫描模块](https://github.com/Sanjeever/port_sentinel/tree/v2.0.1/internal/ports)里，向上只交出统一的数据结构。
 
-端口列表按连接展示，结束操作却作用于整个进程。假设一个服务同时监听 8080 和 8081，选中 8080 并结束进程，8081 也会随之关闭。因此，确认操作时需要展示进程与关联端口，批量选择也要先按进程去重。选中三行，可能实际只有一个目标进程。
+## 按下结束按钮之前
 
-还有一个容易忽略之处，PID 会被复用。从列表刷新到点击按钮之间，原进程可能退出，系统又把相同 PID 分配给另一个进程。新版保存 PID 与创建时间，执行前再次复核身份；发现目标发生变化，就停止该项操作。具体逻辑见[进程操作实现](https://github.com/Sanjeever/port_sentinel/blob/v2.0.1/internal/ports/process.go)。
+端口列表是一行行连接，结束操作却会落在整个进程头上。
 
-默认操作请求正常退出。目标仍在运行，或当前平台无法对它执行正常退出时，界面会反馈结果，强制结束需要另行确认。Windows 正常退出依赖目标接收窗口关闭请求，目标没有适用窗口时，程序会明确报告不支持正常退出。
+假设一个服务同时监听 8080 和 8081，你看着 8080 顺手点下结束，8081 也会跟着断掉。所以在确认弹窗里，程序会把目标进程关联的所有端口一并摊开；批量勾选时也会先按进程去重——选了三行，背后可能只是同一个进程。
 
-发出退出请求之后，程序还会检查进程状态，并重新扫描实际连接。某个目标没有退出，或批量操作中有一部分失败，都需要在结果中保留，方便继续判断下一步。
+还有一件小事容易漏掉：操作系统的 PID 是会复用的。
 
-权限同样按操作处理。主界面以普通权限运行，用户主动授权扫描，或已经确认结束操作却遇到权限不足时，再通过 Windows UAC、macOS 管理员对话框或 Linux polkit 启动临时辅助进程。高权限范围限定在本次请求，自动刷新不会反复弹出授权窗口，也不保存管理员密码。
+从列表刷新到鼠标点下去的几秒钟里，原进程可能刚好自己退了，系统顺手把同一个 PID 分给了刚启动的另一个无辜进程。为了不杀错人，新版在扫描时会同时记下 PID 和进程创建时间，动手前再核对一次身份。一旦发现对不上，就立刻停手。具体实现在[进程操作模块](https://github.com/Sanjeever/port_sentinel/blob/v2.0.1/internal/ports/process.go)里。
 
-授权扫描可以扩大可见范围，但系统保护仍可能阻止读取部分信息。界面需要区分权限不足、进程退出与扫描失败，避免把没有读到信息当成没有连接。
+默认操作会先请求进程正常退出。如果对方还在运行，或者当前平台不支持对它发送正常退出请求（比如 Windows 下对方根本没有接收关闭消息的窗口），界面会如实反馈，由你决定要不要强制结束。
 
-## 下载与迁移
+权限也按需索取。主窗口平时以普通权限运行，自动刷新绝不弹窗打扰。只有当你主动点击“授权扫描”，或者确认结束某个高权限进程却碰壁时，程序才会通过 Windows UAC、macOS 管理员对话框或 Linux polkit 拉起一次临时辅助进程，干完活即销毁，不留密码。
 
-新版支持目标如下，安装包见 [GitHub Releases](https://github.com/Sanjeever/port_sentinel/releases/latest)。
+## 下载与已知边界
+
+安装包放在 [GitHub Releases](https://github.com/Sanjeever/port_sentinel/releases/latest)，解压到可写目录即可运行。Flutter 1.x 老用户需要手动安装新版。
 
 | 平台                            | 分发包与运行依赖                                                  |
 | ------------------------------- | ----------------------------------------------------------------- |
-| Windows 10/11 amd64             | ZIP，需要 Microsoft Edge WebView2 Runtime                         |
+| Windows 10/11 amd64             | ZIP，依赖 Microsoft Edge WebView2 Runtime                         |
 | macOS 12+ Intel / Apple Silicon | Universal ZIP，解压后保留完整 `.app`                              |
-| Ubuntu 22.04/24.04 amd64 桌面   | TAR.GZ，需要 GTK 3、WebKitGTK 4.1；提权需要 polkit 与图形认证代理 |
+| Ubuntu 22.04/24.04 amd64 桌面   | TAR.GZ，依赖 GTK 3、WebKitGTK 4.1；提权需要 polkit 与图形认证代理 |
 
-下载后先完整解压到可写位置，再运行程序。Flutter 1.x 用户需要手动安装 v2。新版正式构建支持检查后续更新，下载、替换和重启均需确认，下载过程可以取消。
+目前 Windows 包尚未签名，macOS 包使用临时签名且未公证，首次打开可能遇到系统拦截。Linux 侧各发行版的具体依赖见[中文 README](https://github.com/Sanjeever/port_sentinel/blob/v2.0.1/README_zh.md)，尚未覆盖的真机验收边界也坦白记在了[开发文档](https://github.com/Sanjeever/port_sentinel/blob/v2.0.1/docs/development.md#历史验证记录与待验收边界)里。
 
-当前 Windows 包未签名，macOS 包采用临时签名且未经公证，安装时可能遇到系统拦截。其他 Linux 发行版尚未验证，依赖要求与安装说明见[中文 README](https://github.com/Sanjeever/port_sentinel/blob/v2.0.1/README_zh.md)。
-
-仓库已记录 macOS 本机窗口检查与三平台 CI 构建通过。真实管理员认证成功、Windows/Linux 图形桌面、macOS 12 与 Intel 设备运行，以及已安装程序升级重启仍待实测，具体范围见[验证记录](https://github.com/Sanjeever/port_sentinel/blob/v2.0.1/docs/development.md#历史验证记录与待验收边界)。
-
-项目继续以 [MIT 协议](https://github.com/Sanjeever/port_sentinel/blob/v2.0.1/LICENSE)开源。[源码](https://github.com/Sanjeever/port_sentinel)与[版本日志](https://github.com/Sanjeever/port_sentinel/tree/v2.0.1/docs/releases)都在仓库，使用中遇到问题，欢迎附上系统版本、操作步骤与实际结果提交 Issue。
+项目依然以 [MIT 协议](https://github.com/Sanjeever/port_sentinel/blob/v2.0.1/LICENSE)开源。[源码](https://github.com/Sanjeever/port_sentinel)与[版本日志](https://github.com/Sanjeever/port_sentinel/tree/v2.0.1/docs/releases)都在仓库里，遇到古怪的端口或权限问题，欢迎随时提 Issue。

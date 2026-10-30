@@ -6,7 +6,7 @@ tags:
   - VS Code
   - 开发工具
   - AI 编程
-description: 我开源了一套面向 AI 辅助开发和代码审查的轻量 VS Code 配置，让 Codex 负责主要编码，让编辑器回归阅读 diff、审查实现和少量修改。
+description: 我开源了一套面向代码审查与轻量修改的 VS Code 配置，把主要编码交给 Codex，让编辑器专注于读 diff 和查调用链。
 outline: deep
 aside: true
 ---
@@ -15,25 +15,23 @@ aside: true
 
 <!-- DESC SEP -->
 
-我开源了一套面向 AI 辅助开发和代码审查的轻量 VS Code 配置：让 Codex 负责主要编码，让编辑器回归阅读 diff、审查实现和少量修改。
+我开源了一套面向代码审查与轻量修改的 VS Code 配置，把主要编码交给 Codex，让编辑器专注于读 diff 和查调用链。
 
 <!-- DESC SEP -->
 
 ## 当编辑器不再负责大部分编码
 
-以前配置编辑器，我关心的是怎样更快地补全、生成和保存代码。现在我的主要工作流变了：大部分实现交给 Codex，我在 VS Code 里阅读 diff、检查调用链，并做少量收尾修改。
+以前配编辑器，心思都在怎么更快地补全、生成和保存代码上。现在日常习惯变了：成块的实现交给 Codex，打开 VS Code 多半是为了看 diff、顺调用链，再动手改几处收尾的细节。
 
-角色变化之后，一些原本方便的行为反而会制造摩擦。审查时随手改了一处，自动保存就可能把它写回磁盘；保存时格式化还可能连带修改其他行。diff 如果隐藏空白差异，眼前看到的变化就不完整；编辑器里再出现几套 AI 入口，也会争夺注意力。
+角色一变，从前觉得顺手的默认行为反而开始添乱。看代码时随手敲了两个字，自动保存立刻写进磁盘；保存时自动格式化又顺带改了几十行缩进。要是 diff 视图再默认折叠空白字符差异，或者侧边栏塞满好几套 AI 聊天入口，界面就显得吵闹。
 
-所以我整理并开源了这套配置：
+我把现在自用的配置整理成了一个公开仓库：
 
 - **GitHub 仓库**：[Sanjeever/vscode-settings](https://github.com/Sanjeever/vscode-settings)
 
-它不是一套“装得越多越好”的全家桶，而是我当前工作方式的一份可读、可审查、可复用的公开快照。
+## 审查时不让编辑器替我动手
 
-## 为代码审查保留控制权
-
-这套配置最重要的选择不是主题或字体，而是尽量避免编辑器在审查期间替我修改工作区。
+这套配置最核心的改动，是关掉那些会在阅读期间悄悄改动工作区的开关：
 
 ```json
 {
@@ -46,65 +44,48 @@ aside: true
 }
 ```
 
-我关闭了 VS Code 内置的 AI 功能，因为主要编码已经在 Codex 中完成，编辑器无需再提供一套平行的对话入口。自动保存和保存时格式化也默认关闭：需要格式化时仍然可以主动执行，但一次代码审查不应该因为打开并保存文件，平白多出一批无关 diff。
+主编码循环已经在 Codex 里完成，所以我关掉了 VS Code 内置的 AI 入口。自动保存和保存时格式化也一并关闭——需要格式化时可以随时手动触发，但打开文件看一眼再保存，不该平白造出一堆无关的 diff。
 
-diff 编辑器开启自动换行，并且不忽略行首或行尾的空白变化。前者让长行更容易阅读，后者确保我看到的差异更接近 Git 真正记录的内容。关闭 Git 自动抓取则减少后台状态变化，让更新远端信息成为一个明确动作。
+diff 视图开启了自动换行，并保留首尾空白差异，确保眼前看到的改动和 Git 实际记录的一致。同时保留了 minimap、inlay hints 和 sticky scroll，翻阅长文件时更容易看清类型和当前所处的作用域。
 
-另一方面，minimap、inlay hints 和 sticky scroll 仍然保留。审查并不只是盯着红绿两色的补丁，还需要理解文件结构、类型信息和当前所处的作用域。这些功能对阅读代码依然有用。
+## 扩展与语言支持
 
-## 语言能力够用，但不重复安装
+配置覆盖了我平时常写的几门语言：Java、Spring Boot、Vue、React、TypeScript、Go、Python、Rust 和 Flutter。
 
-配置覆盖了我常用的技术栈：Java、Maven、Spring Boot、Vue、React、Node.js、JavaScript、TypeScript、Go、Python、Rust、Dart 和 Flutter。
+挑选扩展时尽量不叠床架屋：
 
-选择扩展时，我尽量区分“主动选择的工具”和“已经由 VS Code 或其他扩展提供的能力”。例如：
+- JavaScript 与 TypeScript 直接用 VS Code 内置服务；
+- Python 用官方扩展配 Ruff，环境优先交给 `uv` 和项目内的 `.venv`；
+- Rust 用 `rust-analyzer` 配 `CodeLLDB`；
+- Flutter 扩展会自动带上 Dart，列表里不再重复声明。
 
-- React、Node.js、JavaScript 和 TypeScript 使用 VS Code 内置语言服务；
-- Python 使用官方扩展及其附带的 Pylance、Debugger 和 Environments，Ruff 负责诊断与格式化；
-- Python Environments 自动发现项目中的 `.venv`，有 uv 时优先用 uv 管理环境和安装包；
-- Rust 使用 rust-analyzer，调试交给 CodeLLDB；
-- Flutter 扩展会自动安装 Dart，因此推荐列表不再重复列出 Dart。
+仓库里不写死任何本机的 JDK、SDK 或字体路径，也不把 `node_modules`、`target`、`dist`、`.venv` 放进文件监听和全局搜索里。主题用的是 Vitesse Dark Soft，搭配 JetBrains Mono 字体、Catppuccin Mocha 图标和 JetBrains 快捷键。
 
-仓库没有预设 JDK、Maven、Rust、Flutter SDK、终端或字体的本机路径。语言工具通过项目配置、环境变量或 `PATH` 查找，项目自己的格式化与检查规则也应留在 `pyproject.toml`、`Cargo.toml` 等项目文件中，而不是塞进一份全局编辑器配置。
+## 为什么不用 Settings Sync 就够了
 
-常见的生成目录和缓存也从文件监视或搜索中排除，包括 `node_modules`、`target`、`dist`、`build`、`.venv` 和各类 Python 工具缓存。它们仍然存在于项目中，只是不再占据日常搜索结果或触发没有必要的后台扫描。
+Settings Sync 适合在自己的几台电脑之间同步状态，但 Git 仓库能留下每次改动的记录，也方便别人只挑走有用的几行。
 
-外观方面，我使用 Vitesse Dark Soft、JetBrains Mono、Catppuccin Mocha 文件图标、Carbon 产品图标和 JetBrains 快捷键。Goto Alias、File Nesting Updater、Smart Clicks 与 Where Am I 则分别补足定义跳转、文件嵌套、文本选择和项目识别这些日常细节。
+仓库里剔除了所有密钥、SSH 主机、本机路径和缓存，只保留三样东西：脱敏后的 `settings.json`、精选扩展列表，以及 Windows 和 macOS 的一键安装脚本。
 
-## 为什么用 Git 仓库，而不只用 Settings Sync
+## 安装方式
 
-Settings Sync 很适合在自己的设备之间同步状态，但公开仓库解决的是另一件事：它让我能够检查每次配置变化，也让其他人可以只取走其中有用的部分。
-
-为了让仓库适合公开，我没有复制整个 VS Code 用户目录。API Key、Token、SSH 主机、本机代理、绝对路径、`argv.json`、`globalStorage`、`workspaceStorage` 和扩展缓存都不在其中。仓库只保留三类内容：
-
-1. 可公开的 `settings.json`；
-2. 主动选择的扩展推荐列表；
-3. Windows 和 macOS 的安装脚本。
-
-这也是 Settings Sync 与这个仓库的分工：前者继续服务个人设备间的日常同步，后者发布经过检查、能够公开审阅的配置快照。
-
-## 安装与边界
-
-先克隆仓库：
+克隆仓库后，可以按平台运行安装脚本：
 
 ```bash
 git clone https://github.com/Sanjeever/vscode-settings.git
 cd vscode-settings
 ```
 
-Windows 使用 PowerShell 7：
+Windows（PowerShell 7）：
 
 ```powershell
 pwsh -File .\scripts\install.ps1
 ```
 
-macOS 需要先从 VS Code 命令面板执行 `Shell Command: Install 'code' command in PATH`，然后运行：
+macOS（需先在命令面板执行 `Shell Command: Install 'code' command in PATH`）：
 
 ```bash
 bash ./scripts/install.sh
 ```
 
-两个脚本都会先把现有用户设置备份为带时间戳的文件，再用仓库中的配置**完整替换** `settings.json`，最后安装推荐扩展。它们不会替换 `keybindings.json`、`argv.json`、SSH 配置或其他用户数据，但推荐扩展中包含 JetBrains 快捷键扩展。
-
-如果你已经有一套长期维护的配置，最稳妥的用法不是直接运行脚本，而是先阅读 `.vscode/settings.json` 和 `.vscode/extensions.json`，挑选适合自己的部分。当前自动安装脚本只覆盖 Windows 和 macOS；Linux 用户需要手动复制设置并安装扩展。
-
-这套配置也不试图成为所有人的标准答案。它服务的是一种很具体的工作方式：Agent 负责产生主要改动，人在编辑器中理解和审查结果。工作流不同，自动保存、格式化、AI 入口乃至扩展选择都可能有完全不同的答案。
+脚本会先将你现有的设置备份为带时间戳的文件，再写入新配置并安装扩展。如果你手里已经有维护多年的 `settings.json`，直接翻看仓库里的 `.vscode/settings.json`，挑几条合用的抄过去会更稳妥。

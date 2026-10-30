@@ -5,7 +5,7 @@ tags:
   - AI
   - Software Engineering
   - Vibe Coding
-description: Outdated documentation can carry errors into the next implementation. Maintaining it means identifying which constraints still hold and tracing changes to the descriptions they affect.
+description: When code moves forward while old docs stay behind, stale examples quietly feed bugs into a coding agent’s next implementation.
 outline: deep
 aside: true
 ---
@@ -14,123 +14,72 @@ aside: true
 
 <!-- DESC SEP -->
 
-The code has changed, but old instructions can still shape a coding agent's next implementation. When maintaining project documentation, I care most about deciding which descriptions have become outdated and which constraints should still hold.
+When code moves forward while old docs stay behind, stale examples quietly feed bugs into a coding agent’s next implementation.
 
 <!-- DESC SEP -->
 
-Suppose a report endpoint originally returned a file directly. As data volume grows, exports move to background tasks: return a task ID first, then download the file once it is ready. The code has changed, but the README and integration example still describe the old behavior. In the next session, a coding agent follows that example to build another page and could save the task ID as a “report file.”
+Suppose a report endpoint originally streamed a file directly back to the caller. Six months later, as data volume grows tenfold, exports move to a background job: the endpoint now returns a `taskId` first, and the caller polls until the file is ready to download.
 
-This growing separation between evolving code and existing descriptions is **documentation drift**. Old instructions enter a new session's context and influence the next implementation, giving errors a path to spread.
+The code is merged and deployed, but the README and integration snippet still show the old synchronous call. In the next session, a coding agent reads that outdated example to build a new page—and dutifully saves the JSON `taskId` response to disk as an `.xlsx` file.
 
-## Are the docs wrong, or is the implementation?
+That gap between evolving code and frozen prose is **documentation drift**. When humans and AI agents share a repository, stale docs are more than an eyesore: they enter the next context window and actively seed new bugs.
 
-“Keep the docs consistent with the code” still requires judgment. If the move to background tasks is an agreed change, the old integration instructions need updating. But if the specification requires all matching rows and the code exports only the current page, changing the docs to say “exports the current page” could turn a bug into a new requirement.
+## Are the Docs Stale, or Is the Code Wrong?
 
-In [Intent and Code](/en/posts/2026/10/21-intent-spec-impl), I discussed `Intent → Spec → Impl`. The specification states requirements; the implementation provides concrete behavior. When they disagree, we need to establish which decisions have changed and which promises still apply.
+When documentation and code disagree, the reflex is to update the docs to match the code. Before doing that, it pays to pause and ask: did the design legitimately change, or did the implementation cut a corner?
 
-**Code tells us what is implemented now; established constraints help us judge whether that implementation is correct.** I choose evidence according to the question: inspect the implementation and relevant tests to check the actual response; trace the agreed specification and subsequent changes to judge whether the export includes the right rows. Tests and schemas also need scrutiny of what they actually check. They cannot establish that the requirements themselves are correct.
+Continuing the example from [Intent and Code](/en/posts/2026/10/21-intent-spec-impl): if the team deliberately moved exports to background jobs, updating the integration guide is the right call. But if the spec required exporting *all* matching rows and the code accidentally exported only the first page, rewriting the docs to say “exports the current page only” canonizes a bug as a feature.
 
-In [The Origins of Software Engineering](https://jyywiki.cn/GSE/2026/lect5.md), jyy distinguishes concrete behavior from the requirements that behavior must satisfy, and reminds us to preserve what remains undecided. Here, that means separating choices an agent fills in to complete an implementation from requirements that have been agreed. If the repository cannot resolve an important disagreement, preserve the evidence and take it to someone with the authority to decide.
+As [jyy notes in *The Origins of Software Engineering*](https://jyywiki.cn/GSE/2026/lect5.md), **code tells you what the system does today, while agreed specifications tell you whether that behavior is right**. Check code and tests to verify response shapes; check requirements and commit history to verify whether a promise still holds.
 
-## Keep the decision and the conditions behind it
+## Record the Decision and the Reason Behind It
 
-Knowing what was chosen is not enough to judge whether a constraint still applies.
+Docs that only describe *how* the code works go stale fast; docs that record *why* a choice was made stay useful for years.
 
-Consider the export again. Writing “use background tasks” tells the next developer what the current approach is. Recording the growing data volume, excessive synchronous request times, and continuing requirement to export all matching rows explains why the approach was chosen and which requirements remain. If synchronous processing later becomes fast enough, there is a basis for reconsidering the decision.
+A single sentence beside the export docs—“Switched to async jobs because synchronous exports timed out past 100k rows; must still include all filtered rows”—captures both the constraint and the invariant (the core idea behind [jyy’s *Requirements and Architecture (1)*](https://jyywiki.cn/GSE/2026/lect6.md) and Michael Nygard’s [Architecture Decision Records](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)).
 
-[Requirements and Architecture (1)](https://jyywiki.cn/GSE/2026/lect6.md) discusses how a current result can compress facts, rules, and approval processes. Keep only the result, and its origins become hard to explain. Documentation has a similar problem: once the reason for moving exports to background tasks is deleted, even an accurate account of the current code cannot recover that reasoning.
+Six months later, anyone reading that line can tell which part is an implementation mechanism (`async jobs`) and which part is a non-negotiable promise (`all filtered rows`). Line-by-line descriptions of internal helper calls, on the other hand, can be deleted—the code already speaks for itself.
 
-Michael Nygard's [architecture decision records, or ADRs](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions), preserve the context, status, and consequences of important decisions. When a decision is superseded, keep its record and identify the replacement. A project may not need a dedicated ADR directory, but its decisions and the conditions behind them should be findable.
+## Keep Fewer Copies to Synchronize by Hand
 
-This also sets a boundary for simplifying docs. Internal call sequences can be left to the code when describing them adds no explanatory value. The constraints a choice addresses and the tradeoffs it makes deserve a record. Otherwise, the next change begins with another round of guesswork.
+If the same API response schema is copied into `README.md`, `docs/api.md`, an example file, and `AGENTS.md`, every future change is an invitation to miss one of the four.
 
-## Reduce what needs manual synchronization
+Borrowing the rule from [*Requirements and Architecture (2)*](https://jyywiki.cn/GSE/2026/lect7.md): store a volatile fact in one place and link or derive it everywhere else.
 
-Useful knowledge also has a maintenance cost. Repeat the same API response type in the README, reference docs, integration example, and AGENTS.md, and each copy becomes another place to miss during a change.
+- **Clear division of labor**: Let `README.md` cover getting started, `docs/` hold contracts and design rationale, and `AGENTS.md` define working rules and pointers.
+- **Executable examples**: When integration snippets are tested alongside the code, a breaking API change fails the check immediately instead of waiting to mislead the next reader.
 
-[Requirements and Architecture (2)](https://jyywiki.cn/GSE/2026/lect7.md) offers a useful idea: preserve facts and rules, then compute the results that can be derived from them. Maintenance can then focus on whether the computation and its dependencies are correct, reducing the need to synchronize multiple copies of state.
+## Fold Doc Updates into the Same Atomic Change
 
-Applied to documentation, I would first look for repeated information with a clear source. If task statuses and response fields already have a shared definition, reference material can be generated from it. If integration examples are executable, they can be included in API checks to catch an example that still saves the response as a file.
-
-But a generated parameter table can accurately describe an API that violates its requirements. The promise to export all matching rows and the reason for choosing background tasks still need independent records against which to judge the implementation.
-
-The remaining material also needs clear ownership. I prefer the README to provide entry points for running and developing the project, detailed docs to hold contracts, usage, and design context, and AGENTS.md to state working constraints and point to relevant material. Link to existing explanations to reduce copies of volatile facts. API inputs, outputs, error semantics, and deployment steps should remain concrete: simplifying docs must preserve the information readers need to complete their tasks.
-
-## Include the relevant docs in a complete change
-
-Even with fewer copies, a change can affect several places. Finding them starts with describing how behavior changed.
-
-“Changed the export service” points to a group of source files. “The endpoint now returns a task ID instead of a file; callers must check its status and download the file when it is ready” provides clues about return types, status queries, and the download flow. API contracts, callers, examples, and usage instructions may all depend on the old behavior.
-
-[Version Control (2)](https://jyywiki.cn/GSE/2026/lect4.md) describes the links between requirements, design, implementation, and verification as traceability. Keeping files in one repository and recording their history in Git does not automatically explain which example depends on which contract. Impact analysis for documentation follows those links when something changes.
-
-In the hypothetical project above, a search for the old endpoint and terminology could be a starting point.
+Whenever a change alters external behavior, follow the [traceability trail](https://jyywiki.cn/GSE/2026/lect4.md) with `rg` before wrapping up:
 
 ```bash
 rg -n 'exportReport|/api/reports/export|returns the file directly|synchronous export' .
 ```
 
-Each match needs judgment. A current integration example needs rewriting; a historical decision record may need to remain, marked as superseded. Other descriptions may use different wording, requiring further investigation through callers and documentation links. Start with the intended behavior change, then check against the final result so that a revised implementation does not get reviewed against an outdated plan.
+Updating the code, tests, and affected documentation in a single [atomic change](https://jyywiki.cn/GSE/2026/lect3.md) is far less painful than staging a massive documentation cleanup twice a year.
 
-[Version Control](https://jyywiki.cn/GSE/2026/lect3.md) discusses an atomic change as a complete modification organized around a clear intent, one that can be explained and verified. I want documentation included in that scope. When the background task implementation is ready, review its contracts, integration examples, and usage instructions together, checking whether current instructions still lead callers to depend on the old behavior.
-
-For AGENTS.md, a short rule can capture this expectation.
+A few lines in `AGENTS.md` are enough to make that habit stick:
 
 ```text
-Documentation consistency
-
-- When completing a change, describe the final changes to behavior,
-  interfaces, or constraints. Follow relevant calls and documentation
-  links to check whether contracts, examples, comments, and usage
-  instructions still hold.
-- Resolve conflicts between implementation and agreed requirements using
-  the requirements and context of the change. Do not turn a behavioral
-  deviation directly into a new requirement.
-- Preserve important decisions and their rationale. Reduce duplicate
-  copies of volatile facts.
-- Keep the review proportional to the task's impact. Update documentation
-  according to whether its content is affected.
+Documentation Consistency
+- When changing behavior, interfaces, or configuration, use rg to find and update affected docs, examples, and comments.
+- If implementation and agreed requirements conflict, check the context of the requirement instead of documenting a bug as expected behavior.
+- Record the rationale behind key decisions and avoid duplicating volatile facts across multiple files.
 ```
 
-If outdated material has already accumulated, I would first give the agent a dedicated maintenance task: verify important facts, address duplication and contradictions, then put these principles into AGENTS.md. Keep an existing structure that works, and check that the review has not erased design rationale or left broken links. Subsequent tasks can review their own impact, keeping a broad cleanup from becoming a fixed burden on every change.
+The next session does not need a transcript of every conversation we had today—just a clean entry point, the constraints that still hold, and the reasons we chose them.
 
-An agent can still miss material or misunderstand a design, and important disagreements still need human judgment. Whether this approach reduces later misuse needs to be tested through continued changes.
-
-The next session does not need to reconstruct our entire conversation. It should be able to find the current requirements, important boundaries, and reasons behind those choices.
-
-::: details Documentation maintenance task to adapt for your coding agent
+::: details Prompt: Handing a Documentation Audit to a Coding Agent
 
 ```md
-Review and improve this project's documentation. Make the necessary
-changes directly and preserve the user's existing work.
-Include the README, docs, AGENTS.md, relevant comments, examples, and
-configuration guides.
+Please review and clean up this project's documentation (README, docs, AGENTS.md, comments, and examples):
 
-Read the project entry points and relevant code. Check important facts
-against implementation, configuration, and tests. Address stale claims,
-duplication, and contradictions. Keep an existing structure that works.
-
-Distinguish current implementation from agreed requirements. Resolve
-conflicts by tracing requirements and the context of changes. Preserve
-and report important unresolved disagreements, continuing work that does
-not depend on them. Keep important decisions, their assumptions, and
-rationale. Mark superseded decisions accordingly.
-
-Reduce copies of volatile facts and link to them from other entry points.
-Consider which reference material can be generated from definitions and
-which examples can be checked. Adopt these approaches according to the
-project's actual needs and maintenance costs.
-
-Add incremental maintenance principles suited to the project to AGENTS.md:
-understand the final behavior change, follow relevant calls and docs to
-check affected contracts, examples, comments, and usage instructions, and
-update content according to semantic impact. Keep the review proportional
-to the task.
-
-Review the final diff for lost design context, duplication, and broken
-links. When checking commands, configuration, or behavior, use verification
-that supplies the relevant evidence. Report the actual changes,
-verification results, and disagreements that still need human judgment.
+1. Verify factual claims against the current code, configuration, and tests, fixing stale, duplicated, or contradictory descriptions.
+2. Distinguish intentional design evolution from implementation bugs; if code and requirements conflict, surface the discrepancy rather than rewriting the docs to excuse a bug.
+3. Preserve the rationale and assumptions behind important architectural decisions while removing redundant prose that merely narrates internal function calls.
+4. Eliminate duplicate copies of volatile facts by linking to a single source of truth.
+5. Add a concise documentation-hygiene rule to AGENTS.md so future behavior or interface changes update affected docs in the same pass.
 ```
 
 :::

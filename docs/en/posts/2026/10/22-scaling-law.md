@@ -4,7 +4,7 @@ date: 2026-10-22
 tags:
   - AI
   - Large Language Models
-description: How scaling laws estimate the relationship between scale and performance, and how budgets and usage change the optimal choice from pretraining to inference.
+description: From pretraining and long-term serving to test-time compute, here is how scaling laws map the trade-offs between model size, data, and budget.
 outline: deep
 aside: true
 ---
@@ -13,111 +13,78 @@ aside: true
 
 <!-- DESC SEP -->
 
-How much improvement can larger models and more training data buy? Scaling laws estimate this relationship through empirical curves. Across pretraining, long-term serving, and inference, how to spend compute depends on the objective and the conditions.
+From pretraining and long-term serving to test-time compute, here is how scaling laws map the trade-offs between model size, data, and budget.
 
 <!-- DESC SEP -->
 
-Suppose you have a budget to train a language model. Would you build a larger model and train it on less data, or a smaller model and train it on more?
+Suppose you have a fixed compute budget to train a language model. Do you build a larger model and feed it fewer tokens, or build a smaller model and train it on much more data?
 
-“Larger models are better” is intuitive. But more parameters make each token more expensive to process. With a fixed budget, increasing model size leaves less compute for training tokens. The final result depends on both.
+Intuition says bigger models are smarter, yet every extra parameter makes each token more expensive to process. Under a fixed budget, model size and dataset size compete for the exact same pool of FLOPs.
 
-Scaling laws study the relationship between scale and performance. They let us run smaller experiments before estimating what a larger investment might achieve.
+Scaling laws map how performance evolves as parameters, data, and compute grow. Instead of flying blind on a multi-million-dollar run, teams can fit empirical curves on small runs first and estimate where a larger investment will land.
 
-## How scale affects performance
+## Power Laws Between Scale and Loss
 
-Start with three variables. Parameter count is $N$, the number of training tokens is $D$, and training compute is $C$.
+Start with three familiar variables: parameter count $N$, training tokens $D$, and total training compute $C$ (measured in FLOPs).
 
-Labels such as 7B and 70B usually mean seven billion and seventy billion parameters. A tokenizer divides text into tokens, which may be characters, words, or word fragments. The training token count measures the total processed, including repeated passes over the same text. Compute is often measured in FLOPs, or floating-point operations.
+In 2020, Kaplan et al.’s [*Scaling Laws for Neural Language Models*](https://arxiv.org/html/2001.08361v1) tracked cross-entropy loss on next-token prediction—the higher the probability assigned to the actual next token, the lower the loss.
 
-What counts as better performance?
-
-Kaplan and colleagues published [Scaling Laws for Neural Language Models](https://arxiv.org/html/2001.08361v1) in 2020, studying how cross-entropy loss changes in next-token prediction. A model assigns probabilities to candidate tokens. The higher the probability assigned to the actual next token, the lower the loss for that prediction. These losses are then averaged over many predictions.
-
-For example, if model A assigns the actual next token a probability of 20% and model B assigns it 40%, B has the lower loss on that prediction.
-
-The experiments found relatively smooth power-law relationships between scale and loss when other factors were not bottlenecks. A simplified expression helps illustrate the idea.
+When no single factor bottlenecks the others, loss follows a remarkably smooth power law:
 
 $$
 L(x) \approx L_\infty + A x^{-\alpha}
 $$
 
-Here, $x$ represents one scale variable, $L_\infty$ is the asymptotic floor in the fitted expression, and $A$ and $\alpha$ must be estimated experimentally. Different studies use different equations. Parameters, data, and compute cannot simply be substituted into the same expression with unchanged coefficients.
+Here $x$ is the scale variable and $L_\infty$ is the irreducible entropy of the text. Because the exponent $\alpha$ is small, each tenfold jump in scale trims a predictable fraction off the remaining gap above $L_\infty$.
 
-Suppose $\alpha=0.1$. Increasing scale tenfold leaves about 79% of the original gap between the loss and its floor. This is an illustration, not an experimental result. Continued investment can yield improvements, but those improvements may be modest.
+That smoothness is what makes scaling laws practical: small pilot runs can reveal the slope before anyone commits to a massive cluster.
 
-That predictability has practical value. Large training runs are expensive. Estimating their results in advance gives us a better basis for choosing a scale and budget.
+## Splitting a Fixed Budget: From Kaplan to Chinchilla
 
-## Allocating a fixed budget
-
-For a typical dense Transformer, a common [approximation of training compute](https://arxiv.org/html/2203.15556v1#S3.SS3) is
+For a standard dense Transformer, training compute follows a simple [rule-of-thumb approximation](https://arxiv.org/html/2203.15556v1#S3.SS3):
 
 $$
 C \approx 6ND
 $$
 
-This omits some computation but captures the budget constraint. At fixed compute, doubling the parameter count roughly halves the number of training tokens. Model size and training data compete for the same resources.
+Hold $C$ constant, double the parameter count $N$, and you have to halve the training tokens $D$.
 
-In 2022, DeepMind revisited this allocation in its Chinchilla study. The researchers trained more than four hundred models with different parameter counts and training token budgets. They estimated that parameters and training tokens should grow in roughly equal proportions as compute increases. This differed substantially from the earlier estimate by Kaplan and colleagues, which favored allocating more of the increase to parameters. [Chinchilla paper](https://arxiv.org/html/2203.15556v1)
+In 2022, DeepMind’s [Chinchilla study](https://arxiv.org/html/2203.15556v1) trained over four hundred models across different $(N, D)$ pairs and revised earlier parameter-heavy allocations (see [Section 2](https://arxiv.org/html/2203.15556v1#S2) for the methodological comparison). Their conclusion was clean: as compute budgets grow, **model parameters $N$ and training tokens $D$ should scale up in roughly equal proportion**.
 
-The studies also differed in experimental coverage and training schedules. For example, an intermediate loss from a run with a learning-rate schedule designed for long training may not represent what a run optimized for a shorter budget could achieve. Measurement choices affect the fit and, in turn, allocation recommendations. [Methodological differences](https://arxiv.org/html/2203.15556v1#S2)
+To test that curve, they spent roughly the same compute budget used for the 280B-parameter Gopher model on a model one-quarter the size trained on more than four times as much data ([Section 1](https://arxiv.org/html/2203.15556v1#S1)):
 
-The researchers then trained Chinchilla to test their prediction.
+| Model | Parameters $N$ | Training Tokens $D$ |
+| --- | --- | --- |
+| Gopher | 280B | 300B |
+| Chinchilla | 70B | 1.4T |
 
-| Model      | Parameters | Training tokens |
-| ---------- | ---------- | --------------- |
-| Gopher     | 280B       | 300B            |
-| Chinchilla | 70B        | 1.4T            |
+At 70B parameters, Chinchilla beat the 280B Gopher across a wide suite of benchmarks—showing that an oversized model starved of tokens leaves capacity on the table.
 
-B means billion and T means trillion. With similar training compute budgets, Chinchilla had fewer parameters yet outperformed Gopher across a broad range of downstream evaluations. The table uses the figures in the [paper](https://arxiv.org/html/2203.15556v1#S1).
+## Factoring In Inference Tilts Toward Smaller Models
 
-More parameters require sufficient training. If the budget runs out too soon, some of the larger model's potential remains unrealized. The models also differed in details such as the optimizer, so the entire improvement cannot be attributed to the two numbers in the table. The broader series of experiments matters to the allocation argument as well.
+If Chinchilla’s ~20 tokens per parameter is compute-optimal, why do modern open-weight 7B and 8B models routinely train on 10T+ tokens?
 
-What I value here is the research process. Estimate a relationship at smaller scales, then test the prediction at a larger scale. New results can revise both the curve and the judgment behind it.
+Because Chinchilla optimized for **training cost alone**, whereas production models also pay for **inference**.
 
-## Optimal depends on the objective
+Training happens once; inference runs millions of times. As [*Beyond Chinchilla-Optimal*](https://arxiv.org/html/2401.00448v3) formalizes, once expected serving volume is high enough, spending extra FLOPs up front to “over-train” a smaller model pays for itself many times over in cheaper, faster responses.
 
-If there is a suitable ratio, why keep training a small model on more data?
+“Optimal” only has meaning once you specify whether you are minimizing the bill for a single training run or the lifetime bill of a deployed service.
 
-So far, the objective has been to achieve better performance within a fixed training compute budget. Once a model enters long-term service, its subsequent costs also matter.
+## Spending Compute at the Moment of Answering
 
-Suppose two models reach similar performance. One has more parameters and requires less training compute. The other has fewer parameters and needs more training compute, but may use less compute per request. With enough requests, those savings can repay the extra training investment.
+Even after weights are frozen, there is another axis to scale: spending more compute when answering a hard question (**test-time scaling**).
 
-[Beyond Chinchilla-Optimal](https://arxiv.org/html/2401.00448v3) includes inference demand in the analysis. Under conditions such as substantial expected inference demand, training a smaller model for longer can be more economical.
+In a [2024 study](https://arxiv.org/html/2408.03314v1) on the MATH benchmark, Snell et al. compared verifier-guided step search and iterative self-revision against brute-force sampling (noting the separate cost of difficulty estimation in [Section 3.2 and Appendix C](https://arxiv.org/html/2408.03314v1#S3.SS2)).
 
-The familiar Chinchilla rule of thumb of roughly twenty training tokens per parameter needs its original objective attached. It sets no upper limit on training. More tokens may still improve performance; whether they are worth the cost requires another calculation.
+Pretraining compute is like years of study that raise your baseline on every question; test-time compute is the extra scratch paper you pull out for the hardest problem on the exam.
 
-Maximizing training efficiency and minimizing lifetime cost can lead to different choices.
+## Where the Curve Runs Out
 
-## Spending more compute on an answer
+Empirical curves have natural boundaries too (as Kaplan et al. noted in [Appendix A.3](https://arxiv.org/html/2001.08361v1#A3)):
 
-After training, a model can also use more compute on an individual question.
+- **Average token loss vs. multi-step reliability**: Pretraining loss averages over billions of tokens, while writing working code or citing real sources requires ten steps in a row without a single slip.
+- **Shifting recipes and data ceilings**: Change the architecture or exhaust high-quality text, and the old fit has to be re-measured.
 
-Consider a math problem. The model could produce one answer, generate several solutions and use a verifier to select one, revise an earlier attempt, or search through intermediate steps and evaluate different paths.
+Whenever someone asks whether scaling laws have hit a wall, it helps to separate three distinct claims: has pretraining loss stopped following the power law, has lower loss stopped translating into downstream capability, or has the next tick on the curve simply grown too expensive to justify?
 
-The question becomes how much accuracy an extra inference budget buys. Should that compute fund more attempts, or further refinement of an existing path? These are questions in test-time scaling.
-
-In a [2024 study](https://arxiv.org/html/2408.03314v1), Snell and colleagues examined verifier-guided search and revisions enabled by dedicated fine-tuning on the MATH benchmark. The experiments showed that the appropriate strategy depended on how difficult a question was for the base model. Adjusting compute allocation by difficulty was more effective than uniformly increasing the number of candidates.
-
-Estimating difficulty also costs compute. The paper used 2,048 samples per question and compared bins based on ground-truth answers with bins predicted by a verifier. [Section 3.2 and Appendix C](https://arxiv.org/html/2408.03314v1#S3.SS2) explain that this estimation cost was excluded from the analysis. The experiments demonstrate the potential of allocation strategies, rather than an efficiency gain that includes every deployment cost.
-
-Extra compute needs a mechanism that can put it to use. Once more candidates exist, how do we identify the better answer? If revisions are allowed, how do we avoid changing a correct answer into an incorrect one? These steps affect the return.
-
-A longer response alone therefore does not establish more effective reasoning. We need to measure the task, the procedure, the compute spent, and the resulting improvement. Results on math problems also cannot be assumed to hold across all tasks.
-
-Training and inference investments differ in how often their benefits can be reused. Training can affect many subsequent requests; additional inference compute is spent on the current question. Allocating between them requires considering task difficulty, request volume, and latency requirements.
-
-## How far the curves can predict
-
-If progress is predictable, how far can we extend the curve?
-
-First, consider the gap between metrics. Pretraining loss averages performance across many token predictions. A particular task may require several consecutive steps to be correct. Whether code runs, citations are real, or a long task reaches completion calls for separate evaluation. Task-level evidence must establish which capabilities improve as average loss falls, and by how much.
-
-Next, consider the experimental conditions. When the data distribution, architecture, or training method changes, the accuracy of an existing fit needs to be checked again. Kaplan and colleagues explicitly discussed limits to theoretical understanding and extrapolation in their [appendix](https://arxiv.org/html/2001.08361v1#A3). How far an empirical curve can predict is itself a research question.
-
-Finally, performance and value require separate judgments. Even if more compute still helps, we need to determine whether it reduces errors on actual tasks, saves human time, and justifies its cost. A pretraining loss curve cannot supply those answers directly.
-
-When someone says scaling laws have stopped working, I would first ask which relationship they mean. Loss may depart from predictions under the same training method. A particular task may stop improving. Additional compute may remain effective but become too expensive. These situations require different evidence and lead to different decisions.
-
-Returning to that training budget, I would start with smaller experiments to estimate the allocation between parameters and data, then account for target tasks and expected serving demand. As investment grows, I would keep checking actual results against predictions.
-
-Scaling laws give expensive experiments testable expectations. What lies farther along the curve still needs another set of experiments.
+What scaling laws really gave the field is a way to turn brute-force optimism into back-of-the-envelope engineering. What lies past the edge of the chart still belongs to the next experiment.

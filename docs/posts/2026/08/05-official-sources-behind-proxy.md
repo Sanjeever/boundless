@@ -7,7 +7,7 @@ tags:
   - Windows
   - macOS
   - 命令行
-description: 记录 Windows 和 macOS 开发工具恢复官方源、配置 FlClash 代理的方法，并区分源地址、代理路径与缓存带来的排查差异。
+description: 把 Windows 和 macOS 上的开发工具切回官方源并统一走本地代理，让源地址与网络路径各司其职。
 outline: deep
 aside: true
 ---
@@ -16,28 +16,28 @@ aside: true
 
 <!-- DESC SEP -->
 
-以前我给每个工具各配一套镜像源，排查时还要先回忆它指向哪里。现在把这些工具恢复到官方源，通过 FlClash 处理代理连接。源和网络路径分开配置后，至少能先分清是哪一层出了问题。
+把 Windows 和 macOS 上的开发工具切回官方源并统一走本地代理，让源地址与网络路径各司其职。
 
 <!-- DESC SEP -->
 
-用过一段时间镜像源后，我遇到过同步滞后、返回旧版本的问题。不同工具各指各的镜像，排查时还得先回忆它指向哪。后来我把这些工具恢复到官方源，再分别配置到 FlClash 的代理连接。这篇记录 npm、pnpm、uv、pip、Maven、Go、Cargo、Dart/Flutter，以及 Git 的 HTTP 与 SSH、Homebrew 和 Docker Desktop 的设置。遇到问题先看文末的「排查思路」。
+以前我习惯给每个开发工具各配一套国内镜像源。时间一长，有的镜像同步滞后，有的工具换了配置项，每次拉不下包都得先翻一遍配置文件，回忆当时到底把它指到了哪里。
+
+后来我干脆把这些工具全部恢复成官方源，网络统一走本地的 FlClash 代理。这里记下 `npm`、`pnpm`、`uv`、`pip`、`Maven`、`Go`、`Cargo`、`Dart/Flutter`、`Git`、`Homebrew` 和 `Docker Desktop` 的设置方式。
 
 ## 镜像源和代理是两回事
 
-动手前先分清两个经常被混在一起的问题：
+动手前先分清两件事：
 
-- 镜像源回答"请求发往哪"，是把下载请求重定向到第三方服务器；
-- 代理回答"请求怎么走"，不改动目标地址，只让流量经过本地端口转发出去。
+- **镜像源**决定“去哪儿拿”，把下载请求改写到另一台服务器；
+- **代理**决定“怎么走”，目标还是官方地址，只是流量经由本地端口转发出去。
 
-镜像源是否好用，要看同步与服务情况，不能因为它由第三方提供就一概认定不可靠。我的问题是维护了太多不同的源配置。恢复官方源减少了这部分差异，代理连接、官方服务状态和各工具自身的配置仍然需要分别排查。
-
-下面按两个步骤整理：**把源/仓库/index 复位成官方**，再**配置代理路径**。有些工具有独立代理选项，有些读取环境变量；FlClash 收到连接后，还会按自己的规则决定直连还是转发。已有的项目配置、企业仓库或私有源需要先核对，不能直接清除。
+把源复位到官方、把网络交给代理之后，万一拉包失败，至少能很快分清是网络不通还是配置写错了。
 
 ## 公共代理变量
 
-我的 FlClash 配置在 `7897` 端口提供混合代理，同时支持 HTTP 与 SOCKS。本文按这个端口写示例，使用其他端口时相应替换。**uv、pip、Go、Dart/Flutter、Homebrew** 可通过代理环境变量配置网络路径：
+我的 FlClash 在本机 `7897` 端口提供混合代理（同时支持 HTTP 与 SOCKS）。`uv`、`pip`、`Go`、`Dart/Flutter` 和 `Homebrew` 都可以直接读取环境变量：
 
-Windows（PowerShell，写入用户级变量）：
+Windows（PowerShell，写入用户级环境变量）：
 
 ```powershell
 $proxy = "http://127.0.0.1:7897"
@@ -58,37 +58,25 @@ export http_proxy="$HTTP_PROXY"
 export https_proxy="$HTTPS_PROXY"
 ```
 
-验证：
+访问 HTTPS 时，客户端会通过 HTTP 代理的 `CONNECT` 隧道转发，因此 `HTTPS_PROXY` 同样填 `http://127.0.0.1:7897` 即可。
 
-```bash
-source ~/.zshrc
-printf '%s\n' "$HTTP_PROXY"
-printf '%s\n' "$HTTPS_PROXY"
-```
-
-之所以写成 `HTTPS_PROXY=http://127.0.0.1:7897`，是因为把它当作 HTTP 代理用即可；访问 HTTPS 时由代理通过 CONNECT 隧道转发，不需要单独设 SOCKS。
-
-## 源/索引走官方，网络走公共变量
+## 走公共代理变量的工具
 
 ### uv
 
-uv 官方默认索引是 PyPI，这里显式设为 `https://pypi.org/simple`，同时删除已弃用的 `UV_INDEX_URL`，避免和 `UV_DEFAULT_INDEX` 冲突。
+uv 默认使用 PyPI。显式设好 `UV_DEFAULT_INDEX`，并清掉已弃用的 `UV_INDEX_URL`：
 
 Windows：
 
 ```powershell
 [Environment]::SetEnvironmentVariable("UV_INDEX_URL", $null, "User")
-[Environment]::SetEnvironmentVariable(
-    "UV_DEFAULT_INDEX",
-    "https://pypi.org/simple",
-    "User"
-)
+[Environment]::SetEnvironmentVariable("UV_DEFAULT_INDEX", "https://pypi.org/simple", "User")
 
 Remove-Item Env:UV_INDEX_URL -ErrorAction SilentlyContinue
 $env:UV_DEFAULT_INDEX = "https://pypi.org/simple"
 ```
 
-macOS：从 `~/.zshrc` 删除旧的 `UV_INDEX_URL`，保留并应用：
+macOS（更新 `~/.zshrc` 后执行）：
 
 ```bash
 export UV_DEFAULT_INDEX="https://pypi.org/simple"
@@ -96,50 +84,32 @@ unset UV_INDEX_URL
 source ~/.zshrc
 ```
 
-先确认当前终端中的变量。PowerShell：
-
-```powershell
-$env:UV_DEFAULT_INDEX
-```
-
-macOS：
-
-```bash
-printf '%s\n' "$UV_DEFAULT_INDEX"
-```
-
-两平台都可运行：
+验证：
 
 ```bash
 uvx --refresh --verbose ruff --version
 ```
 
-先看 verbose 日志中的索引和下载地址，再看 ruff 是否启动。单独打印版本号可能用到了缓存，不足以证明本次请求经过 PyPI 和代理。
-
 ### pip
 
-pip 和 uv 一样使用 PyPI 作为默认索引。恢复官方源就是显式设置 `global.index-url`；网络走公共代理变量。
-
-Windows 与 macOS 相同：
+把全局索引显式指回 PyPI（Windows 与 macOS 相同）：
 
 ```bash
 pip config set global.index-url https://pypi.org/simple
 ```
 
-Windows 的 pip 用户配置通常在 `%APPDATA%\pip\pip.ini`。macOS 会根据目录是否存在等条件选择 `~/Library/Application Support/pip/pip.conf` 或 `~/.config/pip/pip.conf`，较新版本还会考虑 XDG 数据目录；可用 `pip config debug` 确认实际加载位置。验证：
+验证：
 
 ```bash
 pip config list
 pip index versions pip
 ```
 
-`pip index versions pip` 能列出版本，说明当前有效配置能取得版本信息。[pip 配置](https://pip.pypa.io/en/stable/topics/configuration/)还可能被环境变量覆盖；需要确认源地址时，检查 `pip config debug`、`PIP_INDEX_URL` 和详细请求日志。要确认代理路径，还需查看 FlClash 连接记录。
+如果曾经设过 `PIP_INDEX_URL` 环境变量，可用 `pip config debug` 检查是否有残留覆盖。
 
 ### Go
 
-`GOPROXY` 配置的是[模块代理服务](https://go.dev/ref/mod#goproxy-protocol)，**不是** HTTP 网络代理。它决定模块从哪下载；HTTP 请求的网络路径由上面的公共变量等配置决定。
-
-Windows 与 macOS 相同：
+`GOPROXY` 配的是 [Go 模块代理服务](https://go.dev/ref/mod#goproxy-protocol)，决定去哪儿拉模块，底层的网络请求则会走前面配好的 `HTTP_PROXY` / `HTTPS_PROXY`：
 
 ```bash
 go env -w GOPROXY="https://proxy.golang.org,direct"
@@ -149,18 +119,15 @@ go env -w GOSUMDB="sum.golang.org"
 验证：
 
 ```bash
-go env GOPROXY
-go env GOSUMDB
+go env GOPROXY GOSUMDB
 go list -m -versions golang.org/x/text
 ```
 
-`go list` 能列出版本，说明这次版本查询成功；不能据此确认所有模块下载路径都可用。这里的 `direct` 表示在前一个模块代理返回特定状态（如 404、410）时直接访问源码仓库，后续还可能调用 Git。
-
 ### Dart / Flutter
 
-Dart 和 Flutter 共用 pub.dev 作为包仓库，Flutter 的引擎等产物则从 Google 的存储下载。前者由 `PUB_HOSTED_URL` 控制，后者由 `FLUTTER_STORAGE_BASE_URL` 控制；恢复官方源就是删掉指向镜像的这两个变量。`FLUTTER_GIT_URL`（克隆 Flutter SDK 仓库时用的镜像地址）有残留也一并删掉。
+Dart 与 Flutter 默认走 `pub.dev` 和 Google 官方存储，把以前指到镜像的三个环境变量删掉即可。
 
-Windows（删除用户级变量）：
+Windows：
 
 ```powershell
 [Environment]::SetEnvironmentVariable("PUB_HOSTED_URL", $null, "User")
@@ -172,128 +139,53 @@ Remove-Item Env:FLUTTER_STORAGE_BASE_URL -ErrorAction SilentlyContinue
 Remove-Item Env:FLUTTER_GIT_URL -ErrorAction SilentlyContinue
 ```
 
-macOS：从 `~/.zshrc` 删除这三个变量，并清理当前终端：
+macOS（从 `~/.zshrc` 删除对应行后执行）：
 
 ```bash
-unset PUB_HOSTED_URL
-unset FLUTTER_STORAGE_BASE_URL
-unset FLUTTER_GIT_URL
+unset PUB_HOSTED_URL FLUTTER_STORAGE_BASE_URL FLUTTER_GIT_URL
 source ~/.zshrc
 ```
 
-网络走公共代理变量。验证：
-
-```bash
-env | grep -E '^PUB_HOSTED_URL=|^FLUTTER_STORAGE_BASE_URL=|^FLUTTER_GIT_URL='
-```
-
-正确时没有输出。在一个 Flutter 项目里运行：
-
-```bash
-flutter pub get
-```
-
-结合下载日志确认是否访问了 pub.dev；已有缓存时，依赖解析成功不一定代表发生了网络下载。
-
 ### Homebrew
 
-仅 macOS。Homebrew 没有独立代理配置，网络走公共变量；只需清掉镜像变量。
-
-从 `~/.zshrc`、`~/.zprofile`、`~/.bash_profile` 删除：
-
-```text
-HOMEBREW_API_DOMAIN
-HOMEBREW_ARTIFACT_DOMAIN
-HOMEBREW_BOTTLE_DOMAIN
-HOMEBREW_BREW_GIT_REMOTE
-HOMEBREW_CORE_GIT_REMOTE
-HOMEBREW_PIP_INDEX_URL
-```
-
-清理当前终端：
+仅限 macOS。从 `~/.zshrc`、`~/.zprofile` 等配置文件里删掉 `HOMEBREW_API_DOMAIN`、`HOMEBREW_BOTTLE_DOMAIN` 等镜像变量，并在当前终端清理：
 
 ```bash
-unset HOMEBREW_API_DOMAIN
-unset HOMEBREW_ARTIFACT_DOMAIN
-unset HOMEBREW_BOTTLE_DOMAIN
-unset HOMEBREW_BREW_GIT_REMOTE
-unset HOMEBREW_CORE_GIT_REMOTE
-unset HOMEBREW_PIP_INDEX_URL
-```
-
-验证：
-
-```bash
+unset HOMEBREW_API_DOMAIN HOMEBREW_ARTIFACT_DOMAIN HOMEBREW_BOTTLE_DOMAIN
+unset HOMEBREW_BREW_GIT_REMOTE HOMEBREW_CORE_GIT_REMOTE HOMEBREW_PIP_INDEX_URL
 brew config
 brew update
-env | grep -E '^HOMEBREW_(API_DOMAIN|ARTIFACT_DOMAIN|BOTTLE_DOMAIN|BREW_GIT_REMOTE|CORE_GIT_REMOTE|PIP_INDEX_URL)='
 ```
-
-正确时最后一条命令没有输出。
 
 ## 自带代理配置的包管理器
 
 ### npm
 
-npm 的官方 registry 是 `https://registry.npmjs.org/`，支持 `proxy`、`https-proxy` 及标准代理环境变量。下面恢复官方源并配置代理（Windows 与 macOS 相同）：
+恢复官方源并写入用户级代理（Windows 与 macOS 相同）：
 
 ```bash
 npm config set registry "https://registry.npmjs.org/" --location=user
 npm config set proxy "http://127.0.0.1:7897" --location=user
 npm config set https-proxy "http://127.0.0.1:7897" --location=user
-```
-
-验证：
-
-```bash
-npm config get registry --location=user
-npm config get proxy --location=user
-npm config get https-proxy --location=user
 npm ping
 ```
 
-`npm ping` 成功时输出 `PONG`。
-
 ### pnpm
 
-本文按 [pnpm 11/12 的配置方式](https://pnpm.io/settings)记录，网络选项为 `httpProxy`、`httpsProxy`。下面恢复官方源并配置代理（Windows 与 macOS 相同）：
+按 [pnpm 设置文档](https://pnpm.io/settings)，代理字段名为 `httpProxy` 和 `httpsProxy`：
 
 ```bash
 pnpm config set registry "https://registry.npmjs.org/" --global
 pnpm config set httpProxy "http://127.0.0.1:7897" --global
 pnpm config set httpsProxy "http://127.0.0.1:7897" --global
-```
-
-验证：
-
-```bash
-pnpm config get registry --global
-pnpm config get httpProxy --global
-pnpm config get httpsProxy --global
 pnpm ping
 ```
 
-`pnpm ping` 成功时输出 `PONG`。
-
 ### Maven
 
-配置文件位置：Windows 在 `$HOME\.m2\settings.xml`，macOS 在 `~/.m2/settings.xml`。
+配置文件在 `$HOME\.m2\settings.xml`（Windows）或 `~/.m2/settings.xml`（macOS）。
 
-**恢复官方源：** 删除阿里云、腾讯云、华为云等 `<mirror>` 配置，例如：
-
-```diff
-- <mirrors>
--     <mirror>
--         <id>aliyun</id>
--         <mirrorOf>*</mirrorOf>
--         <url>https://maven.aliyun.com/repository/public</url>
--     </mirror>
-- </mirrors>
-```
-
-没有第三方 `<mirror>` 覆盖时，Maven 默认使用 Maven Central。
-
-**配置代理：** 在现有 `<settings>` 内加入；已有 `<proxies>` 时合并，不要重复创建：
+先删掉 `<mirrors>` 里的第三方镜像块，让 Maven 回到默认的 Maven Central；再在 `<settings>` 里加上代理：
 
 ```xml
 <proxies>
@@ -311,31 +203,12 @@ pnpm ping
 验证：
 
 ```bash
-mvn help:effective-settings
 mvn -U dependency:get "-Dartifact=org.apache.commons:commons-lang3:3.18.0"
-```
-
-下载日志应显示：
-
-```text
-Downloading from central: https://repo.maven.apache.org/maven2/...
 ```
 
 ### Rust / Cargo
 
-Cargo 默认使用 crates.io。配置文件位置：Windows 在 `$HOME\.cargo\config.toml`，macOS 在 `~/.cargo/config.toml`。
-
-**恢复官方 crates.io：** 删除第三方源替换，例如：
-
-```diff
-- [source.crates-io]
-- replace-with = "rsproxy"
--
-- [source.rsproxy]
-- registry = "sparse+https://rsproxy.cn/index/"
-```
-
-**配置代理：** 已有 `[http]` 时只加入 `proxy`：
+编辑 `$HOME\.cargo\config.toml` 或 `~/.cargo/config.toml`，删掉 `[source.crates-io]` 的 `replace-with` 镜像段落，只保留代理设置：
 
 ```toml
 [http]
@@ -348,58 +221,37 @@ proxy = "http://127.0.0.1:7897"
 cargo search serde --limit 1
 ```
 
-`cargo search` 能返回结果，说明 crates.io 与网络都通。
-
 ## Git 的两种通道
 
-Git 的远端可以走 HTTPS 或 SSH，两条路分别处理。下面为 GitHub 设置专用代理。前面设置的公共代理变量仍可能被其他 HTTPS 请求读取，因此这不是对“仅 GitHub 走代理”的保证。
+Git 远端分 HTTPS 和 SSH 两条路。这里只为 `github.com` 单独指派代理，免得影响公司内网的 Git 服务。
 
-### Git：HTTPS
+### Git HTTPS
 
-Windows：清理可能存在的全局通用代理，再只代理 GitHub：
+Windows：
 
 ```powershell
 git config --global --unset-all http.proxy 2>$null
-git config --global `
-    "http.https://github.com.proxy" `
-    "http://127.0.0.1:7897"
+git config --global "http.https://github.com.proxy" "http://127.0.0.1:7897"
 ```
 
 macOS：
 
 ```bash
 git config --global --unset-all http.proxy 2>/dev/null || true
-git config --global \
-    "http.https://github.com.proxy" \
-    "http://127.0.0.1:7897"
-```
-
-当前仓库恢复 GitHub 官方地址：
-
-```bash
-git remote get-url origin
-git remote set-url origin "https://github.com/OWNER/REPOSITORY.git"
+git config --global "http.https://github.com.proxy" "http://127.0.0.1:7897"
 ```
 
 验证：
 
 ```bash
-git config --global --get "http.https://github.com.proxy"
 git ls-remote "https://github.com/git/git.git" HEAD
 ```
 
-### Git：SSH
+### Git SSH
 
-GitHub 的 SSH 443 入口是 `ssh.github.com:443`。走 SSH 时连接从 `ssh.github.com` 的 443 端口出去，再用系统自带工具把连接转发到本地代理。
+SSH 走 `ssh.github.com` 的 443 端口，通过本地代理转发。
 
-Windows：先恢复 GitHub SSH 地址，并确认 Git for Windows 自带代理程序存在：
-
-```powershell
-git remote set-url origin "git@github.com:OWNER/REPOSITORY.git"
-Test-Path "$env:ProgramFiles\Git\mingw64\bin\connect.exe"
-```
-
-编辑 `$HOME\.ssh\config`，加入：
+Windows（编辑 `$HOME\.ssh\config`，利用 Git for Windows 自带的 `connect.exe`）：
 
 ```sshconfig
 Host github.com
@@ -409,11 +261,7 @@ Host github.com
     ProxyCommand "C:/Program Files/Git/mingw64/bin/connect.exe" -H 127.0.0.1:7897 %h %p
 ```
 
-macOS：恢复 GitHub SSH 地址，再编辑 `~/.ssh/config`：
-
-```bash
-git remote set-url origin "git@github.com:OWNER/REPOSITORY.git"
-```
+macOS（编辑 `~/.ssh/config`，使用系统自带的 `nc`）：
 
 ```sshconfig
 Host github.com
@@ -423,7 +271,7 @@ Host github.com
     ProxyCommand /usr/bin/nc -X connect -x 127.0.0.1:7897 %h %p
 ```
 
-设置权限并验证：
+验证：
 
 ```bash
 chmod 600 ~/.ssh/config
@@ -432,26 +280,10 @@ ssh -T git@github.com
 
 ## Docker Desktop
 
-这里记录 macOS 的操作。[Docker 官方文档](https://docs.docker.com/engine/daemon/proxy/)说明，Docker Desktop 会忽略 `daemon.json` 中的代理设置，应在 Desktop 设置中配置；这个限制针对代理字段，后面的 `registry-mirrors` 仍在 Docker Engine 配置中处理。
+按 [Docker 官方文档](https://docs.docker.com/engine/daemon/proxy/)，Docker Desktop 的代理在图形界面里设置：
 
-**恢复官方源：** 进入 `Docker Desktop → Settings → Docker Engine`，删除类似配置：
-
-```diff
-{
--  "registry-mirrors": [
--    "https://某个镜像地址"
--  ]
-}
-```
-
-点击 **Apply & Restart**。
-
-**配置代理：** 进入 `Docker Desktop → Settings → Resources → Proxies`，选 **Manual configuration**：
-
-```text
-HTTP Proxy:  http://127.0.0.1:7897
-HTTPS Proxy: http://127.0.0.1:7897
-```
+1. 打开 `Settings → Docker Engine`，删掉 JSON 里的 `"registry-mirrors"` 数组，点击 **Apply & Restart**。
+2. 打开 `Settings → Resources → Proxies`，开启 **Manual configuration**，将 HTTP 与 HTTPS Proxy 都填为 `http://127.0.0.1:7897`。
 
 验证：
 
@@ -460,15 +292,10 @@ docker info --format '{{json .RegistryConfig.Mirrors}}'
 docker pull hello-world
 ```
 
-第一条命令应输出 `[]`，说明没有残留镜像源。
+## 排查小抄
 
-## 排查思路
+万一哪个工具拉不下包，按这个顺序看一眼就能定位：
 
-- 先确认 FlClash 在运行，且 7897 端口在监听。
-- 区分"源错了"和"代理没生效"：打印 registry/index 配置确认是官方地址，再单独测一次网络（如 `npm ping`、`docker pull`）。
-- 临时变量只在当前 shell 生效；Windows 用户级变量供新进程继承，macOS 则由新终端加载 shell 配置。已有终端需要单独更新。
-- 删镜像源前，先确认没有残留的第三方源地址覆盖项。
-
-## 总结
-
-这套配置减少的是源地址的差异，没有消除网络故障。代理不可用、官方源异常、某个工具未读取预期配置，仍是不同的问题。先查实际源地址，再查代理路径，最后用下载日志确认请求去了哪里，比同时更换源和代理更容易定位原因。
+1. FlClash 是否开着，`7897` 端口有没有在监听。
+2. 跑工具自带的 config 命令，看源地址是不是已经回到了官方地址（防旧环境变量残留）。
+3. 改过系统环境变量后，记得新开一个终端窗口再试。

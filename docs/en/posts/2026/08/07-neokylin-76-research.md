@@ -1,5 +1,5 @@
 ---
-title: A hands-on study of NeoKylin 7.6
+title: A Hands-On Study of NeoKylin 7.6
 date: 2026-08-07
 tags:
   - Linux
@@ -7,82 +7,50 @@ tags:
   - Sysadmin
   - GRUB
   - VMware
-description: Recovering login and networking in a NeoKylin 7.6 VMware installation, then examining its relationship to RHEL 7.6 and Spacewalk through release identifiers, RPM metadata, and client scripts.
+description: Starting from a locked, offline NeoKylin 7.6 VM, here is how I recovered access via GRUB and NetworkManager and dissected its RHEL 7.6 base and Spacewalk-based NKUC client.
 outline: deep
 aside: true
 ---
 
-# A hands-on study of NeoKylin 7.6
+# A Hands-On Study of NeoKylin 7.6
 
 <!-- DESC SEP -->
 
-I got an image named `zbql7.6_v5u9.iso` and, after installing it in VMware, found I knew no password and the system had no network. A "locked" virtual machine sat in front of me, with the console in hand but no way to log in.
+Starting from a locked, offline NeoKylin 7.6 VM, here is how I recovered access via GRUB and NetworkManager and dissected its RHEL 7.6 base and Spacewalk-based NKUC client.
 
 <!-- DESC SEP -->
 
-After restoring access, I wanted to answer two questions: what evidence connects this system to RHEL 7.6, and what can the preinstalled NKUC client do to the machine? The findings below concern this image, not every NeoKylin 7.6 installation.
+I was handed an ISO named `zbql7.6_v5u9.iso`. After installing it in VMware and booting to the desktop login screen, I ran into two immediate roadblocks: an ordinary user account existed, but I knew neither its password nor `root`’s, and the network icon in the corner read `NetworkManager needs to be running`.
 
-## Two problems after getting the image
+A locked machine with no network sat in front of me—heureusement, I still had the VMware console.
 
-This isn't an official release, just an installation medium I got, named `zbql7.6_v5u9.iso`. After installing with the default VMware NAT network, the system came with a pre-provisioned ordinary user. The issue was that I knew neither that user's password nor root's, so I couldn't log in.
+## Recovering Passwords Through GRUB
 
-Worse, the login screen let me switch to the user, but no combination got me in. And the system had no network at all, with the desktop network icon reporting `NetworkManager needs to be running`. No password and no network meant a "locked" machine.
-
-The saving grace was that this is a VM, so I have console access. That gave me a standard way to recover, by modifying the kernel boot parameters through GRUB to reach a single-user-style environment. That requires the VM console or a physical console, and it is not a remote intrusion path.
-
-## Restoring access through GRUB
-
-Reboot, select the boot entry in the GRUB menu, press `e` to edit, and append to the kernel parameter line (the one starting with `linux` or `linux16`).
+I rebooted the VM, hit `e` at the GRUB menu, and appended the following to the kernel line starting with `linux` (or `linux16`):
 
 ```text
 init=/bin/bash console=tty0
 ```
 
-Press `Ctrl+x` to boot, and you land in a bash environment that drops straight into a root shell.
+Pressing `Ctrl+x` dropped straight into a root shell prompt: `bash-4.2#`.
 
-```text
-bash-4.2#
-```
-
-My first attempt to reset the passwords.
-
-```bash
-passwd root
-passwd <普通用户名>
-```
-
-Both commands failed the same way.
+Running `passwd root` right away failed with:
 
 ```text
 passwd: Authentication token manipulation error
 ```
 
-The error alone does not identify a unique cause. In this case, inspection showed that the root filesystem was read-only after booting with `init=/bin/bash`, preventing `passwd` from writing the password database. The next step was to remount it read-write.
+When booting with `init=/bin/bash`, the root filesystem comes up read-only. Remounting `/` read-write fixed that:
 
 ```bash
 mount -n -o remount,rw /
-```
-
-Confirm the mount state, with the key line from `mount | grep ' on / '`.
-
-```bash
 mount | grep ' on / '
+# /dev/mapper/nlas-root on / type xfs (rw,relatime,attr2,inode64,noquota)
 ```
 
-```text
-/dev/mapper/nlas-root on / type xfs (rw,relatime,attr2,inode64,noquota)
-```
+That line also gave away the storage layout: XFS on an LVM logical volume named `nlas-root`. Once `/` was writable, `passwd` updated both `root` and the regular user without complaint.
 
-Note the `rw` is now in effect, and it also shows the root filesystem is XFS on a logical volume named `nlas-root`. With the mount writable, reset the passwords for `root` and `普通用户`.
-
-```bash
-passwd root
-passwd <普通用户名>
-```
-
-A weak-password message alone establishes neither failure nor success; acceptance also depends on password policy. In this case, the success message was `passwd: all authentication tokens updated successfully.`
-
-After changing the passwords, I did a few things before rebooting.
+Before rebooting, I created `/.autorelabel` so SELinux would fix the security contexts on `/etc/shadow` at next boot:
 
 ```bash
 touch /.autorelabel
@@ -90,107 +58,47 @@ sync
 /sbin/reboot -f
 ```
 
-`touch /.autorelabel` makes SELinux re-check file labels at next boot, because I modified files in a single-user environment where labels may be incomplete, and skipping this could leave some services unable to start after reboot. `sync` flushes the cached changes to disk. After the reboot, both root and the ordinary user can log in with the new passwords.
+## Bringing Up VMware NAT Networking
 
-## Restoring VMware NAT networking
-
-I could log in now, but there was still no network. The desktop network icon reported `NetworkManager needs to be running`.
-
-The system initially saw only the loopback interface, not a working VMware NIC. Start by checking the NetworkManager service.
+Logging into the desktop worked now, but the machine was still offline. Checking `NetworkManager` showed why:
 
 ```bash
 systemctl status NetworkManager --no-pager -l
+# inactive (dead)
 ```
 
-It was inactive.
-
-```text
-inactive (dead)
-```
-
-Start it and enable it at boot.
+The service was disabled. Starting it and connecting `ens33` brought the interface up immediately:
 
 ```bash
 systemctl enable --now NetworkManager
-```
-
-Check devices, and the system now recognizes NIC `ens33`, just not connected.
-
-```bash
-nmcli device status
-```
-
-Bring up the NIC.
-
-```bash
 nmcli device connect ens33
 ```
 
-Check the address, and the NIC got `192.168.182.x/24` via DHCP.
-
-```bash
-ip -4 addr show ens33
-```
-
-Check routing, and the default gateway is `192.168.182.2`.
-
-```bash
-ip route
-```
-
-Then a few connectivity tests.
-
-```bash
-ping -c 4 192.168.182.2
-ping -c 4 223.5.5.5
-ping -c 4 www.baidu.com
-```
-
-All three succeeded, confirming respectively that the VM reaches the VMware NAT gateway, public IPs are reachable, and DNS resolution works.
-
-There was still a catch. If I'd only connected manually, the network might not survive a reboot. Check the connection's auto-connect flag.
+DHCP handed out a `192.168.182.x/24` address, and pings to the gateway, public IPs, and domain names all went through. Inspecting the connection profile revealed one more catch:
 
 ```bash
 nmcli -f NAME,UUID,DEVICE,AUTOCONNECT connection show
 ```
 
-It showed `AUTOCONNECT=no`, meaning networking worked this boot only because I connected by hand, and it could drop again after a restart. Set it to auto-connect.
+`AUTOCONNECT` was set to `no`, meaning the interface would stay down on the next reboot. Flipping it to `yes` made the fix stick:
 
 ```bash
 nmcli connection modify ens33 connection.autoconnect yes
 ```
 
-Verify the change.
-
-```bash
-nmcli -f NAME,DEVICE,AUTOCONNECT connection show
-```
-
-```text
-ens33  ens33  yes
-```
-
-Networking now restores on its own after a reboot. With access and the network working, I logged in over SSH to study the system.
-
-| Fault | Cause | Fix |
+| Symptom | Cause | Fix |
 | --- | --- | --- |
-| `passwd` reports `Authentication token manipulation error` | root filesystem mounted read-only under `init=/bin/bash` | remount `rw` with `mount -n -o remount,rw /`, then set the passwords |
-| No network | NetworkManager service is stopped | `systemctl enable --now NetworkManager`, then connect `ens33` manually |
-| Network may not survive a reboot | `AUTOCONNECT=no` | `nmcli connection modify ens33 connection.autoconnect yes` |
+| `passwd` fails with `Authentication token manipulation error` | `/` is mounted read-only under `init=/bin/bash` | Run `mount -n -o remount,rw /` before `passwd` |
+| No network after login | `NetworkManager` service is stopped | `systemctl enable --now NetworkManager` and `nmcli device connect ens33` |
+| Network drops after reboot | `AUTOCONNECT=no` on `ens33` | `nmcli connection modify ens33 connection.autoconnect yes` |
 
-## Dissecting the system over SSH
+## Looking Under the Hood over SSH
 
-With the network and passwords in hand, I logged in over SSH and unpacked the system piece by piece: distribution identity, kernel, RPM builds, customization packages, and virtual hardware.
+With SSH working, I logged in from my terminal to see how the distribution was put together.
 
-### Distribution identity
+### Release Identity and Kernel
 
-Start with how the system declares itself.
-
-```bash
-cat /etc/*release
-```
-
-Here's the key output.
+Reading `/etc/*release`:
 
 ```text
 NeoKylin Linux Advanced Server release V7Update6 (Chromium)
@@ -204,27 +112,16 @@ PRETTY_NAME="NeoKylin Linux Advanced Server V7Update6 (Chromium)"
 Red Hat Enterprise Linux Server release 7.6 (Maipo)
 ```
 
-This confirms that the product name is NeoKylin Linux Advanced Server, version V7Update6, codename Chromium, and that the system keeps the RHEL 7.6 compatibility identifier. Judging from these identifiers, it appears highly based on or compatible with RHEL 7.6, inheriting the Enterprise Linux 7 stack represented by RPM, YUM, systemd, and SELinux.
+Alongside its official product name (NeoKylin Linux Advanced Server V7Update6, codenamed Chromium), it preserves the `Red Hat Enterprise Linux Server release 7.6 (Maipo)` compatibility line.
 
-### Kernel
-
-Check the running kernel.
+Checking the running kernel:
 
 ```bash
-uname -a
-```
+uname -r
+# 3.10.0-957.el7.x86_64
 
-```text
-Linux localhost.localdomain 3.10.0-957.el7.x86_64 #1 SMP Fri Jan 11 17:34:50 CST 2019 x86_64 x86_64 x86_64 GNU/Linux
-```
-
-Then the kernel package info.
-
-```bash
 rpm -qi kernel-$(uname -r)
 ```
-
-Here are the key fields.
 
 ```text
 Name        : kernel
@@ -236,52 +133,17 @@ Packager    : NeoKylin Linux
 Vendor      : CS2C
 ```
 
-The kernel version corresponds to [RHEL 7.6's initial kernel](https://access.redhat.com/articles/red-hat-enterprise-linux-release-dates), `3.10.0-957`, and the Source RPM field follows that naming. Matching names do not prove identical source or binaries. Look at the top of the kernel changelog.
+`3.10.0-957.el7` matches [RHEL 7.6’s initial release kernel](https://access.redhat.com/articles/red-hat-enterprise-linux-release-dates). Running `rpm -q --changelog kernel-$(uname -r)` shows a single `Modify for: neokylin-rpm-config` entry at the very top, followed by Red Hat’s standard patch history.
+
+### Base Rebuilds and Custom Packages
+
+Most core packages (`kernel`, `glibc`, `bash`, `systemd`, `yum`, `GNOME`, `OpenSSH`) carry `Vendor: CS2C` and `Packager: NeoKylin Linux`.
+
+Filtering for packages unique to NeoKylin narrows the list down to:
 
 ```bash
-rpm -q --changelog kernel-$(uname -r) | head -n 50
+rpm -qa | grep -Ei '^(neokylin|nkuc|yum-nkuc|license-client|System_)' | sort
 ```
-
-At the top is NeoKylin's own build entry.
-
-```text
-Modify for: neokylin-rpm-config
-```
-
-Below it, most entries come from Red Hat's kernel patch history, including CVE fixes and hardware-support updates. The changelog shows inherited patch records alongside NeoKylin's added build entry; it is not a complete inventory of source differences.
-
-### The RPM rebuild
-
-Query which packages carry NeoKylin's build identity.
-
-```bash
-rpm -qa --qf '%{NAME}\t%{VENDOR}\t%{PACKAGER}\n' |
-grep -Ei 'NeoKylin|CS2C' |
-sort
-```
-
-A large set of base packages carry `Vendor: CS2C` and `Packager: NeoKylin Linux`.
-
-```text
-Vendor   : CS2C
-Packager : NeoKylin Linux
-```
-
-These include kernel, glibc, bash, systemd, yum, rpm, GNOME, NetworkManager, SELinux, OpenSSH, libvirt, Xorg, and open-vm-tools. The fields show that many base packages carry NeoKylin's vendor and packager identifiers.
-
-`Vendor` and `Packager` are package metadata. They do not independently verify build provenance or signature trust, or establish how much source code changed. Provenance needs signatures and their trust chain; the extent of changes requires a comparison of the corresponding source.
-
-### NeoKylin's own customization packages
-
-Filter out the packages that are clearly NeoKylin-specific.
-
-```bash
-rpm -qa |
-grep -Ei '^(neokylin|nkuc|yum-nkuc|license-client|System_)' |
-sort
-```
-
-Here are the key packages.
 
 ```text
 license-client-libs
@@ -301,54 +163,11 @@ System_Installation-Adv
 yum-nkuc-plugin
 ```
 
-These make up NeoKylin's branding, release identity, licensing, and centralized-ops customization layer on top of base Enterprise Linux. The files shipped by `neokylin-release-server` show where the "distribution identity" concretely lives.
+`neokylin-release-server` supplies `/etc/os-release`, RPM macros, GPG keys, and default repo files. The more intriguing group is the `nkuc*` suite.
 
-```text
-/etc/os-release
-/etc/redhat-release
-/etc/neokylin-release
-/etc/system-release
-/etc/system-release-cpe
-/etc/rpm/macros.dist
-/etc/yum.repos.d/ns7-adv.repo
-/etc/pki/rpm-gpg/RPM-GPG-KEY-neokylin-release
-/usr/bin/nkvers
-/usr/lib/systemd/system-preset/85-display-manager.preset
-/usr/lib/systemd/system-preset/90-default.preset
-/usr/share/neokylin-release/EULA
-```
+## Unpacking the NKUC Client
 
-It handles the distribution name and version identifier, the RHEL compatibility identifier, RPM dist macros, the RPM GPG public key, default YUM repository config, systemd service presets, and the license agreement plus a version query tool.
-
-### Storage and VMware virtual hardware
-
-Here's the storage layout.
-
-```bash
-lsblk -f
-```
-
-```text
-sda
-├─sda1        xfs          /boot
-└─sda2        LVM2_member
-  ├─nlas-root xfs          /
-  └─nlas-swap swap         [SWAP]
-```
-
-The system uses XFS, with root and swap managed by LVM and `/boot` as a separate XFS partition, which also matches the `nlas-root` logical volume name from earlier. `lspci` shows standard VMware virtual hardware (a SVGA II GPU, an LSI 53c1030 SCSI controller, and PCI/IDE bridges, among others), and the system ships `open-vm-tools` plus VMware's Xorg drivers, indicating it's adapted for VMware virtualization.
-
-## NKUC, Spacewalk, and centralized management
-
-The most interesting of the customization packages are the ones starting with `nkuc`. They form NeoKylin's centralized-ops client, essentially a repackaging of the Spacewalk/RHN system. I traced the line from "daemon → check script → whitelisted actions → actual execution."
-
-### nkucsd (the scheduling daemon)
-
-```bash
-rpm -qi nkucsd
-```
-
-Here's the key output.
+Inspecting `nkucsd` gives away its lineage immediately:
 
 ```text
 Summary     : Spacewalk query daemon
@@ -357,200 +176,21 @@ Vendor      : CS2C
 Packager    : NeoKylin Linux
 ```
 
-The `Summary` literally reads "Spacewalk query daemon," and `nkucsd` is essentially NeoKylin's repackaging of the Spacewalk/RHN query daemon. Which files does it ship?
+NKUC is a repackaged Spacewalk / RHN management client. Tracing its files reveals a clean three-step chain:
 
-```bash
-rpm -ql nkucsd
-```
+1. **`nkucsd`**: A small C daemon that wakes up every 240 minutes (`INTERVAL=240` in `/etc/sysconfig/rhn/nkucsd`) and invokes `/usr/sbin/nkuc_check`.
+2. **`nkuc_check`**: A Python script that reads `serverURL` and `systemIdPath` from `/etc/sysconfig/rhn/up2date` and polls the Spacewalk server over XML-RPC.
+3. **Whitelisted actions**: Incoming method names are validated by `/usr/share/rhn/up2date_client/getMethod.py` and restricted to Python modules under `/usr/share/rhn/actions` that explicitly export functions via `__rhnexport__`.
 
-Here are the key files.
+Those exported functions cover:
 
-```text
-/etc/rc.d/init.d/nkucsd
-/etc/sysconfig/rhn
-/etc/sysconfig/rhn/nkucsd
-/usr/sbin/nkucsd
-```
+- `packages.*` / `errata.update`: installing, updating, removing, and rolling back RPM packages via the YUM API, plus uploading package inventories;
+- `hardware.refresh_list`: uploading hardware profiles;
+- `reboot.reboot`: scheduling `/sbin/shutdown -r +3`;
+- `rhnsd.configure` / `up2date_config.*` / `systemid.disable`: updating client settings or disabling registration.
 
-It uses the traditional SysV init script, hosted by systemd's compatibility mechanism. Here's the check interval.
+On this particular VM, `/etc/sysconfig/rhn/systemid` does not exist and `serverURL` is still set to the placeholder `https://enter.your.server.url.here/XMLRPC`. The sole YUM repo entry (`file:///mnt`) is disabled as well, leaving `nkucsd` spinning quietly in the background with nowhere to phone home.
 
-```bash
-cat /etc/sysconfig/rhn/nkucsd
-```
+## Takeaway
 
-```text
-INTERVAL=240
-```
-
-That's every 240 minutes, or every 4 hours. Next, the non-comment, non-empty lines of the update-client config.
-
-```bash
-grep -Ev '^[[:space:]]*(#|$)' /etc/sysconfig/rhn/up2date
-```
-
-Here's the key config.
-
-```text
-systemIdPath=/etc/sysconfig/rhn/systemid
-serverURL=https://enter.your.server.url.here/XMLRPC
-sslCACert=/usr/share/nkuc/NKUC-CA-CERT
-noReboot=0
-stagingContent=1
-stagingContentWindow=24
-```
-
-Check whether the system has registered.
-
-```bash
-ls -l /etc/sysconfig/rhn/systemid
-```
-
-```text
-No such file or directory
-```
-
-The configured `systemid` file is absent, so no usable registration identity is present. The daemon is nevertheless running.
-
-```bash
-systemctl status nkucsd --no-pager -l
-```
-
-```text
-Spacewalk Services Daemon starting up, check in interval 240 minutes.
-```
-
-The current state is that `nkucsd` runs, `systemid` is absent, and `serverURL` is still a placeholder, so it can't reach a real NKUC platform and won't fetch or execute remote actions.
-
-### nkuc_check (the script that actually connects)
-
-Inspect both programs' file type and dependencies.
-
-```bash
-file /usr/sbin/nkucsd
-ldd /usr/sbin/nkucsd
-```
-
-`nkucsd` is a 64-bit x86_64 ELF program, stripped of debug symbols, with essentially only glibc as a dynamic dependency. Meanwhile `nkuc_check` is this kind of file.
-
-```bash
-file /usr/sbin/nkuc_check
-```
-
-```text
-Python script, ASCII text executable
-```
-
-`nkuc_check` is a Python script. Combined with the man pages, the division of labor is clear. `nkucsd` is only the scheduling daemon and doesn't connect to the network itself. When its check interval arrives it invokes the external program `nkuc_check`, which is the one that contacts the Spacewalk server.
-
-### The remote-action whitelist
-
-`nkuc_check` doesn't let the server push arbitrary Python code. Remote methods are mapped to local functions through `/usr/share/rhn/up2date_client/getMethod.py`, with several layers of restriction.
-
-1. Method paths are split on `.`; each component permits only letters, digits, and underscores and must begin with a letter.
-2. Methods must live under `/usr/share/rhn/actions`.
-3. Modules must explicitly export methods via `__rhnexport__`.
-4. Methods not on the whitelist can't be called.
-
-The mapping chain is as follows.
-
-```text
-Spacewalk returns method + params
-  → validate method name
-    → locate the /usr/share/rhn/actions module
-      → check the __rhnexport__ whitelist
-        → call the local Python function
-```
-
-The actually exported actions include the following.
-
-```text
-errata.update
-
-hardware.refresh_list
-
-packages.update
-packages.remove
-packages.refresh_list
-packages.fullUpdate
-packages.checkNeedUpdate
-packages.runTransaction
-packages.verify
-
-reboot.reboot
-
-rhnsd.configure
-
-systemid.disable
-
-up2date_config.update
-up2date_config.rpmmacros
-up2date_config.get
-```
-
-These capabilities include package installation, update, removal, rollback, and verification; full system updates; software and hardware inventory uploads; configuration and interval changes; client identity disabling; and rebooting. The whitelist limits callable function entry points, but those actions run as root and can have broad effects. Package transactions may also execute package scripts. The absence of a general-purpose remote-shell entry point therefore does not establish that the manager cannot execute other code; repositories, signature trust, and action parameters also matter.
-
-### Remote reboot and package management
-
-`reboot.py` invokes `/sbin/shutdown -r +3`.
-
-```bash
-/sbin/shutdown -r +3
-```
-
-It schedules a reboot 3 minutes after receiving the action. The config `noReboot=0` means remote reboot is allowed, and setting `noReboot=1` makes the client refuse to execute it.
-
-`packages.py` uses the Python 2 YUM API to manage packages, supporting install, update, remove, full update, rollback, verify, and profile refresh. Before each transaction it runs repository resolution, dependency calculation, package download, RPM GPG signature check, and a YUM transaction test, then executes, and finally reports the result back to the server.
-
-```text
-server sends a package action
-  → nkuc_check parses the XML-RPC
-    → packages.py builds a YUM transaction
-      → resolve dependencies, download, and check signatures as configured
-        → YUM transaction test
-          → root executes install/upgrade/remove/rollback
-            → result reported back to the server
-```
-
-`packages.refresh_list()` collects the local RPM package list and uploads it to the central management server, and `packages.verify()` checks whether specified packages are missing or files are anomalous.
-
-### The YUM plugin and repository state
-
-`yum-nkuc-plugin` ships the plugin config, `/usr/share/rhn/actions/packages.py`, `errata.py`, and `/var/lib/up2date`. The plugin config is as follows.
-
-```ini
-[main]
-enabled = 0
-gpgcheck = 1
-timeout = 120
-```
-
-`enabled = 0` means the NKUC YUM plugin is currently disabled. The system's only repository config is the following.
-
-```ini
-[rhel-source]
-name=Neoky7.6
-baseurl=file:///mnt
-enabled=0
-gpgcheck=0
-```
-
-So there are no usable YUM sources right now. No online repository is enabled, the only repo points at `/mnt` and is itself disabled, and the installation ISO was removed from the VM, so `/mnt` has nothing mounted. I won't guess at NeoKylin's official repository addresses, nor invent a working mirror. For a freshly installed system that means installing software requires first mounting installation media or configuring a trusted repository yourself, since there's no out-of-the-box source.
-
-| Component | Origin or role |
-| --- | --- |
-| `neokylin-release-server` | distro name/version identity, RHEL compatibility identifier, RPM macros, GPG public key, default repo config, systemd presets |
-| `nkucsd` | repackaged Spacewalk/RHN query daemon; SysV init script hosted by systemd-sysv-generator, invokes `nkuc_check` every 4 hours |
-| `nkuc_check` | Python script that contacts the Spacewalk server, fetches the action queue, and reports results |
-| `__rhnexport__` whitelist | Restricts method calls to local functions explicitly exported under `/usr/share/rhn/actions`; the actions still have root-level effects |
-| `yum-nkuc-plugin` | integrates YUM with NKUC; currently disabled with `enabled = 0` |
-| kernel / glibc / systemd and other base packages | Carry `Vendor: CS2C` and `Packager: NeoKylin Linux` metadata; provenance and signatures need separate verification |
-
-## Summary
-
-This image retains RHEL 7.6 release identifiers, a matching kernel version, and extensive patch history, alongside NeoKylin release, licensing, and management components. That establishes a close relationship with Enterprise Linux 7 without quantifying source differences. NKUC's action interface follows the Spacewalk/RHN system. This installation is not connected to a real management platform; once connected, its root-level package and reboot capabilities become part of the trust decision.
-
-This system's software baseline dates mostly from 2018—2019, which suits historical compatibility testing, research on domestic OSes, learning Enterprise Linux 7 administration, or validating legacy commercial software. To use it on a new networked production system, confirm vendor support, a sustained source of security updates, and repository availability before weighing the business applications' compatibility requirements.
-
-## A note on security
-
-Being able to get into GRUB and change boot parameters means you have the VM console or a physical console. It's a standard admin recovery path, but also a path that needs protecting. On a real production system, consider a GRUB password, disk encryption, restricted physical access, and a controlled recovery procedure, so that anyone with console access can't reset passwords or tamper with boot configuration.
+Stripped to its essentials, this NeoKylin 7.6 image is a 2018–2019 Enterprise Linux 7.6 system (`3.10.0-957.el7` kernel, XFS on LVM, systemd, SELinux) topped with NeoKylin branding and a Spacewalk-based management agent. For legacy compatibility testing, treating it as an offline RHEL 7.6 box gets you almost all the way there.

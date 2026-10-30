@@ -54,7 +54,8 @@ const copy = computed(() =>
   isEnglish.value
     ? {
         brand: 'Boundless',
-        slogan: 'Writing code, building tools, and keeping raw notes.',
+        slogan:
+          'Writing code, building small tools, and keeping notes along the way.',
         pageTitle: (page: number) => `Index · Page ${page}`,
         previous: '← Prev',
         next: 'Next →',
@@ -62,7 +63,7 @@ const copy = computed(() =>
       }
     : {
         brand: '无垠',
-        slogan: '写代码，做小工具，记录具体的排查与想法。',
+        slogan: '写代码，做小工具，记下沿途的问题与想法。',
         pageTitle: (page: number) => `文章目次 · 第 ${page} 页`,
         previous: '← 上一页',
         next: '下一页 →',

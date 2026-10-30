@@ -5,7 +5,7 @@ tags:
   - AI
   - Software Engineering
   - Vibe Coding
-description: A report export illustrates Intent, Spec, and Impl, the gaps between goals, specifications, and implementations, and how to make requirements and acceptance criteria clear.
+description: Using a simple report-export feature to look at Intent, Spec, and Impl—and where things slip through the cracks between an idea and working code.
 outline: deep
 aside: true
 ---
@@ -14,46 +14,45 @@ aside: true
 
 <!-- DESC SEP -->
 
-AI can speed up implementation. Turning an idea into useful software still takes alignment between goals, requirements, and acceptance criteria. A report export offers a way to understand Intent, Spec, and Impl.
+Using a simple report-export feature to look at Intent, Spec, and Impl—and where things slip through the cracks between an idea and working code.
 
 <!-- DESC SEP -->
 
-Suppose I ask AI to add an export feature to a report.
+Suppose you ask an AI agent to add an Export button to an admin report.
 
-The button appears quickly, and clicking it downloads a file. But the file contains only the current page of data. I need to reconcile sales totals at the end of the month, which requires every row matching the filters, including the later pages.
+A minute later, the button is on screen and clicking it downloads an Excel file. Then you open the sheet and find only the 20 rows from the current page—when what you actually needed was to reconcile the entire month’s sales totals.
 
-The program runs and the feature looks plausible, yet the result falls short. Three concepts help explain the mismatch: Intent, Spec, and Impl.
+The code compiles and the button works, yet the feature misses the mark. Three old software engineering terms make it easy to see why: `Intent`, `Spec`, and `Impl`.
 
-**[Intent](https://dictionary.cambridge.org/dictionary/english/intent)** describes the goal we want to reach or the problem we want to solve. Here, the goal is to reconcile monthly sales with less manual work; exporting a file is one way to get there.
+- **[Intent](https://dictionary.cambridge.org/dictionary/english/intent)** is the real-world job you want done: reconciling monthly sales without copying and pasting page by page.
+- **[Spec (Specification)](https://dictionary.cambridge.org/dictionary/english/specification)** turns that goal into checkable rules: export every row matching the active filters, round currency to two decimal places, and make the bottom total match the summary header.
+- **[Impl (Implementation)](https://dictionary.cambridge.org/us/dictionary/english/implementation)** is the code that makes it happen: reusing the filter query, bypassing pagination, and streaming the workbook back to the browser.
 
-**Spec**, short for [Specification](https://dictionary.cambridge.org/dictionary/english/specification), turns the goal into behavior and constraints we can check: export every row matching the current filters, keep monetary amounts to two decimal places, and make the total agree with the report. Without a clear data scope and monetary rules, “export succeeded” can mean different things.
+Building software is a journey along `Intent → Spec → Impl`.
 
-**Impl** stands for [Implementation](https://dictionary.cambridge.org/us/dictionary/english/implementation): the code, configuration, and processing that fulfill the specification. Here, it means reusing the filtered query, handling pagination, generating a file, and making it available for download. Different implementations can satisfy the same specification. Acceptance checks whether the agreed behavior holds.
+## Two Arrows, Two Cracks
 
-Following the development process gives us `Intent → Spec → Impl`. A goal becomes explicit requirements, then a working program.
+As [jyy’s Generative Software Engineering notes](https://jyywiki.cn/GSE/2026/lect1.md) point out, every arrow in that chain is an act of translation—and every translation can lose something along the way.
 
-[jyy's Generative Software Engineering lecture notes](https://jyywiki.cn/GSE/2026/lect1.md) discuss the gaps between these three layers. Each arrow involves choices, and each can introduce a mismatch.
+The first crack sits between `Intent` and `Spec`. If you want to reconcile monthly totals but only ask for “an export button,” data scope and rounding rules are left unspoken. Even if the code satisfies every word of your prompt, a single page of rows still leaves you stuck doing manual work.
 
-Moving from Intent to Spec means translating a goal into requirements. If “make sales reconciliation easier” becomes “download a file,” the specification may leave out the data scope and aggregation rules. The code could satisfy every stated requirement while the user still has to move between pages and combine the results manually.
+The second crack sits between `Spec` and `Impl`. If the specification explicitly calls for “all matching rows,” yet the implementation reuses a paginated list endpoint out of habit, the bug lives in the code.
 
-Moving from Spec to Impl means turning requirements into an executable program. If the specification already says “all rows,” but the code retains the list endpoint's default pagination, the mismatch is in the implementation.
+When a feature comes back wrong, figuring out *which* arrow bent is far more effective than telling the agent “still broken, try again.”
 
-These problems call for different fixes. The first requires revising or extending the specification. The second requires changing the implementation. When a result falls short, identifying where the mismatch occurred is usually more useful than asking AI to “try again.”
+## Don’t Let the Model Fill In Product Blanks Silently
 
-In vibe coding, AI can fill in gaps quickly. Leave out the data scope, and it may keep pagination. Say nothing about monetary precision, and it may choose for us. Each choice can look reasonable while the combined result drifts away from the goal.
+The magic of vibe coding is how fast an agent fills in blanks; the trap is that it fills them in without telling you.
 
-That makes a little more context worthwhile when handing AI a task.
+Leave out the row scope, and it defaults to the current page. Say nothing about currency formatting, and it dumps raw floats. Each guess looks reasonable in isolation, until five quiet guesses add up to the wrong feature.
 
-Start with the use case. “I need to reconcile monthly sales without copying data page by page.” Then ask AI to outline the key behavior, constraints, and acceptance examples, and identify which decisions need clarification or an experiment. Agree on the important tradeoffs before implementation.
+Taking thirty seconds to anchor both ends before the agent writes code pays off quickly:
 
-[GitHub's introduction to Spec Kit](https://github.blog/ai-and-ml/generative-ai/spec-driven-development-with-ai-get-started-with-a-new-open-source-toolkit/) emphasizes that specifications should keep guiding planning, implementation, and verification as the project evolves. The same idea applies to small tasks. Write down the requirements and how to check them, and keep that record as a reference for later changes.
+1. **Share the real goal first**: “I need to reconcile monthly sales totals without paging through the table.”
+2. **Ask for a short spec before code**: Following the spirit of [GitHub’s Spec Kit](https://github.blog/ai-and-ml/generative-ai/spec-driven-development-with-ai-get-started-with-a-new-open-source-toolkit/), have the agent list the key behaviors, edge cases, and acceptance checks in a few lines first. Once those look right, let it write the code.
 
-A specification can develop gradually. When an interaction is uncertain, build a small prototype. Update the requirements when trying it reveals an omission. AI can help clarify intent, draft specifications, and run checks. People still need to confirm the important tradeoffs and judge whether the result is useful.
+Before handing a task to a coding agent, three quick questions keep all three layers aligned:
 
-Acceptance needs to look in both directions. We can check whether the file contains every row. Whether that file makes sales reconciliation straightforward requires trying it in the actual workflow. Passing tests means passing the current checks, which may themselves leave requirements uncovered.
-
-Before giving a coding agent its next task, ask three questions.
-
-> What problem am I trying to solve?
-> What would count as complete?
-> What evidence would confirm it?
+> What real problem am I trying to solve?
+> What has to be true for this to count as done?
+> How will we verify it once the code is written?
