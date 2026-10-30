@@ -26,15 +26,18 @@ const copy = computed(() =>
         siteSuffix:
           '’s entry for boundless (“Being without boundaries or limits”). It isn’t a grand statement—I just liked the word, and it’s a good reminder that there is always unfamiliar code and plenty of things left to figure out.',
         candor:
-          'I appreciate the plain-spoken candor in Wang Xiaobo’s essays: speaking frankly without jargon or pretense. In an era saturated with manufactured buzzwords and AI slop, I prefer keeping things simple—documenting tangible issues encountered while writing code or building tools, and how they were worked out.',
+          'I’m drawn to the plain-spoken candor and pursuit of wisdom in Wang Xiaobo’s essays, the lightness of Italo Calvino’s fiction, and a clean, scientific aesthetic. I distrust grand narratives, care about concrete things over abstractions, and have a hard time staying in dull, lifeless environments. In an era saturated with hollow buzzwords and AI slop, I prefer keeping things grounded—documenting tangible issues encountered while writing code or building tools, and how they were worked out.',
         writing:
           'Blogging easily turns into self-indulgence, so I try to stay grounded by writing down exact conditions, thoughts, and reproducible steps. If something here saves you a bit of troubleshooting time, wonderful. If not, treat it simply as someone else’s raw engineering notes.',
         albumsPrefix:
-          'Outside of programming, I spend a lot of time listening to music. There is also a ',
+          'Outside of programming, I spend a lot of time with music, listening for composition and emotional texture rather than lyrics. There is a ',
         albumsText: 'records wall',
         albumsUrl: '/en/albums',
-        albumsSuffix:
-          ' here tracking full-length albums I’ve listened through.',
+        albumsMid:
+          ' here tracking full-length albums I’ve listened through—most of the pre-2020 releases come from my middle and high school years, a thread I explored further in ',
+        tasteText: 'Teenage Playlists and Adult Appetites',
+        tasteUrl: '/en/posts/2026/10/30-teenage-taste',
+        albumsSuffix: '.',
         contact: 'Contact',
         email: 'Email',
       }
@@ -56,13 +59,17 @@ const copy = computed(() =>
         siteSuffix:
           '对 boundless 的释义“Being without boundaries or limits”。倒不是要把话说得很大，单纯觉得这个词顺眼，也顺便提醒自己：没见过的代码和没折腾明白的问题还多得很。',
         candor:
-          '喜欢王小波杂文里的坦荡劲儿，有一说一，讨厌故弄玄虚的行话和空洞的通稿。在到处都在量产观点和 AI Slop 的当下，这里只做点朴素的事：记录平时写代码、做工具遇到的具体问题，以及怎么把它们解决掉。',
+          '喜欢王小波杂文里的坦荡与对智慧的追求，也偏爱卡尔维诺小说里的轻盈，审美上倾向干净利落的“理科”质感。我不喜欢宏大叙事，更愿意关心具体的事物，也很难在无聊无趣的环境里待下去。在到处都在量产空洞通稿和 AI Slop 的当下，这里尽量做点朴素的事，记录平时写代码、做工具遇到的具体问题，以及怎么把它们解决掉。',
         writing:
           '写博客容易变成自说自话，我尽量写得实在点，把当时的环境、排查思路和验证过程交代清楚。内容要是碰巧帮到了正在查资料的你，自然最好；要是没帮上，就当翻看了一篇别人的现场工作便签。',
         albumsPrefix:
-          '除了写代码，平时也经常听歌，这里还整理了一面我听过整张的',
+          '除了写代码，平时也经常听歌。我听音乐不太在意歌词，更看重曲子本身和旋律传递的情绪，这里整理了一面听过整张的',
         albumsText: '唱片墙',
         albumsUrl: '/albums',
+        albumsMid:
+          '，其中 2020 年以前的唱片大多来自初高中时期，顺着这个话题也写过一篇',
+        tasteText: '《青春期的歌单与成年后的胃口》',
+        tasteUrl: '/posts/2026/10/30-teenage-taste',
         albumsSuffix: '。',
         contact: '联系方式',
         email: '邮箱',
@@ -119,6 +126,8 @@ const copy = computed(() =>
       <p>
         {{ copy.albumsPrefix }}
         <a :href="copy.albumsUrl">{{ copy.albumsText }}</a>
+        {{ copy.albumsMid }}
+        <a :href="copy.tasteUrl">{{ copy.tasteText }}</a>
         {{ copy.albumsSuffix }}
       </p>
     </article>
