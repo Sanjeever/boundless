@@ -15,6 +15,7 @@ import ArticleMeta from './components/ArticleMeta.vue'
 import HomeIndex from './components/HomeIndex.vue'
 import ProjectIndex from './components/ProjectIndex.vue'
 import MermaidDiagram from './components/MermaidDiagram.vue'
+import FooterStats from './components/FooterStats.vue'
 import { startDeployUpdateNotifier } from './utils/deployVersion'
 
 export default {
@@ -26,6 +27,7 @@ export default {
       'doc-after': () => h(Comment),
       'doc-top': () => h(ImageViewer),
       'aside-top': () => h(GoBack),
+      'layout-bottom': () => h(FooterStats),
     })
   },
 
