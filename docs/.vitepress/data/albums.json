@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-19",
+  "updatedAt": "2026-10-31",
   "albums": [
     {
       "id": "sofa-sea",
@@ -24,6 +24,14 @@
       "releaseDate": "2009-01-22",
       "url": "https://music.apple.com/tw/album/815493324",
       "cover": "https://coverartarchive.org/release-group/c87ef084-3ed8-3301-9f48-a770e3c43e89/front-500"
+    },
+    {
+      "id": "flower-posture-live",
+      "title": "花的姿态演唱会经典实录",
+      "artist": "陈绮贞",
+      "releaseDate": "2007-05-18",
+      "url": "https://music.apple.com/cn/album/1601807862",
+      "cover": "https://coverartarchive.org/release-group/b051325c-9031-3914-8965-aefbd2bff919/front-500"
     },
     {
       "id": "adventure",
