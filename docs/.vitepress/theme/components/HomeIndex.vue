@@ -54,8 +54,6 @@ const copy = computed(() =>
   isEnglish.value
     ? {
         brand: 'Boundless',
-        slogan:
-          'Writing code, building small tools, and keeping notes along the way.',
         pageTitle: (page: number) => `Index · Page ${page}`,
         previous: '← Prev',
         next: 'Next →',
@@ -63,7 +61,6 @@ const copy = computed(() =>
       }
     : {
         brand: '无垠',
-        slogan: '写代码，做小工具，记下沿途的问题与想法。',
         pageTitle: (page: number) => `文章目次 · 第 ${page} 页`,
         previous: '← 上一页',
         next: '下一页 →',
@@ -88,7 +85,6 @@ function dateTime(timestamp: number) {
     <header class="paper-header">
       <div v-if="currentPage === 1" class="header-intro">
         <h1 class="site-title">{{ copy.brand }}</h1>
-        <p class="site-slogan">{{ copy.slogan }}</p>
       </div>
       <div v-else class="header-subpage">
         <h1 class="subpage-title">{{ copy.pageTitle(currentPage) }}</h1>
@@ -178,19 +174,12 @@ function dateTime(timestamp: number) {
 }
 
 .site-title {
-  margin: 0 0 12px;
+  margin: 0;
   color: var(--vp-c-text-1);
   font-size: clamp(34px, 5vw, 44px);
   font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.15;
-}
-
-.site-slogan {
-  margin: 0;
-  color: var(--vp-c-text-2);
-  font-size: 16px;
-  line-height: 1.7;
 }
 
 .subpage-title {

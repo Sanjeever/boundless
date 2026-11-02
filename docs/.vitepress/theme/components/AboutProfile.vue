@@ -9,9 +9,7 @@ const copy = computed(() =>
   isEnglish.value
     ? {
         title: 'About Me',
-        intro:
-          'I’m Sanjeev. I live in Nanning, write code, and build small tools.',
-        namePrefix: 'My handle comes from the Sanskrit word ',
+        namePrefix: 'The name Sanjeev comes from the Sanskrit word ',
         sanskritWord: 'saṃjīva',
         nameMid: '. Flipping through the ',
         dictSanskrit: 'Monier-Williams Sanskrit-English Dictionary',
@@ -44,8 +42,7 @@ const copy = computed(() =>
       }
     : {
         title: '关于我',
-        intro: '我是 Sanjeev，住广西南宁，平时写代码、做小工具。',
-        namePrefix: '这个名字取自梵语 ',
+        namePrefix: 'Sanjeev 这个名字取自梵语 ',
         sanskritWord: 'saṃjīva',
         nameMid: '。以前翻',
         dictSanskrit: '《Monier-Williams 梵英词典》',
@@ -81,7 +78,6 @@ const copy = computed(() =>
   <main class="about-paper">
     <header class="about-header">
       <h1 class="about-title">{{ copy.title }}</h1>
-      <p class="about-intro">{{ copy.intro }}</p>
       <hr class="head-rule" />
     </header>
 
@@ -171,19 +167,12 @@ const copy = computed(() =>
 }
 
 .about-title {
-  margin: 0 0 16px;
+  margin: 0;
   color: var(--vp-c-text-1);
   font-size: clamp(34px, 5vw, 44px);
   font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.15;
-}
-
-.about-intro {
-  margin: 0;
-  color: var(--vp-c-text-2);
-  font-size: 17px;
-  line-height: 1.7;
 }
 
 .head-rule {
