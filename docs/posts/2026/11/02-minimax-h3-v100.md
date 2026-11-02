@@ -300,6 +300,7 @@ ComfyUI 把过程铺在画布上。一段提示词先进入文本编码器，随
 
 下面样片先通过文生视频生成湖面，再提取首帧送入图生视频工作流。默认输出保存在宿主机 `/srv/comfyui-h3/output/H3/`。
 
+<div>
 <video
   controls
   playsinline
@@ -308,6 +309,7 @@ ComfyUI 把过程铺在画布上。一段提示词先进入文本编码器，随
   aria-label="双卡 V100 生成帆船视频，608×352，约五秒"
   style="width: 100%; max-width: 608px"
 ></video>
+</div>
 
 双卡图生视频样片，608×352，124 帧，24fps，附带 32kHz 双声道音轨。
 

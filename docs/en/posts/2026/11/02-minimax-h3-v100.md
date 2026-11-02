@@ -300,6 +300,7 @@ The main model passes through the Turbo LoRA before FP16Safe, then connects to t
 
 The clip below started as text-to-video. Its first frame was then extracted and used in the image-to-video workflow. The default output directory on the host is `/srv/comfyui-h3/output/H3/`.
 
+<div>
 <video
   controls
   playsinline
@@ -308,6 +309,7 @@ The clip below started as text-to-video. Its first frame was then extracted and 
   aria-label="Sailboat video generated on two V100s, 608 by 352 pixels, about five seconds"
   style="width: 100%; max-width: 608px"
 ></video>
+</div>
 
 Image-to-video sample using both cards: 608×352, 124 frames, 24fps, with a 32kHz stereo audio track.
 
