@@ -6,7 +6,7 @@ tags:
   - 本地部署
   - 视频生成
   - GPU
-description: 用 Docker 在两张 16GB V100 上部署 ComfyUI 与 MiniMax H3，从权重下载、精度适配走到文生视频与图生视频。
+description: 在两张 16GB V100 上用 Docker 跑通 ComfyUI 与 MiniMax H3，绕开 FP16 溢出黑图，从文字或首帧图片生成带音轨的短片。
 outline: deep
 aside: true
 ---
@@ -15,32 +15,38 @@ aside: true
 
 <!-- DESC SEP -->
 
-用 Docker 在两张 16GB V100 上部署 ComfyUI 与 MiniMax H3，从权重下载、精度适配走到文生视频与图生视频。
+在两张 16GB V100 上用 Docker 跑通 ComfyUI 与 MiniMax H3，绕开 FP16 溢出黑图，从文字或首帧图片生成带音轨的短片。
 
 <!-- DESC SEP -->
 
-一艘帆船缓缓穿过金色湖面。远岸压成一道细线，船尾拖着涟漪。播放器走完一遍，五秒多。
+五秒钟的画面里，一艘红帆船缓缓划过日出时的湖面，船尾拖开细碎的涟漪，耳机里传来水波拍岸和远处的鸟鸣。
 
-生成这样一段画面，两张 16GB V100 也能胜任。配合 64GB 主机内存，本次实测首次生成约需三分多钟，模型载入后约需一分半钟。
+这段带音轨的视频，出自那台插着两张 16GB V100 的旧服务器。前几天它还在跑 [Qwen3.8 长上下文](/posts/2026/10/23-v100-strata-iq3-xxs)，用 `docker stop` 停掉语言模型容器后，占着的 44GiB 内存和每张卡 15GiB 显存才真正松手（`pause` 会把它们留在原地），系统重新空出 52GiB 内存。
 
-下面按实际部署顺序，把环境要求、权重下载、镜像构建与使用方法串起来。手头若也有 V100，可以从这套已验证配置起步。
+第一次点下运行，风扇转了三分多钟。等权重在内存和显存里安顿下来，一分半钟就能洗出一段五秒的短片。
 
-[MiniMax H3](https://huggingface.co/MiniMaxAI/MiniMax-H3) 负责生成视频与同步音频，[ComfyUI](https://github.com/Comfy-Org/ComfyUI/tree/v0.43.0) 负责把模型加载、输入编码、采样和解码组织成工作流。同一套 FL2VA 权重既能接受纯文字，也能接受首帧图片，分别完成文生视频与图生视频。
+## 44.4GB 的五份权重
 
-## 先确认环境与资源
+一行文字怎么变成画面与声音？翻看 [Comfy-Org 整理的模型仓库](https://huggingface.co/Comfy-Org/MiniMax-H3)，目录下躺着五个文件，加起来 44.4GB。
 
-本次环境如下，后文命令均在 Linux Bash 中执行，以 root 用户为例，需要 `curl`、`tar` 与 `jq`。
+核心是 21GB 的 [MiniMax H3](https://huggingface.co/MiniMaxAI/MiniMax-H3) `FL2VA` 扩散模型。它把文生视频和图生视频合在了同一份权重里。不接图片时，模型从纯噪声里凭空推演；递过去一张首帧图片，那张图就成为整段轨迹的起点。
 
-| 项目 | 配置 |
-| --- | --- |
-| GPU | 两张 Tesla V100-SXM2 16GB，NVLink 互联 |
-| CPU | Xeon E5-2686 v4，18 核 36 线程 |
-| 内存 | 标称 64GB，系统可见约 61GiB |
-| 磁盘 | 512GB SATA SSD，建议预留至少 80GB 空间 |
-| 宿主机 | Ubuntu 26.04.1 LTS，NVIDIA 驱动 580.178.04 |
-| 容器环境 | Docker 29.8.1、Compose v5.5.1，已配置 NVIDIA Container Toolkit |
+提示词和首帧画面先交给 15.7GB 的 `Qwen3-VL 32B` 编码器（NVFP4/AWQ 量化）转成条件向量。采样时挂上 1.96GB 的 `8 步 Turbo LoRA`，把漫长的去噪过程收束到 8 步。等潜空间里的张量成形，守在末端的两个 VAE 再各自接手，5.2GB 的视频 VAE（FP16）还原出 24fps 的连续画面，605MB 的音频 VAE（FP32）解出 32kHz 双声道音轨。
 
-先确认驱动与容器工具正常。GPU 环境初始化可以参考[前文](/posts/2026/10/23-v100-strata-iq3-xxs)，这里从已有 GPU 容器环境继续。
+[ComfyUI](https://github.com/Comfy-Org/ComfyUI/tree/v0.43.0) 做的事，就是把这五块拼图铺在画布上，连成一条从左往右的流水线。
+
+这台服务器的配置沿用[上一篇笔记](/posts/2026/10/23-v100-strata-iq3-xxs)里的 GPU 容器环境：
+
+| 项目     | 配置                                                   |
+| -------- | ------------------------------------------------------ |
+| GPU      | 两张 Tesla V100-SXM2 16GB，NVLink 互联                 |
+| CPU      | Xeon E5-2686 v4，18 核 36 线程                         |
+| 内存     | 标称 64GB，系统可见约 61GiB                            |
+| 磁盘     | 512GB SATA SSD，建议预留至少 80GB 空间                 |
+| 宿主机   | Ubuntu 26.04.1 LTS，NVIDIA 驱动 `580.178.04`           |
+| 容器环境 | Docker `29.8.1`、Compose `v5.5.1`，已配置 GPU 容器支持 |
+
+确认驱动、容器工具与基础命令就绪：
 
 ```bash
 apt-get update
@@ -50,30 +56,7 @@ docker --version
 docker compose version
 ```
 
-如果机器还在运行其他大模型，先停止对应服务，确认显存和主机内存已经释放。`pause` 会保留内存与显存，这里应使用 `stop`。
-
-这台机器原先运行 Qwen，容器占用约 44GiB 内存，每张卡各占约 15GiB 显存。停止服务后，系统可用内存回到约 52GiB，才有空间容纳视频模型。
-
-## 下载 FL2VA 权重
-
-本篇采用 FL2VA。主模型约 21GB，文本编码器约 15.7GB，加上视频与音频 VAE、8 步 Turbo LoRA，合计约 44.4GB。VAE 在这里负责把内部压缩表示还原成画面或声音。
-
-<details>
-<summary>五个权重文件</summary>
-
-以下文件来自 [Comfy-Org 模型仓库](https://huggingface.co/Comfy-Org/MiniMax-H3)，本次通过 ModelScope 下载。
-
-| 目录 | 文件 |
-| --- | --- |
-| `diffusion_models/` | `minimax_h3_fl2va_pruned_fp8_scaled.safetensors` |
-| `text_encoders/` | `qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors` |
-| `vae/` | `minimax_h3_video_vae_fp16.safetensors` |
-| `vae/` | `minimax_h3_audio_vae_fp32.safetensors` |
-| `loras/` | `minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors` |
-
-</details>
-
-建立目录，然后通过 ModelScope 下载。下面命令按文件逐个执行，支持断点续传；已有完整文件会跳过。
+建好目录，从 ModelScope 拉回五份权重。脚本支持断点续传，落盘后会核对文件字节数：
 
 ```bash
 mkdir -p /srv/comfyui-h3/{build,models,input,output,user,cache}
@@ -106,25 +89,27 @@ FILES
 )
 ```
 
-44.4GB 是磁盘体积，运行时还要为反量化结果、临时张量与解码画面留出余量。
+## 65504 的边界与黑图
 
-## V100 需要单独处理精度
+权重落盘后，如果直接照默认配置在 V100 上运行，等待三分多钟后，播放器里只会看到五秒钟的纯黑画面。
 
-`nvidia-smi` 右上角写着 CUDA 13.0，看起来很新。可 [NVIDIA 支持矩阵](https://docs.nvidia.com/datacenter/tesla/drivers/cuda-toolkit-driver-and-architecture-matrix.html) 把 Volta 留在 CUDA 12.x，计算能力为 `sm_70`。驱动展示兼容上限，具体程序能否运行，还要看它有没有带上这代显卡。
+问题出在两代硬件的缝隙里。
 
-这次基础镜像固定为 `pytorch/pytorch:2.12.1-cuda12.6-cudnn9-runtime`，容器内使用 Python 3.12 与 [PyTorch 2.12.1+cu126](https://pytorch.org/get-started/previous-versions/)。核对编译架构时，列表里确实能找到 `sm_70`。
+宿主机 `nvidia-smi` 右上角标着 `CUDA Version: 13.0`，那只是 580 驱动兼容的上限。[NVIDIA 支持矩阵](https://docs.nvidia.com/datacenter/tesla/drivers/cuda-toolkit-driver-and-architecture-matrix.html)里，Volta 架构（`sm_70`）停留在 CUDA 12.x。容器基础镜像因此固定为 `pytorch/pytorch:2.12.1-cuda12.6-cudnn9-runtime`，里面的 [PyTorch 2.12.1+cu126](https://pytorch.org/get-started/previous-versions/) 仍带着 `sm_70` 的算子。
 
-在 [ComfyUI 0.43.0 原生实现](https://github.com/Comfy-Org/ComfyUI/blob/v0.43.0/comfy/supported_models.py#L907) 中，H3 支持 BF16 与 FP32 推理。V100 缺少原生 BF16 支持，走 FP32 路径会增加计算与存储负担。直接强制 FP16，又可能因激活溢出得到 NaN，最后交出一张黑图。
+更隐蔽的边界在浮点数的指数位上。
 
-模型文件名写着 FP8，也不会替显卡补上原生 FP8 算力。这里先用较小体积保存权重，真正计算时，再沿兼容路径展开。
+[ComfyUI 0.43.0 原生代码](https://github.com/Comfy-Org/ComfyUI/blob/v0.43.0/comfy/supported_models.py#L907)里，H3 走 `BF16` 或 `FP32` 推理。主模型文件名里的 `fp8` 只是磁盘与显存里的压缩打包格式；V100 发布于 2017 年，既没有原生 `FP8`，也不认识后来 Ampere 架构才引入的 `BF16`。
 
-最终采用 [FP16Safe](https://github.com/aaalll12322/ComfyUI-MiniMaxH3-FP16Safe/tree/4badf245c757932ad776c0dd799500428400fb17) 插件。大矩阵乘尽量交给 FP16，残差等关键计算保留 FP32，并在容易溢出之处调整数值尺度。文本编码器使用 NVFP4/AWQ 权重，视频 VAE 使用 FP16，音频 VAE 使用 FP32。
+把 21GB 的模型在 16GB 显存里全展开成 `FP32` 并不现实。可一旦强行切到 V100 原生支持的 `FP16`，数值范围就突然收窄了：`BF16` 有 8 位指数，上限与 `FP32` 一样在 $3.4 \times 10^{38}$；`FP16` 只有 5 位指数，最大只能表示到 `65504`。
 
-权重采用低精度存储，计算仍需按组件选择兼容路径，不能把整个流程统一强制成 FP16。
+H3 的残差流与注意力层在累加中间激活值时，数字很容易越过 `65504` 变成 `NaN`。一个张量出现 `NaN`，整条采样链随之失真，解码出来的画面便只剩一片黑幕。
 
-## 构建固定版本镜像
+[FP16Safe 插件](https://github.com/aaalll12322/ComfyUI-MiniMaxH3-FP16Safe/tree/4badf245c757932ad776c0dd799500428400fb17)在两者之间做了一次拆解：吃算力的大矩阵乘法继续交给 `FP16` 跑在 Tensor Core 上，容易越界的残差主干留在 `FP32`，并在敏感算子前后预先缩放数值尺度。
 
-先拉取基础镜像，确认 Torch 能识别两张卡，并在编译架构列表中找到 `sm_70`。
+## 固定版本的容器镜像
+
+拉取基础镜像，确认 PyTorch 能识别两张卡，且编译架构列表里包含 `sm_70`：
 
 ```bash
 docker pull pytorch/pytorch:2.12.1-cuda12.6-cudnn9-runtime
@@ -135,7 +120,7 @@ docker run --rm --gpus all --entrypoint uv \
   'import torch; print(torch.__version__); print(torch.cuda.device_count()); print(torch.cuda.get_arch_list())'
 ```
 
-若 Docker Hub 直连不通，可改用下面镜像源，再补回官方镜像标签。
+若 Docker Hub 直连较慢，可先从镜像源拉取再改回原标签：
 
 ```bash
 docker pull docker.m.daocloud.io/pytorch/pytorch:2.12.1-cuda12.6-cudnn9-runtime &&
@@ -144,7 +129,7 @@ docker tag \
   pytorch/pytorch:2.12.1-cuda12.6-cudnn9-runtime
 ```
 
-接着下载 ComfyUI 0.43.0 与固定提交版本 FP16Safe。不要在这一步直接追随最新分支，后文工作流按这组版本验证。
+把 ComfyUI `v0.43.0` 与对应提交的 `FP16Safe` 源码包下载到构建目录：
 
 ```bash
 cd /srv/comfyui-h3/build
@@ -158,7 +143,7 @@ curl -fL --retry 3 \
   -o fp16safe-4badf245.tar.gz
 ```
 
-将下面内容保存为 `/srv/comfyui-h3/build/main_v100.py`。入口先处理参数与 CUDA 内存分配器，再导入 comfy-kitchen，避免两者选择不同 allocator。
+写一个七行的启动入口 `/srv/comfyui-h3/build/main_v100.py`：
 
 ```python
 import runpy
@@ -174,9 +159,9 @@ comfy_kitchen.disable_backend('triton')
 runpy.run_path('main.py', run_name='__main__')
 ```
 
-这里关闭 comfy-kitchen 自带 CUDA 与 Triton 后端，使用 eager 实现。Torch 仍然在 V100 上运行。启动参数同时关闭 Comfy 编译器与 CUDA graphs，注意力计算使用 PyTorch 路径。
+`comfy-kitchen` 自带的自定义 CUDA 与 Triton 后端没有针对 Volta 适配，若在参数解析前导入，还会与 `cuda_malloc` 争抢内存分配器。这里先完成参数解析和分配器初始化，再关掉这两个自定义后端，退回 PyTorch 原生算子。
 
-再保存 `/srv/comfyui-h3/build/Dockerfile`。基础镜像已包含 `uv`，下面通过它安装依赖，并保留 Torch 与 torchvision 版本约束。
+保存 `/srv/comfyui-h3/build/Dockerfile`，用基础镜像自带的 `uv` 安装依赖，并锁住原有的 Torch 版本：
 
 ```dockerfile
 FROM pytorch/pytorch:2.12.1-cuda12.6-cudnn9-runtime
@@ -209,18 +194,14 @@ EXPOSE 8188
 CMD ["uv", "run", "--no-project", "--offline", "python", "main_v100.py", "--listen", "0.0.0.0", "--port", "8188", "--default-device", "1", "--disable-comfy-compiler", "--disable-cuda-graphs", "--disable-triton-backend", "--disable-xformers", "--use-pytorch-cross-attention", "--reserve-vram", "0.5"]
 ```
 
-构建镜像。
+构建镜像：
 
 ```bash
 cd /srv/comfyui-h3
 docker build --pull=false -t local/comfyui-h3:v100-0.43.0 build
 ```
 
-## 配置 Compose 并启动
-
-用 [Docker Compose](https://docs.docker.com/compose/) 管理服务。将下面内容保存为 `/srv/comfyui-h3/docker-compose.yml`。
-
-模型目录只读挂载，输入、输出与用户工作流保留在宿主机。示例将 8188 绑定到本机回环地址。
+用 [Docker Compose](https://docs.docker.com/compose/) 管理容器，将下面配置保存为 `/srv/comfyui-h3/docker-compose.yml`：
 
 ```yaml
 name: comfyui-h3
@@ -247,7 +228,17 @@ services:
       - ./user:/opt/ComfyUI/user
       - ./cache:/root/.cache
     healthcheck:
-      test: ['CMD', 'uv', 'run', '--no-project', '--offline', 'python', '-c', 'import urllib.request; urllib.request.urlopen("http://127.0.0.1:8188/system_stats", timeout=5).read()']
+      test:
+        [
+          'CMD',
+          'uv',
+          'run',
+          '--no-project',
+          '--offline',
+          'python',
+          '-c',
+          'import urllib.request; urllib.request.urlopen("http://127.0.0.1:8188/system_stats", timeout=5).read()',
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -259,7 +250,7 @@ services:
         max-file: '3'
 ```
 
-检查配置并启动，等日志出现服务监听信息后，再查询状态。
+启动服务并观察日志：
 
 ```bash
 cd /srv/comfyui-h3
@@ -268,37 +259,35 @@ docker compose up -d
 docker compose logs --tail 100 -f
 ```
 
-按 `Ctrl+C` 退出日志查看，不会停止容器。
+等日志出现监听提示后，按 `Ctrl+C` 退出日志流，测试一下状态接口：
 
 ```bash
 curl -fsS http://127.0.0.1:8188/system_stats
 ```
 
-本机浏览器打开 `http://127.0.0.1:8188`。如果服务运行在远程服务器，在自己电脑上建立 SSH 转发，将 `user@server` 换成实际登录地址，再访问同一网址。
+在远端服务器上运行时，从本地电脑建一条 SSH 隧道，即可在浏览器访问 `http://127.0.0.1:8188`：
 
 ```bash
 ssh -L 8188:127.0.0.1:8188 user@server
 ```
 
-## 导入工作流并生成视频
+## 画布上的连线与五秒湖面
 
-ComfyUI 把过程铺在画布上。一段提示词先进入文本编码器，随后连向 H3 采样，再分别经过视频与音频解码，最后汇入保存节点。
-
-下面两份工作流已经配好模型、8 步 Turbo、FP16Safe 与双卡设备分工。下载后拖入 ComfyUI 画布即可。
+打开浏览器里的 ComfyUI 画布，可以直接拖入下面配好的工作流：
 
 - <a href="/downloads/posts/2026/11/minimax-h3-t2v-v100.json" download>文生视频工作流</a>
 - <a href="/downloads/posts/2026/11/minimax-h3-i2v-v100.json" download>图生视频工作流</a>
 - <a href="/downloads/posts/2026/11/h3-validation.png" download>验证用首帧图片</a>
 
-**文生视频**打开第一份工作流，在「提示词与视频参数」节点输入画面与声音描述，例如“夕阳下，一艘帆船缓慢驶过湖面，镜头固定，伴随轻微水声”。点击右上角「运行」，完成后在保存节点或任务历史中预览、下载。
+两份工作流的中央都摆着同一个节点：`MiniMaxH3ImageToVideo`（画布上标为「提示词与视频参数」）。
 
-**图生视频**打开第二份工作流，在「首帧图片」节点上传图片，再描述希望发生什么，例如“保持船身与构图，帆船缓慢前行，水面泛起涟漪”。也可以先上传上方验证图片，保持默认提示词，检查整条流程。
+文生视频里，这个节点的 `first_frame` 输入口悬空着。在文本框写下画面与声音，比如「夕阳下，一艘帆船缓慢驶过湖面，镜头固定，伴随轻微水声」，主模型挂上 `8 步 Turbo` LoRA，穿过 `V100 混合精度`节点，在采样器里跑完 8 步去噪，再分头交给视频与音频解码器。
 
-先保持 `608×352`、124 帧、24fps、8 步这组参数，成片约 5.17 秒。宽高需为 32 倍数，帧数使用 `17k + 5`；后续提高分辨率或延长视频时，逐档观察资源占用。
+图生视频多了一步：左边放一个「首帧图片」节点，把图片连进 `first_frame`。可以先上传上面的验证图片，提示词写「保持船身与构图，帆船缓慢前行，水面泛起涟漪」，画面就会顺着首帧的光影继续往下走。
 
-工作流中，主模型先经过 Turbo LoRA，再进入 FP16Safe，最后接采样器。文本编码器应选 H3 专用 Qwen3-VL 权重，类型保持 `minimax`。生成新样本时修改随机种子；相同参数可能复用缓存。
+工作流默认设在 `608×352`、124 帧、24fps、8 步，成片约 5.17 秒。宽高需为 32 的倍数，帧数按 `17k + 5` 递增。`H3 文本编码器`节点选专用 Qwen3-VL 权重，类型保持 `minimax`。由于相同输入会命中 ComfyUI 的缓存，同一段提示词想再抽一次卡时，改一下「随机种子」里的数字即可。
 
-下面样片先通过文生视频生成湖面，再提取首帧送入图生视频工作流。默认输出保存在宿主机 `/srv/comfyui-h3/output/H3/`。
+下面这段样片先由文生视频生成湖面，再抽出首帧送入图生视频工作流。输出文件默认落在宿主机 `/srv/comfyui-h3/output/H3/`。
 
 <div>
 <video
@@ -311,45 +300,31 @@ ComfyUI 把过程铺在画布上。一段提示词先进入文本编码器，随
 ></video>
 </div>
 
-双卡图生视频样片，608×352，124 帧，24fps，附带 32kHz 双声道音轨。
+## 两张卡的接力
 
-## 双卡分工与实测速度
+两张 V100 之间连着 NVLink，容器也开了 `gpus: all`，但把单卡和双卡的耗时摆在一起，秒表上的数字几乎没有拉开差距：
 
-这套工作流采用按阶段分工，物理 GPU 0 接手文本编码器、视频 VAE 与音频 VAE，物理 GPU 1 承担 H3 采样。
+| 场景                   | 单卡     | 双卡分工 |
+| ---------------------- | -------- | -------- |
+| 服务启动后首次生成     | 195.3 秒 | 196.5 秒 |
+| 同提示词换种子         | 78.4 秒  | 77.6 秒  |
+| 模型已加载，修改提示词 | 84.7 秒  | 81.9 秒  |
 
-两张卡之间能通过 NVLink 通信，容器也能同时看到它们。不过，`gpus: all` 只负责把设备交给容器，具体计算仍需工作流安排。两份 16GB 显存也不会自动变成一张 32GB 显卡。
+两张 16GB 显卡并不会在容器里自动合并成一张 32GB 的大卡。编码提示词、8 步去噪采样、解码音视频这三个阶段前后相接，最耗时的采样依然在一张卡上逐步推进，每步约 8.3 秒（双卡图生视频热运行一趟约 91.9 秒）。
 
-编码、采样、解码依次进行，采样本身仍由一张卡执行，所以这里不应预期速度翻倍。
+双卡真正改变的是主机内存的余量。
 
-设备映射有个容易绕晕人之处。容器设置 `CUDA_VISIBLE_DEVICES=1,0`，所以工作流中 `gpu:0` 对应物理 GPU 1，`gpu:1` 才对应物理 GPU 0。三个原生设备选择节点需要填 `gpu:1`，才能把编码与解码移到另一张卡。
+如果所有节点都挤在同一张 16GB 显卡上，显存装不下全套模型，ComfyUI 只能在阶段切换时把上一阶段的权重退回系统内存，再把下一阶段的权重搬进显存。采样期间，主机可用内存会被压到 5～10GiB。
 
-下表固定 608×352、124 帧、8 步，每组提示词和种子保持一致。首次生成包含模型加载，没有清空操作系统文件缓存，每种场景各做一次配对。
+把阶段拆开后，物理 GPU 0 接管文本编码器与两个 VAE，物理 GPU 1 专门留给 21GB 的 H3 采样模型。省去了显存与内存之间的来回腾挪，采样时主机可用内存一直留在 18～24GiB。
 
-| 场景 | 单卡 | 双卡分工 |
-| --- | --- | --- |
-| 服务启动后首次生成 | 195.3 秒 | 196.5 秒 |
-| 同提示词换种子 | 78.4 秒 | 77.6 秒 |
-| 模型已加载，修改提示词 | 84.7 秒 | 81.9 秒 |
+这里有一处设备编号的反转：`docker-compose.yml` 里设了 `CUDA_VISIBLE_DEVICES: '1,0'`，因此画布上的 `gpu:0` 对应物理 GPU 1，`gpu:1` 才对应物理 GPU 0。工作流左侧的三个设备选择节点（`SelectCLIPDevice` 与两个 `SelectVAEDevice`）填 `gpu:1`，正是为了把编码和解码挪到物理 GPU 0 上；若想退回单卡运行，把这三个节点改成 `gpu:0` 即可。
 
-采样每步仍在 8.3 秒左右，整段耗时变化很小。这几秒差异，还不足以支撑稳定加速结论。
+## 经由 HTTP 投递任务
 
-内存余量变化更明显。测试采样阶段，单卡可用系统内存约 5–10GiB，双卡约 18–24GiB。这些是阶段观察值，尚未做连续峰值统计。
+除了在画布上手动点击运行，也可以通过 [ComfyUI 的 HTTP 接口](https://github.com/Comfy-Org/ComfyUI/blob/v0.43.0/server.py)从外部程序投递任务。
 
-本次据此采用双卡分工，主要收益是内存余量增加。若想回退到单卡，将三个设备选择节点均设为 `gpu:0`，编码、采样、解码便会集中到物理 GPU 1。
-
-双卡图生视频另做一次热运行，约 91.9 秒完成，画面、首帧保持与音轨检查通过。720p、更长片段与跨卡并行采样尚未测试，不能沿用本表耗时。
-
-## 通过 HTTP 接入程序
-
-ComfyUI 同时提供 HTTP 服务，可以将生成流程接进其他程序。
-
-程序调用沿用 [ComfyUI 原生接口](https://github.com/Comfy-Org/ComfyUI/blob/v0.43.0/server.py)，按异步任务处理。
-
-先上传图片，文生视频跳过这步；把 API 格式工作流提交到 `POST /prompt`，拿到 `prompt_id`；接着查询 `GET /history/{prompt_id}`，成功后按返回文件信息，从 `GET /view` 下载 MP4。
-
-画布 JSON 与 API 请求体需要区分。本文提供前端画布文件；程序接入时，先在 ComfyUI 中导出 API 格式工作流，再包进请求体 `prompt` 字段。
-
-假设 API 导出文件保存为 `workflow-api.json`，可以这样提交。
+画布保存的 JSON 带有前端布局信息，不能直接作为请求体。先在 ComfyUI 菜单中导出 **API 格式**工作流（存为 `workflow-api.json`），包进 `prompt` 字段后发往 `POST /prompt`：
 
 ```bash
 jq '{prompt: .}' workflow-api.json > request.json
@@ -359,15 +334,11 @@ curl --fail-with-body -sS http://127.0.0.1:8188/prompt \
   --data-binary @request.json
 ```
 
-任务编号刚返回时，湖面还没出现。程序此时该记住编号，过几秒再问一次，直到成功、失败或超时。相同参数可能命中缓存；想让同一段描述再生出一幅画面，还需要换个种子。
+拿到返回的 `prompt_id` 后，每隔几秒轮询一次 `GET /history/{prompt_id}`（排队或运行中可能返回空对象，可配合 `/queue` 查看进度）。
 
-查询历史时，返回空对象可能表示任务尚在排队或运行，应结合 `/queue` 判断。成功状态位于 `history[prompt_id].status.status_str`，值为 `success`；若值为 `error`，应读取 `status.messages` 中异常信息并停止轮询。
+等 `history[prompt_id].status.status_str` 变为 `"success"`，从 `history[prompt_id].outputs["16"].images[0]` 取出 `filename`、`subfolder` 和 `type`（节点 16 是保存视频节点，视频输出同样挂在 `images` 字段下），传给 `GET /view` 即可取回 MP4。若状态变为 `"error"`，报错详情记录在 `status.messages` 中。
 
-当前工作流使用节点 16 保存视频，结果位于 `history[prompt_id].outputs["16"].images[0]`，其中包含文件名、子目录和类型。视频输出同样使用 `images` 字段，下载时将这三个字段传给 `/view`。
-
-## 日常检查
-
-遇到显存不足、生成停滞或页面无法访问时，先看容器日志与资源状态。
+遇到生成停滞或显存吃紧时，可以用下面几条命令查看容器日志与资源水位：
 
 ```bash
 cd /srv/comfyui-h3
@@ -378,6 +349,4 @@ free -h
 df -h /srv
 ```
 
-重启服务使用 `docker compose restart`；修改 Compose 配置后使用 `docker compose up -d`。输入图片、输出视频与用户工作流都挂载在宿主机，备份时优先保留 `input/`、`output/`、`user/` 和部署配置。
-
-先让这五秒视频稳定走完，再慢慢扩大画幅。
+先让这五秒钟的湖面平稳跑通，再试着把画幅一点点推开。

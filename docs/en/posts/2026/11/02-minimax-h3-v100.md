@@ -6,7 +6,7 @@ tags:
   - Local Deployment
   - Video Generation
   - GPU
-description: Deploy ComfyUI and MiniMax H3 with Docker on two 16GB V100s, from downloading weights and handling precision to generating video from text and images.
+description: Running ComfyUI and MiniMax H3 on two 16GB V100s with Docker, bypassing FP16 black-frame overflows to generate five-second clips with sound from text or a starting image.
 outline: deep
 aside: true
 ---
@@ -15,32 +15,38 @@ aside: true
 
 <!-- DESC SEP -->
 
-Deploy ComfyUI and MiniMax H3 with Docker on two 16GB V100s, from downloading weights and handling precision to generating video from text and images.
+Running ComfyUI and MiniMax H3 on two 16GB V100s with Docker, bypassing FP16 black-frame overflows to generate five-second clips with sound from text or a starting image.
 
 <!-- DESC SEP -->
 
-A sailboat moves slowly across a golden lake. The far shore is a thin line, with ripples trailing behind the hull. One pass through the player takes a little over five seconds.
+For just over five seconds, a small red sailboat drifts across a sunrise lake. Ripples trail behind the hull, while soft water lapping and distant birdsong play through the audio track.
 
-Two 16GB V100s can generate that scene. With 64GB of host RAM, this setup took just over three minutes for the first clip and about a minute and a half once the models were loaded.
+Both the frames and the stereo sound came out of the same older server with two 16GB V100s that was running [256K-context Qwen3.8 tests](/en/posts/2026/10/23-v100-strata-iq3-xxs) a few days ago. Stopping that language model container with `docker stop` freed the 44GiB of system RAM and 15GiB of VRAM per card it had been holding (`pause` leaves those allocations in place), bringing available host memory back to roughly 52GiB.
 
-This guide follows the deployment from prerequisites and weight downloads through the image build and the first video. If you have a similar V100 machine, it provides a tested starting configuration.
+The first run after launch took a little over three minutes while the weights settled into memory. Once warm, the server turns a prompt into a five-second clip in about a minute and a half.
 
-[MiniMax H3](https://huggingface.co/MiniMaxAI/MiniMax-H3) generates the video and synchronized audio. [ComfyUI](https://github.com/Comfy-Org/ComfyUI/tree/v0.43.0) arranges model loading, input encoding, sampling, and decoding into a workflow. The same FL2VA weights accept either text alone or a starting image, covering both text-to-video and image-to-video generation.
+## Five weight files totaling 44.4GB
 
-## Hardware and prerequisites
+How does a line of text turn into moving pictures and synchronized sound? A glance at the [Comfy-Org MiniMax H3 repository](https://huggingface.co/Comfy-Org/MiniMax-H3) shows five files totaling 44.4GB.
 
-The machine used for these measurements has the following configuration. Commands below run in Bash on Linux as root and require `curl`, `tar`, and `jq`.
+At the center sits the 21GB [MiniMax H3](https://huggingface.co/MiniMaxAI/MiniMax-H3) `FL2VA` diffusion model, which folds text-to-video and image-to-video into a single set of weights. Leave the image input empty and it dreams from pure noise; feed it a starting frame and that picture becomes the opening boundary of the trajectory.
 
-| Item | Configuration |
-| --- | --- |
-| GPUs | Two Tesla V100-SXM2 16GB cards connected by NVLink |
-| CPU | Xeon E5-2686 v4, 18 cores and 36 threads |
-| RAM | Nominal 64GB, about 61GiB visible to the OS |
-| Disk | 512GB SATA SSD; leave at least 80GB free for this setup |
-| Host | Ubuntu 26.04.1 LTS, NVIDIA driver 580.178.04 |
-| Containers | Docker 29.8.1 and Compose v5.5.1, with NVIDIA Container Toolkit configured |
+Prompts and reference frames first pass through a 15.7GB `Qwen3-VL 32B` encoder (quantized to NVFP4/AWQ) to become conditioning vectors. During sampling, a 1.96GB `8-step Turbo LoRA` compresses the denoising schedule down to 8 Euler steps. Once the latent tensor takes shape, two VAEs at the exit unpack it into media: a 5.2GB video VAE (FP16) reconstructs 24fps frames, while a 605MB audio VAE (FP32) decodes a 32kHz stereo waveform.
 
-First, check the driver and container tools. The [earlier V100 guide](/en/posts/2026/10/23-v100-strata-iq3-xxs) covers host initialization; the steps here assume GPU containers already work.
+[ComfyUI](https://github.com/Comfy-Org/ComfyUI/tree/v0.43.0) lays those five pieces out on a canvas as a left-to-right dataflow graph.
+
+The server hosting them carries over the GPU container setup from the [earlier V100 note](/en/posts/2026/10/23-v100-strata-iq3-xxs):
+
+| Item       | Configuration                                                           |
+| ---------- | ----------------------------------------------------------------------- |
+| GPUs       | Two Tesla V100-SXM2 16GB cards connected over NVLink                    |
+| CPU        | Xeon E5-2686 v4, 18 cores and 36 threads                                |
+| RAM        | Nominal 64GB, about 61GiB visible to the OS                             |
+| Disk       | 512GB SATA SSD; leave at least 80GB free                                |
+| Host       | Ubuntu 26.04.1 LTS, NVIDIA driver `580.178.04`                          |
+| Containers | Docker `29.8.1`, Compose `v5.5.1`, with NVIDIA Container Toolkit set up |
+
+Check that the driver, container runtime, and command-line tools are ready:
 
 ```bash
 apt-get update
@@ -50,30 +56,7 @@ docker --version
 docker compose version
 ```
 
-If another large model is running, stop its service and confirm that it has released both VRAM and host RAM. `pause` retains those allocations; use `stop` here.
-
-This server previously ran Qwen, whose container occupied about 44GiB of RAM and 15GiB of VRAM on each card. Stopping it brought available system memory back to roughly 52GiB, leaving room for the video model.
-
-## Download the FL2VA weights
-
-This setup uses FL2VA. The main model is about 21GB, the text encoder about 15.7GB, and the video VAE, audio VAE, and 8-step Turbo LoRA bring the total to approximately 44.4GB. The VAEs turn compressed internal representations back into images and sound.
-
-<details>
-<summary>The five weight files</summary>
-
-These files come from the [Comfy-Org model repository](https://huggingface.co/Comfy-Org/MiniMax-H3). They were downloaded through ModelScope for this deployment.
-
-| Directory | File |
-| --- | --- |
-| `diffusion_models/` | `minimax_h3_fl2va_pruned_fp8_scaled.safetensors` |
-| `text_encoders/` | `qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors` |
-| `vae/` | `minimax_h3_video_vae_fp16.safetensors` |
-| `vae/` | `minimax_h3_audio_vae_fp32.safetensors` |
-| `loras/` | `minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors` |
-
-</details>
-
-Create the directories, then download the files from ModelScope. The following block downloads them sequentially, resumes partial downloads, and skips files that already match the expected size.
+Create the working directories under `/srv/comfyui-h3` and pull the five weight files from ModelScope. The loop resumes partial downloads and checks each file's byte count on disk:
 
 ```bash
 mkdir -p /srv/comfyui-h3/{build,models,input,output,user,cache}
@@ -106,25 +89,27 @@ FILES
 )
 ```
 
-That 44.4GB describes the files on disk. Runtime memory must also accommodate dequantized weights, temporary tensors, and decoded frames.
+## The 65504 ceiling and black frames
 
-## Precision on a V100
+With the weights on disk, running a stock ComfyUI setup on a V100 will spin the fans for three minutes and hand back five seconds of pitch-black video.
 
-The CUDA 13.0 label in `nvidia-smi` can be misleading. The [NVIDIA support matrix](https://docs.nvidia.com/datacenter/tesla/drivers/cuda-toolkit-driver-and-architecture-matrix.html) lists CUDA 12.x as Volta's final supported toolkit series, with compute capability `sm_70`. The driver reports its compatibility ceiling; the application still needs support for the actual GPU architecture.
+The trouble sits in the gap between hardware generations.
 
-The base image here is `pytorch/pytorch:2.12.1-cuda12.6-cudnn9-runtime`, providing Python 3.12 and [PyTorch 2.12.1+cu126](https://pytorch.org/get-started/previous-versions/). Its compiled architecture list includes `sm_70`.
+In the corner of `nvidia-smi`, the host prints `CUDA Version: 13.0`, which only reflects the R580 driver's compatibility ceiling. In the [NVIDIA support matrix](https://docs.nvidia.com/datacenter/tesla/drivers/cuda-toolkit-driver-and-architecture-matrix.html), Volta (`sm_70`) stops at CUDA 12.x. The container therefore builds on `pytorch/pytorch:2.12.1-cuda12.6-cudnn9-runtime`, where [PyTorch 2.12.1+cu126](https://pytorch.org/get-started/previous-versions/) still includes compiled `sm_70` kernels.
 
-In the [ComfyUI 0.43.0 implementation](https://github.com/Comfy-Org/ComfyUI/blob/v0.43.0/comfy/supported_models.py#L907), H3 supports BF16 and FP32 inference. A V100 lacks native BF16 support, while the FP32 path increases compute and memory costs. Forcing FP16 throughout the model can overflow activations, producing NaNs and black frames.
+A subtler boundary lies in the exponent bits of the floating-point format.
 
-An FP8 filename does not give the card native FP8 compute. The weights are stored compactly, then expanded through a compatible execution path.
+In [ComfyUI 0.43.0's native code](https://github.com/Comfy-Org/ComfyUI/blob/v0.43.0/comfy/supported_models.py#L907), H3 runs inference in `BF16` or `FP32`. The `fp8` label in the main checkpoint's filename is only a compact storage format on disk and in VRAM; released in 2017, the V100 has neither native `FP8` nor the `BF16` format introduced later with Ampere.
 
-This setup uses [FP16Safe](https://github.com/aaalll12322/ComfyUI-MiniMaxH3-FP16Safe/tree/4badf245c757932ad776c0dd799500428400fb17). It keeps large matrix multiplications in FP16 where possible, retains FP32 for critical calculations such as the residual stream, and rescales values around operations prone to overflow. The text encoder uses NVFP4/AWQ weights, the video VAE runs in FP16, and the audio VAE runs in FP32.
+Expanding a 21GB model into full `FP32` inside a 16GB card is out of reach. Yet forcing the graph into the V100's native `FP16` narrows the dynamic range sharply: `BF16` uses an 8-bit exponent that reaches $3.4 \times 10^{38}$ just like `FP32`, whereas `FP16` has only 5 exponent bits and tops out at `65504`.
 
-Low-precision storage and compute precision are separate choices. Each component needs a compatible path rather than one global FP16 override.
+As activations accumulate down H3's residual stream and attention blocks, intermediate values easily cross `65504` and turn into `NaN`. Once a single tensor goes `NaN`, it spreads through the remaining sampling steps, leaving the decoder with nothing but a black screen.
 
-## Build a pinned image
+The [FP16Safe custom node](https://github.com/aaalll12322/ComfyUI-MiniMaxH3-FP16Safe/tree/4badf245c757932ad776c0dd799500428400fb17) splits the work cleanly: heavy matrix multiplications stay in `FP16` on the V100's Tensor Cores, while the residual stream remains in `FP32` and activations prone to spiking are rescaled before they can overflow.
 
-Pull the base image and check that Torch detects both cards and lists `sm_70` among its compiled architectures.
+## A pinned container image
+
+Pull the base image and confirm that PyTorch detects both cards and includes `sm_70` in its architecture list:
 
 ```bash
 docker pull pytorch/pytorch:2.12.1-cuda12.6-cudnn9-runtime
@@ -135,7 +120,7 @@ docker run --rm --gpus all --entrypoint uv \
   'import torch; print(torch.__version__); print(torch.cuda.device_count()); print(torch.cuda.get_arch_list())'
 ```
 
-If Docker Hub is unreachable from your network, the following mirror was used for this deployment. Retag the image so the build can use the official image name.
+If Docker Hub is slow from your network, pull from a mirror and retag the image:
 
 ```bash
 docker pull docker.m.daocloud.io/pytorch/pytorch:2.12.1-cuda12.6-cudnn9-runtime &&
@@ -144,7 +129,7 @@ docker tag \
   pytorch/pytorch:2.12.1-cuda12.6-cudnn9-runtime
 ```
 
-Download ComfyUI 0.43.0 and the pinned FP16Safe commit. Keep these versions for the initial setup; the workflows below were checked against this combination.
+Download the source tarballs for ComfyUI `v0.43.0` and the pinned `FP16Safe` commit into the build directory:
 
 ```bash
 cd /srv/comfyui-h3/build
@@ -158,7 +143,7 @@ curl -fL --retry 3 \
   -o fp16safe-4badf245.tar.gz
 ```
 
-Save the following as `/srv/comfyui-h3/build/main_v100.py`. It initializes argument parsing and the CUDA allocator before importing comfy-kitchen, so both use the same allocator configuration.
+Create a seven-line entrypoint at `/srv/comfyui-h3/build/main_v100.py`:
 
 ```python
 import runpy
@@ -174,9 +159,9 @@ comfy_kitchen.disable_backend('triton')
 runpy.run_path('main.py', run_name='__main__')
 ```
 
-This disables comfy-kitchen's custom CUDA and Triton backends in favor of its eager implementation. Torch still executes on the V100. The launch arguments also disable the Comfy compiler and CUDA graphs and select PyTorch attention.
+The custom CUDA and Triton backends bundled in `comfy-kitchen` are not built for Volta, and importing `comfy-kitchen` before argument parsing would initialize CUDA before `cuda_malloc` configures the allocator. Running `comfy.options` and `cuda_malloc` first, then switching `comfy-kitchen` to eager mode, keeps execution on standard PyTorch kernels.
 
-Save `/srv/comfyui-h3/build/Dockerfile` next. The base image already includes `uv`; the build uses it to install dependencies while constraining the Torch and torchvision versions.
+Save `/srv/comfyui-h3/build/Dockerfile`, using the base image's `uv` binary to install dependencies while locking the preinstalled Torch build:
 
 ```dockerfile
 FROM pytorch/pytorch:2.12.1-cuda12.6-cudnn9-runtime
@@ -209,18 +194,14 @@ EXPOSE 8188
 CMD ["uv", "run", "--no-project", "--offline", "python", "main_v100.py", "--listen", "0.0.0.0", "--port", "8188", "--default-device", "1", "--disable-comfy-compiler", "--disable-cuda-graphs", "--disable-triton-backend", "--disable-xformers", "--use-pytorch-cross-attention", "--reserve-vram", "0.5"]
 ```
 
-Build the image.
+Build the image:
 
 ```bash
 cd /srv/comfyui-h3
 docker build --pull=false -t local/comfyui-h3:v100-0.43.0 build
 ```
 
-## Start ComfyUI with Compose
-
-Use [Docker Compose](https://docs.docker.com/compose/) to manage the service. Save the following as `/srv/comfyui-h3/docker-compose.yml`.
-
-The models are mounted read-only. Inputs, outputs, and user workflows remain on the host. This example binds port 8188 to the host's loopback address.
+Manage the service with [Docker Compose](https://docs.docker.com/compose/) by saving `/srv/comfyui-h3/docker-compose.yml`:
 
 ```yaml
 name: comfyui-h3
@@ -247,7 +228,17 @@ services:
       - ./user:/opt/ComfyUI/user
       - ./cache:/root/.cache
     healthcheck:
-      test: ['CMD', 'uv', 'run', '--no-project', '--offline', 'python', '-c', 'import urllib.request; urllib.request.urlopen("http://127.0.0.1:8188/system_stats", timeout=5).read()']
+      test:
+        [
+          'CMD',
+          'uv',
+          'run',
+          '--no-project',
+          '--offline',
+          'python',
+          '-c',
+          'import urllib.request; urllib.request.urlopen("http://127.0.0.1:8188/system_stats", timeout=5).read()',
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -259,7 +250,7 @@ services:
         max-file: '3'
 ```
 
-Check the configuration and start the service. Wait for the listening message in the logs before checking the endpoint.
+Start the container and follow the logs:
 
 ```bash
 cd /srv/comfyui-h3
@@ -268,37 +259,35 @@ docker compose up -d
 docker compose logs --tail 100 -f
 ```
 
-Press `Ctrl+C` to leave the log stream. The container keeps running.
+Once the listening message appears, press `Ctrl+C` to leave the log stream and check the stats endpoint:
 
 ```bash
 curl -fsS http://127.0.0.1:8188/system_stats
 ```
 
-Open `http://127.0.0.1:8188` in a browser on the host. For a remote server, establish an SSH tunnel from your own computer, replacing `user@server` with the actual login address, then open the same URL locally.
+When running on a remote machine, open an SSH tunnel from your local computer and visit `http://127.0.0.1:8188` in a browser:
 
 ```bash
 ssh -L 8188:127.0.0.1:8188 user@server
 ```
 
-## Import a workflow and generate a video
+## Wiring the canvas and the five-second lake
 
-ComfyUI lays the process out on a canvas. A prompt enters the text encoder, feeds into H3 sampling, passes through separate video and audio decoders, and ends at a save node.
-
-These workflows already include the models, 8-step Turbo LoRA, FP16Safe, and GPU placement. Download a file and drag it onto the ComfyUI canvas.
+Drag either of these preconfigured workflows onto the ComfyUI canvas:
 
 - <a href="/downloads/posts/2026/11/minimax-h3-t2v-v100.json" download>Text-to-video workflow</a>
 - <a href="/downloads/posts/2026/11/minimax-h3-i2v-v100.json" download>Image-to-video workflow</a>
 - <a href="/downloads/posts/2026/11/h3-validation.png" download>Sample first-frame image</a>
 
-For **text-to-video**, open the first workflow and enter a scene and sound description in the node titled `提示词与视频参数` (prompt and video settings). For example, try “A sailboat moves slowly across a lake at sunset, fixed camera, soft water sounds.” Click **Run** in the upper-right corner. Once it finishes, preview or download the result from the save node or task history.
+At the center of both graphs sits the same node: `MiniMaxH3ImageToVideo` (titled `提示词与视频参数` on the canvas).
 
-For **image-to-video**, open the second workflow and upload an image in the node titled `首帧图片` (first-frame image). Describe what should happen next, such as “Preserve the boat and composition, let the sailboat move slowly forward, with ripples spreading across the water.” You can also upload the sample image above and keep the default prompt to check the complete pipeline.
+In the text-to-video workflow, its `first_frame` input stays unconnected. Enter a scene and sound description—for instance, _"A sailboat moves slowly across a lake at sunset, fixed camera, soft water sounds"_—while the main model passes through the `8 步 Turbo` LoRA and the `V100 混合精度` (`MiniMaxH3FP16Safe`) node, runs 8 denoising steps in the sampler, and branches into the video and audio decoders.
 
-Start with **608×352, 124 frames, 24fps, and 8 steps**, which produces about 5.17 seconds of video. Width and height must be multiples of 32, and frame counts follow `17k + 5`. When increasing resolution or duration, move up gradually and watch resource usage.
+The image-to-video workflow adds a `LoadImage` node (`首帧图片`) on the left, wired into `first_frame`. Upload the sample validation image above and describe the motion that should follow, such as _"Preserve the boat and composition, let the sailboat move slowly forward, with ripples spreading across the water."_
 
-The main model passes through the Turbo LoRA before FP16Safe, then connects to the sampler. Use the H3-specific Qwen3-VL text encoder and keep its type set to `minimax`. Change the random seed for a new sample; identical inputs may reuse cached results.
+Both workflows start at `608×352`, 124 frames, 24fps, and 8 steps, producing a 5.17-second clip. Width and height must be multiples of 32, and frame counts follow `17k + 5`. Keep the `CLIPLoader` node (`H3 文本编码器`) pointed at the H3-specific Qwen3-VL weights with its type set to `minimax`. Because ComfyUI caches identical inputs, change the number in `RandomNoise` (`随机种子`) whenever you want a fresh variation from the same prompt.
 
-The clip below started as text-to-video. Its first frame was then extracted and used in the image-to-video workflow. The default output directory on the host is `/srv/comfyui-h3/output/H3/`.
+The clip below started as a text-to-video generation; its opening frame was then extracted and fed into the image-to-video workflow. Output files land in `/srv/comfyui-h3/output/H3/` on the host.
 
 <div>
 <video
@@ -311,45 +300,31 @@ The clip below started as text-to-video. Its first frame was then extracted and 
 ></video>
 </div>
 
-Image-to-video sample using both cards: 608×352, 124 frames, 24fps, with a 32kHz stereo audio track.
+## Passing the baton between two GPUs
 
-## GPU placement and measured performance
+Even with NVLink between the two V100s and `gpus: all` in Compose, putting single-GPU and dual-GPU timings side by side shows almost no difference on the stopwatch:
 
-This workflow assigns different stages to different cards. Physical GPU 0 handles the text encoder and both VAEs, while physical GPU 1 handles H3 sampling.
+| Scenario                               | One GPU | Stages split across two GPUs |
+| -------------------------------------- | ------- | ---------------------------- |
+| First generation after service startup | 195.3 s | 196.5 s                      |
+| Same prompt, new seed                  | 78.4 s  | 77.6 s                       |
+| Models loaded, prompt changed          | 84.7 s  | 81.9 s                       |
 
-The cards can communicate over NVLink, and both are visible inside the container. However, `gpus: all` only exposes the devices; the workflow still has to place the work. Two 16GB cards do not automatically become one 32GB GPU.
+Two 16GB cards do not automatically merge into a single 32GB pool inside the container. Prompt encoding, 8-step denoising, and audio-video decoding run one after another, and the heavy sampling loop still steps through a single card at roughly 8.3 seconds per step (a warm image-to-video pass takes about 91.9 seconds total).
 
-Encoding, sampling, and decoding follow their dependencies in sequence. Sampling itself still runs on one card, so this arrangement should not be expected to double the speed.
+What the second card changes is the breathing room in system memory.
 
-The device numbering needs care. With `CUDA_VISIBLE_DEVICES=1,0`, workflow device `gpu:0` maps to physical GPU 1, and `gpu:1` maps to physical GPU 0. The three native device-selection nodes therefore use `gpu:1` to move encoding and decoding onto the other card.
+When every node crowds onto one 16GB V100, the full set of weights cannot stay in VRAM at once. At each stage boundary, ComfyUI has to evict the previous model back to host RAM before loading the next one, squeezing free system memory down to 5–10GiB during sampling.
 
-The comparison below uses 608×352, 124 frames, and 8 steps, with matching prompts and seeds within each pair. The first generation includes model loading. The OS file cache was not cleared, and each scenario was measured once per configuration.
+Splitting the stages parks the text encoder and both VAEs on physical GPU 0 while leaving physical GPU 1 dedicated to the 21GB H3 diffusion model. Without that back-and-forth shuffling between VRAM and RAM, free host memory stays at 18–24GiB throughout the run.
 
-| Scenario | One GPU | Stages split across two GPUs |
-| --- | --- | --- |
-| First generation after service startup | 195.3 s | 196.5 s |
-| Same prompt, new seed | 78.4 s | 77.6 s |
-| Models loaded, prompt changed | 84.7 s | 81.9 s |
+Watch out for one numbering flip: because `docker-compose.yml` sets `CUDA_VISIBLE_DEVICES: '1,0'`, ComfyUI's `gpu:0` maps to physical GPU 1, while `gpu:1` maps to physical GPU 0. Setting the three device-selector nodes on the left (`SelectCLIPDevice` and the two `SelectVAEDevice` nodes) to `gpu:1` places encoding and decoding on physical GPU 0; if you want to run on a single card, set all three back to `gpu:0`.
 
-Sampling stayed at roughly 8.3 seconds per step, and overall latency changed very little. A difference of a few seconds in these measurements is not enough to establish a consistent speedup.
+## Submitting jobs over HTTP
 
-Available host memory showed a larger difference. During sampling, it was observed at about 5–10GiB for the single-GPU configuration and 18–24GiB with the stages split. These are point-in-time observations, not continuously collected peak-memory statistics.
+Beyond clicking Run on the canvas, external scripts can submit jobs through [ComfyUI's HTTP endpoints](https://github.com/Comfy-Org/ComfyUI/blob/v0.43.0/server.py).
 
-The tested deployment uses both cards primarily for that extra memory headroom. To return to one card, set all three device-selection nodes to `gpu:0`; encoding, sampling, and decoding will then use physical GPU 1.
-
-A separate image-to-video run with the models already loaded completed in about 91.9 seconds. Frame inspection, first-frame preservation, and the audio track checks passed. Higher resolutions such as 720p, longer clips, and sampling distributed across both GPUs were not tested, so the timings above do not cover those cases.
-
-## Call the HTTP API
-
-ComfyUI also exposes an HTTP service for integrating generation into other programs.
-
-Use its [native endpoints](https://github.com/Comfy-Org/ComfyUI/blob/v0.43.0/server.py) as an asynchronous job API.
-
-Upload an image first for image-to-video, or skip that step for text-to-video. Submit the API-format workflow to `POST /prompt` and save the returned `prompt_id`. Poll `GET /history/{prompt_id}` until the job succeeds, then download the MP4 through `GET /view` using the returned file information.
-
-The canvas JSON and API request formats are different. The downloads in this guide are canvas workflows. For programmatic use, export the workflow in API format from ComfyUI and wrap it in a `prompt` field.
-
-If the API export is saved as `workflow-api.json`, submit it like this.
+Canvas JSON files include frontend layout metadata and cannot be sent directly as request bodies. Export the workflow in **API format** from the ComfyUI menu first (saved as `workflow-api.json`), wrap it in a `prompt` field, and post it to `POST /prompt`:
 
 ```bash
 jq '{prompt: .}' workflow-api.json > request.json
@@ -359,15 +334,11 @@ curl --fail-with-body -sS http://127.0.0.1:8188/prompt \
   --data-binary @request.json
 ```
 
-A returned job ID is not a finished video. Keep the ID and poll every few seconds until success, failure, or a timeout. Identical inputs may hit the cache; change the seed when you want another sample from the same prompt.
+Once `prompt_id` comes back, poll `GET /history/{prompt_id}` every few seconds (an empty object means the job is still queued or running, which you can check via `/queue`).
 
-An empty history response may mean the job is queued or running, so check `/queue` as well. Success is reported by `history[prompt_id].status.status_str == "success"`. If the value is `error`, read the exception information in `status.messages` and stop polling.
+When `history[prompt_id].status.status_str` turns to `"success"`, read `filename`, `subfolder`, and `type` from `history[prompt_id].outputs["16"].images[0]` (node 16 is the `SaveVideo` node, and video outputs still use the `images` key) and pass them to `GET /view` to download the MP4. If the status reports `"error"`, the exception details sit in `status.messages`.
 
-These workflows save video through node 16. Its file information appears at `history[prompt_id].outputs["16"].images[0]`, containing the filename, subfolder, and type. Video results also use the `images` field; pass those three values to `/view` to download the file.
-
-## Routine checks
-
-If generation runs out of VRAM, stalls, or the page becomes unreachable, inspect the container logs and resource usage first.
+When a job stalls or VRAM runs tight, these commands show the state of the container and host resources:
 
 ```bash
 cd /srv/comfyui-h3
@@ -378,6 +349,4 @@ free -h
 df -h /srv
 ```
 
-Use `docker compose restart` to restart the service and `docker compose up -d` after changing the Compose configuration. Input images, generated videos, and user workflows are mounted from the host. Prioritize `input/`, `output/`, `user/`, and the deployment configuration when making backups.
-
-Get a stable five-second clip first, then increase the canvas a little at a time.
+Get that first five-second lake clip running smoothly, then nudge the canvas wider one step at a time.
