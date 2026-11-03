@@ -340,7 +340,7 @@ hr.head-rule {
 }
 
 .vp-doc table {
-  overflow: hidden;
+  overflow-x: auto;
   font-size: 14px;
 }
 
