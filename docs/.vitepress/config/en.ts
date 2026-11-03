@@ -18,7 +18,7 @@ export default defineConfig({
     ],
     footer: {
       message:
-        'Copyright © 2025-present <a href="https://sanjeev.top/en/about">Sanjeev</a>.',
+        'Copyright © 2025-present <a href="https://sanjeev.top/en/about">Sanjeev</a>. · <a href="https://geekring.net/">Geekring</a>',
     },
     outlineTitle: 'Contents',
 
