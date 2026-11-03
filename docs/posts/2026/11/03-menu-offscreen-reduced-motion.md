@@ -7,7 +7,7 @@ tags:
   - Ant Design
   - Firefox
   - 故障排查
-description: Windows 远程桌面中 Ant Design 下拉框不显示、滚动条闪现，排查发现 prefers-reduced-motion 与全局 CSS 过渡冲突，将过渡时间设为零后恢复正常。
+description: Windows 远程桌面下 Ant Design 下拉框点开后只闪滚动条、不见菜单，顺着 prefers-reduced-motion 查出是 0.01ms 全局过渡打乱了弹层同步测量。
 outline: deep
 aside: true
 ---
@@ -16,46 +16,42 @@ aside: true
 
 <!-- DESC SEP -->
 
-Windows 远程桌面中 Ant Design 下拉框不显示、滚动条闪现，排查发现 prefers-reduced-motion 与全局 CSS 过渡冲突，将过渡时间设为零后恢复正常。
+Windows 远程桌面下 Ant Design 下拉框点开后只闪滚动条、不见菜单，顺着 prefers-reduced-motion 查出是 0.01ms 全局过渡打乱了弹层同步测量。
 
 <!-- DESC SEP -->
 
-我平时开发主要用 Firefox，企智盒本机页面一直正常。最近把程序部署到另一台 Windows 电脑，通过远程桌面（RDP）连过去，用 Edge 打开 `http://localhost:8080`，碰到一个奇怪问题。
+平时开发企智盒，我都在本机用 Firefox 调试，页面一直很安分。
 
-点击下拉框切换助手，页面短暂出现纵向和横向滚动条，随后消失，下拉菜单没有弹出来。再点左下角账户入口，想退出登录，也只有滚动条闪一下，账户菜单没有出现。
+前两天把程序部署到另一台 Windows 电脑，通过远程桌面（RDP）连过去，用 Edge 打开 `http://localhost:8080`。点了一下顶部的助手下拉框，菜单没有弹出来，反倒是页面右侧和底部的滚动条同时闪了一下，又立刻缩了回去。再点左下角的账户入口想退出登录，依然只有两条滚动条一闪而过，菜单不见踪影。
 
-换 Chrome 试，还是一样。回到自己电脑，通过局域网 IP 访问同一个服务，Firefox 和 Chrome 都能正常操作。
+在远程电脑上换 Chrome 试，毛病一模一样。可切回我自己的电脑，顺着局域网 IP 访问同一台机器上的同一个服务，Firefox 和 Chrome 都能正常展开菜单。
 
-## 同一个页面，为什么换台电脑就正常
+| 访问环境                 | 浏览器  | 助手下拉框与账户菜单         |
+| ------------------------ | ------- | ---------------------------- |
+| 远程 Windows 桌面        | Edge    | 点击后滚动条闪现，菜单不显示 |
+| 远程 Windows 桌面        | Chrome  | 同样异常                     |
+| 本机通过局域网访问同服务 | Firefox | 正常                         |
+| 本机通过局域网访问同服务 | Chrome  | 正常                         |
 
-当时能确认四组结果。
+同一个 Chrome 访问同一个服务，换台电脑就正常，说明问题出在那台远程 Windows 的运行环境上。
 
-| 访问环境          | 浏览器  | 助手下拉框与账户菜单         |
-| ----------------- | ------- | ---------------------------- |
-| 远程 Windows 桌面 | Edge    | 点击后滚动条闪现，菜单不显示 |
-| 远程 Windows 桌面 | Chrome  | 同样异常                     |
-| 本机访问远程服务  | Firefox | 正常                         |
-| 本机访问远程服务  | Chrome  | 正常                         |
+点击瞬间横竖滚动条同时闪现，也留下了线索。助手切换用的是 [Ant Design](https://ant.design/) `Select`，账户菜单用的是 `Dropdown`，两处入口点击后都会往页面挂载弹层。滚动条被撑开又缩回，说明弹层多半已经生成，只是落到了屏幕外某个很远的位置。
 
-单看 Firefox 正常，很容易先怀疑浏览器兼容性。但 Chrome 在两台电脑上表现不同，问题范围还得往环境上看。
+## 关掉的窗口动画与 0.01ms
 
-我请 Codex 协助检查代码和远程电脑。助手切换使用 [Ant Design](https://ant.design/) Select，账户菜单使用 Dropdown。两处入口都涉及弹层定位。既然点击后滚动条会变化，就值得确认弹层是否已经生成，只是位置不对。
+我拉上 Codex 一起核对远程电脑配置与前端代码。
 
-## Windows 动画设置与 prefers-reduced-motion
+检查远程电脑时，先发现当前账户注册表里的 `MinAnimate` 为 `0`，窗口动画处于关闭状态。在 Windows 11 里，这个开关对应「设置 → 辅助功能 → 视觉效果 → 动画效果」，远程桌面会话或系统性能设置经常会把它关掉。
 
-检查远程电脑时，先发现账户注册表中 `MinAnimate` 为 `0`，窗口动画处于关闭状态。顺着这个线索回看代码，项目恰好有一段样式，会在 [`prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-reduced-motion) 命中时生效。
-
-这个查询让网页跟随用户“减少动态效果”偏好。Windows 11 相关入口在“设置 → 辅助功能 → 视觉效果 → 动画效果”。关闭动画后，浏览器可能命中这段样式。
-
-注册表状态还不能直接代表网页查询结果。遇到类似情况，可以在浏览器按 `F12`，打开控制台运行下面这句，先确认当前页面是否命中。Firefox、Edge 和 Chrome 都适用。
+光看注册表还不能直接代表网页拿到的状态。想知道浏览器有没有跟着系统关闭动画，最直接的办法是在页面上按 `F12`，打开控制台查一下 [`prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-reduced-motion) 媒体查询。Firefox、Edge 和 Chrome 都能直接运行：
 
 ```js
 window.matchMedia('(prefers-reduced-motion: reduce)').matches
 ```
 
-返回 `true`，表示当前页面处于减少动态效果模式。接下来就要检查这个条件下哪些 CSS 会生效。
+远程桌面里的浏览器返回 `true`，本机浏览器返回 `false`。差别终于对上了。
 
-企智盒当时有这样一段全局规则。
+顺着这个条件翻看前端样式表，项目里刚好有一段全局规则，在命中 `prefers-reduced-motion: reduce` 时生效：
 
 ```css
 @media (prefers-reduced-motion: reduce) {
@@ -70,23 +66,28 @@ window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 ```
 
-这段代码原本用来减少动画，把持续时间压缩到 `0.01ms`。肉眼看不出过渡，但它仍然大于零。
+这套写法在不少 CSS Reset 模板里都能见到，初衷是把动画和过渡时间压到 `0.01ms`，既能抹掉肉眼可见的动态效果，又保留相关事件触发。
 
-## Select 和 Dropdown 弹层坐标异常
+肉眼确实看不出 `0.01ms` 的过渡，可在浏览器的布局与过渡状态机里，它依然大于零。
 
-接下来，我让 Codex 对同一个部署页面做对照验证。在 `1600 × 900` 视口中，普通模式下助手菜单坐标为 `(222, 132)`；切换到减少动态效果模式，坐标变成 `(-16000, -9000)`。账户菜单也出现相同问题。
+## 飞到 (-16000, -9000) 的弹层
 
-这样就能解释为什么点击后看不到菜单。弹层确实存在，位置却在屏幕外。
+一段只有 `0.01ms` 的过渡，为什么会把下拉菜单弄丢？
 
-想检查自己页面，可以先展开下拉框，再到开发者工具里查看 `.ant-select-dropdown` 或 `.ant-dropdown`。以 Select 为例，在控制台读取位置。
+点开下拉框后，去开发者工具里找 `.ant-select-dropdown` 或 `.ant-dropdown`，在控制台调用 [`getBoundingClientRect()`](https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect) 读取弹层相对视口的位置：
 
 ```js
 document.querySelector('.ant-select-dropdown')?.getBoundingClientRect()
 ```
 
-[`getBoundingClientRect()`](https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect) 返回元素尺寸及其相对视口位置。如果弹层存在，坐标却远远超出窗口范围，就该沿着定位过程继续查。
+在 `1600 × 900` 视口下把普通模式和减少动态效果模式摆在一起对比，数字一下子就说明白了：
 
-项目当时使用 antd 6.6.3 和 `@rc-component/trigger 3.10.1`。弹层定位前，trigger 会先把元素放在屏幕外，测量时临时归零，再根据按钮位置计算最终坐标。`useAlign` 中，关键顺序可以简化成三行。
+- 普通模式下，助手菜单的坐标为 `(222, 132)`，稳稳贴在按钮下方；
+- 切换到减少动态效果模式，同一个菜单的坐标变成了 `(-16000, -9000)`，账户菜单也跟着飞到了屏幕外。
+
+`(-16000, -9000)` 刚好是 `1600 × 900` 视口的负十倍。弹层早已渲染进 DOM，只是停在了左上角十倍视口之外。定位过程中异常坐标短暂撑大页面范围，便激出了开头看到的那一下横竖滚动条闪烁。
+
+项目当时使用的是 `antd 6.6.3` 和 `@rc-component/trigger 3.10.1`。弹层对齐前，`trigger` 会先把元素放在屏幕外，测量时临时把坐标归零，再结合按钮位置换算最终坐标。`useAlign` 里的关键步骤可以简化成三行：
 
 ```js
 popupElement.style.left = '0'
@@ -94,27 +95,23 @@ popupElement.style.top = '0'
 const popupRect = popupElement.getBoundingClientRect()
 ```
 
-这段计算依赖一个前提，写入 `0` 后，马上测量就能拿到归零位置。
+这段逻辑依赖一个前提：把 `left` 和 `top` 设为 `'0'` 之后，下一行同步调用的 `getBoundingClientRect()` 能够立刻读到归零后的位置。
 
-可全局 `transition-duration: 0.01ms !important` 会让位置变化也参与过渡。`transition-property` 默认值为 `all`，所以 `left` 和 `top` 也可能产生过渡。Chromium 在同步测量时仍可能返回过渡起点位置，接下来算出坐标就会偏离。
+偏偏全局样式加上了 `* { transition-duration: 0.01ms !important }`，而 `transition-property` 的默认值又是 `all`，连 `left` 和 `top` 的坐标修改也被迫带上了 CSS 过渡。
 
-[react-component/trigger issue #618](https://github.com/react-component/trigger/issues/618) 记录过同一种故障，包含 `left`、`top` 重置和同步测量过程。报告使用 antd 5 与更早一版 trigger，本次 antd 6 也能复现。
+当 `left` 和 `top` 从屏幕外改写成 `'0'` 时，`0.01ms` 的过渡刚刚开始。Chromium 在同一帧内同步测量，拿到的仍是过渡起点的旧坐标。`useAlign` 拿着远在屏幕外的起点坐标去算偏移，算出来的落点自然也就留在了 `(-16000, -9000)`。
 
-定位期间，异常坐标还可能短暂撑大页面范围，与开始看到横向、纵向滚动条闪现相吻合。
+翻看社区记录，[react-component/trigger issue #618](https://github.com/react-component/trigger/issues/618) 报告过一模一样的故障。那条记录基于 antd 5 与较早版本的 `trigger`，到了 antd 6 依然会踩中同一套同步测量机制。
 
-对照验证能确认，这段 CSS 在减少动态效果模式下会触发故障。至于远程桌面是否必然触发这种偏好，还不能下结论。排查其他机器时，应以实际媒体查询结果为准，本机 Firefox 正常不能替其他环境作判断。
+## 把过渡时间改回 0s
 
-## 修复 CSS，将 transition-duration 改为 0s
-
-最后改动集中在一行，把减少动态效果模式下过渡时间设为零。
+定位清楚后，改动只有一行，把减少动态效果模式下的过渡时间设为 `0s`：
 
 ```diff
 -    transition-duration: 0.01ms !important;
 +    transition-duration: 0s !important;
 ```
 
-[CSS Transitions 规范](https://www.w3.org/TR/css-transitions-1/#transition-duration-property) 将 `0s` 作为默认过渡时间。本次位置变化没有额外过渡延迟，改成零后，测量前重置坐标便能立即生效。
+按照 [CSS Transitions 规范](https://www.w3.org/TR/css-transitions-1/#transition-duration-property)，`transition-duration` 的初始默认值就是 `0s`。只要没有额外的过渡延迟，时长设为零就不会启动过渡，测量前重置 `left` 与 `top` 会当场生效。
 
-加载修改后样式再检查，助手下拉框与账户菜单都能正常展开，普通模式和减少动态效果模式均通过验证，页面也没有额外滚动范围。前端生产构建通过，修复已提交。
-
-遇到 Ant Design 下拉框不显示，尤其伴随滚动条闪现时，我会先看弹层是否存在、坐标是否异常，再检查 `prefers-reduced-motion` 和全局过渡样式。这次本机测试一直正常，遗漏恰好就在系统偏好这个条件上。
+加载新样式后重新验证，不论在普通模式还是减少动态效果模式下，助手下拉框与账户菜单都能正常展开，点击时页面也不再闪现滚动条。

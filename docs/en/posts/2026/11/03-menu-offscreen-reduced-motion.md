@@ -7,7 +7,7 @@ tags:
   - Ant Design
   - Firefox
   - Troubleshooting
-description: Ant Design dropdowns failed to appear and scrollbars flashed over Windows Remote Desktop, traced to a conflict between prefers-reduced-motion and global CSS transitions that disappeared when the transition duration was set to zero.
+description: Clicking Ant Design dropdowns over Windows Remote Desktop only flashed the scrollbars, until tracing prefers-reduced-motion revealed how a 0.01ms global transition broke synchronous popup measurement.
 outline: deep
 aside: true
 ---
@@ -16,46 +16,42 @@ aside: true
 
 <!-- DESC SEP -->
 
-Ant Design dropdowns failed to appear and scrollbars flashed over Windows Remote Desktop, traced to a conflict between prefers-reduced-motion and global CSS transitions that disappeared when the transition duration was set to zero.
+Clicking Ant Design dropdowns over Windows Remote Desktop only flashed the scrollbars, until tracing prefers-reduced-motion revealed how a 0.01ms global transition broke synchronous popup measurement.
 
 <!-- DESC SEP -->
 
-I mainly use Firefox for development, and Qizhihe had been working fine on my own computer. After deploying it to another Windows machine, I connected through Remote Desktop (RDP), opened `http://localhost:8080` in Edge, and ran into a strange problem.
+While developing Qizhihe on my own machine in Firefox, the interface had always behaved as expected.
 
-Clicking the assistant selector briefly brought up both vertical and horizontal scrollbars. They disappeared a moment later, but the dropdown never appeared. I then clicked the account button in the bottom-left corner to sign out. The scrollbars flashed again, with no account menu in sight.
+After deploying the app to another Windows computer, I connected over Remote Desktop (RDP) and opened `http://localhost:8080` in Edge. Clicking the assistant selector at the top failed to open the dropdown. Instead, both the vertical and horizontal scrollbars flashed briefly and vanished. Clicking the account button in the bottom-left corner to sign out did the exact same thing: a quick flash of the scrollbars, and no menu in sight.
 
-Chrome behaved the same way on that machine. Back on my own computer, accessing the same service through its LAN IP address worked in both Firefox and Chrome.
+Switching to Chrome on that remote machine gave the same result. Yet back on my own computer, opening the exact same service over its LAN IP worked fine in both Firefox and Chrome.
 
-## Why did the same page work on another computer?
+| Access environment                       | Browser | Assistant selector and account menu      |
+| ---------------------------------------- | ------- | ---------------------------------------- |
+| Remote Windows desktop                   | Edge    | Scrollbars flashed; menus did not appear |
+| Remote Windows desktop                   | Chrome  | Same issue                               |
+| Local machine accessing the same service | Firefox | Worked                                   |
+| Local machine accessing the same service | Chrome  | Worked                                   |
 
-I had four results to compare.
+Seeing Chrome fail on one machine and succeed on another ruled out a simple browser compatibility bug. Something about the remote Windows environment was changing how the page behaved.
 
-| Access environment                        | Browser | Assistant selector and account menu      |
-| ----------------------------------------- | ------- | ---------------------------------------- |
-| Remote Windows desktop                    | Edge    | Scrollbars flashed; menus did not appear |
-| Remote Windows desktop                    | Chrome  | Same problem                             |
-| My computer, accessing the remote service | Firefox | Worked                                   |
-| My computer, accessing the remote service | Chrome  | Worked                                   |
+The flashing scrollbars offered a second clue. The assistant selector used [Ant Design](https://ant.design/) `Select`, and the account menu used `Dropdown`. Both components mount a floating popup into the document when clicked. If the page briefly grew scrollbars, the popup was likely being rendered into the DOM, just far outside the visible viewport.
 
-Firefox working could easily suggest a browser compatibility issue. But Chrome behaved differently on the two computers, so the environment needed a closer look too.
+## Disabled window animations and 0.01ms
 
-I asked Codex to help inspect the code and the remote machine. The assistant selector used [Ant Design](https://ant.design/) Select, while the account menu used Dropdown. Both needed to position a popup. Since clicking caused the scrollbars to change, it was worth checking whether the popup had been created but placed somewhere unexpected.
+I paired up with Codex to inspect the remote machine's settings alongside the frontend code.
 
-## Windows animation settings and prefers-reduced-motion
+On the remote computer, `MinAnimate` was set to `0` in the current user's registry, meaning Windows window animations were turned off. In Windows 11, this corresponds to **Settings → Accessibility → Visual effects → Animation effects**, a toggle that Remote Desktop sessions and performance presets often disable.
 
-The remote machine had `MinAnimate` set to `0` in the user's registry, indicating that window animations were disabled. Following that clue back to the code turned up a stylesheet rule applied when [`prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-reduced-motion) matched.
-
-This media query lets a page respect the user's preference for reduced motion. In Windows 11, the relevant setting is under **Settings → Accessibility → Visual effects → Animation effects**. Turning animations off can cause the browser to apply reduced-motion styles.
-
-The registry setting alone does not establish what the page's media query returns. If you encounter something similar, press `F12`, open the browser console, and check the page directly. This works in Firefox, Edge, and Chrome.
+A registry value alone does not tell you what the browser sees. The quickest way to check whether the page itself has entered reduced-motion mode is to press `F12` and evaluate [`prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-reduced-motion) in the console across Firefox, Edge, or Chrome:
 
 ```js
 window.matchMedia('(prefers-reduced-motion: reduce)').matches
 ```
 
-A result of `true` means the page is currently in reduced-motion mode. The next step is to check which CSS rules apply under that condition.
+The browsers inside the remote session returned `true`, while the browsers on my local machine returned `false`.
 
-Qizhihe had this global rule at the time.
+Searching the project's stylesheets for that media query turned up a global rule:
 
 ```css
 @media (prefers-reduced-motion: reduce) {
@@ -70,23 +66,28 @@ Qizhihe had this global rule at the time.
 }
 ```
 
-The intention was to reduce motion by shortening durations to `0.01ms`. You cannot see a transition that short, but its duration is still greater than zero.
+This snippet is a common pattern from modern CSS resets. It shrinks animation and transition durations down to `0.01ms` so visual motion disappears while `transitionend` and `animationend` events still fire.
 
-## Select and Dropdown popups had incorrect coordinates
+To the human eye, `0.01ms` is instantaneous. To the browser's layout and transition engine, it is still greater than zero.
 
-Next, I asked Codex to compare the same deployed page with and without the reduced-motion preference. In a `1600 × 900` viewport, the assistant menu appeared at `(222, 132)` under normal settings. With reduced motion enabled, its coordinates became `(-16000, -9000)`. The account menu had the same problem.
+## Popups stranded at (-16000, -9000)
 
-That explained why clicking seemed to do nothing. The popup existed, but it was outside the viewport.
+How does a `0.01ms` transition make a dropdown disappear?
 
-To inspect your own page, click the selector and look for `.ant-select-dropdown` or `.ant-dropdown` in the developer tools. For Select, you can read its position from the console.
+After clicking the selector, you can locate `.ant-select-dropdown` or `.ant-dropdown` in DevTools and read its position relative to the viewport with [`getBoundingClientRect()`](https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect):
 
 ```js
 document.querySelector('.ant-select-dropdown')?.getBoundingClientRect()
 ```
 
-[`getBoundingClientRect()`](https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect) returns an element's dimensions and position relative to the viewport. If the popup exists but its coordinates are far outside the window, the positioning process is worth investigating.
+Comparing normal mode against reduced-motion mode in a `1600 × 900` viewport made the failure obvious:
 
-The project was using antd 6.6.3 and `@rc-component/trigger 3.10.1`. Before positioning a popup, trigger places it offscreen, temporarily resets its coordinates to zero for measurement, and then calculates its final position relative to the button. The key sequence in `useAlign` can be reduced to three lines.
+- Under normal settings, the assistant menu landed at `(222, 132)`, right below the trigger button.
+- With `prefers-reduced-motion: reduce` active, the same menu sat at `(-16000, -9000)`, and the account menu was stranded offscreen in the same way.
+
+Those `(-16000, -9000)` coordinates are ten times the `1600 × 900` viewport dimensions in the negative direction. The popup was sitting in the DOM the whole time, parked far beyond the top-left corner of the screen, and the brief coordinate shift during alignment was what made the scrollbars flash.
+
+The project was running `antd 6.6.3` with `@rc-component/trigger 3.10.1`. Before aligning a popup, `trigger` parks the element far offscreen, temporarily resets its coordinates to zero to measure its natural box, and then calculates the final offset next to the button. Inside `useAlign`, that measurement step comes down to three lines:
 
 ```js
 popupElement.style.left = '0'
@@ -94,27 +95,23 @@ popupElement.style.top = '0'
 const popupRect = popupElement.getBoundingClientRect()
 ```
 
-This calculation assumes that measuring immediately after writing `0` will return the reset position.
+This sequence assumes that writing `'0'` to `left` and `top` takes effect immediately, so the synchronous `getBoundingClientRect()` call on the next line reads the reset position.
 
-But the global `transition-duration: 0.01ms !important` rule lets position changes transition too. The default value of `transition-property` is `all`, so `left` and `top` can also transition. During synchronous measurement, Chromium may still return the position at the start of the transition, throwing off the coordinates calculated next.
+With `* { transition-duration: 0.01ms !important }` active and `transition-property` defaulting to `all`, changes to `left` and `top` are also forced through a CSS transition.
 
-[react-component/trigger issue #618](https://github.com/react-component/trigger/issues/618) documents the same failure, including the `left` and `top` resets and the synchronous measurement. That report used antd 5 and an earlier trigger release; the issue also reproduced with antd 6 in this case.
+When `left` and `top` are overwritten from their offscreen coordinates to `'0'`, a `0.01ms` transition begins. Measuring synchronously on the very same frame in Chromium still returns the starting coordinates of that transition. `useAlign` then computes the popup's alignment from the offscreen starting point, leaving the menu stuck at `(-16000, -9000)`.
 
-Incorrect coordinates can briefly expand the page's scrollable area during positioning, which fits the horizontal and vertical scrollbars flashing at the beginning.
+The same mechanism was reported in [react-component/trigger issue #618](https://github.com/react-component/trigger/issues/618) against antd 5 and an earlier `trigger` release, and it reproduces the same way in antd 6.
 
-The comparison confirmed that this CSS rule could trigger the failure under reduced motion. It did not establish that a Remote Desktop connection always triggers that preference. On another machine, check the actual media query result; Firefox working on my computer does not settle what happens elsewhere.
+## Setting transition-duration back to 0s
 
-## Fixing the CSS by setting transition-duration to 0s
-
-The fix came down to one line, setting the transition duration to zero under reduced motion.
+Once the cause was clear, the fix was a single line setting the reduced-motion transition duration to `0s`:
 
 ```diff
 -    transition-duration: 0.01ms !important;
 +    transition-duration: 0s !important;
 ```
 
-The [CSS Transitions specification](https://www.w3.org/TR/css-transitions-1/#transition-duration-property) defines `0s` as the default transition duration. There was no additional transition delay on these position changes, so setting the duration to zero made the coordinate reset take effect immediately before measurement.
+In the [CSS Transitions specification](https://www.w3.org/TR/css-transitions-1/#transition-duration-property), `0s` is the initial default for `transition-duration`. With no transition delay present, a zero duration prevents any transition from starting, so resetting `left` and `top` updates the element's geometry immediately before measurement.
 
-With the updated styles loaded, both the assistant selector and the account menu opened correctly. Checks passed with normal and reduced-motion settings, and the page had no additional scrollable area. The frontend production build also passed, and the fix was committed.
-
-When an Ant Design dropdown fails to appear, especially if scrollbars flash, I would now check whether the popup exists and whether its coordinates make sense, then inspect `prefers-reduced-motion` and global transition rules. Everything had worked in local testing; the system preference was the condition I had missed.
+With the updated stylesheet loaded, both the assistant selector and the account menu opened right where they belonged under both normal and reduced-motion settings, without a single scrollbar flash.
