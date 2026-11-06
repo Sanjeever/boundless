@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-31",
+  "updatedAt": "2026-11-06",
   "albums": [
     {
       "id": "sofa-sea",
@@ -384,6 +384,14 @@
       "releaseDate": "2025-03-07",
       "url": "https://music.apple.com/cn/album/1799903617",
       "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/1b/2b/d7/1b2bd788-53fb-d910-b662-3258b5aa3f96/4712862000673.jpg/500x500bb.jpg"
+    },
+    {
+      "id": "happy-happy-collaboration",
+      "title": "如果每天都可以 happy happy 谁想要sad: * - 合作的秘密",
+      "artist": "陈娴静",
+      "releaseDate": "2025-03-07",
+      "url": "https://music.apple.com/cn/album/1799904359",
+      "cover": "https://coverartarchive.org/release-group/85f6c95c-271a-42e2-977d-09708ee54403/front-500"
     }
   ]
 }
