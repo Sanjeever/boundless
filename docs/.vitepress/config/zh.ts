@@ -18,7 +18,7 @@ export default defineConfig({
     ],
     footer: {
       message:
-        'Copyright © 2025-present <a href="https://sanjeev.top/about">Sanjeev</a>. · <a href="https://geekring.net/">Geekring</a>',
+        'Copyright © 2025-present <a href="https://sanjeev.top/about">Sanjeev</a>. · <a href="/about#support">支持</a> · <a href="https://geekring.net/">Geekring</a>',
     },
     docFooter: {
       prev: '上一篇',

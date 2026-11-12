@@ -1,9 +1,28 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useData } from 'vitepress'
+import { computed, onUnmounted, ref } from 'vue'
+import { useData, withBase } from 'vitepress'
 
 const { lang } = useData()
 const isEnglish = computed(() => lang.value.startsWith('en'))
+const solanaAddress = 'C5zyA7QViWxX6UWNtBCpzKvP4aW3xCmi7TCyQ9J4GeLF'
+const copyState = ref<'idle' | 'copied' | 'error'>('idle')
+let copyTimer: ReturnType<typeof setTimeout> | undefined
+
+async function copyAddress() {
+  clearTimeout(copyTimer)
+
+  try {
+    await navigator.clipboard.writeText(solanaAddress)
+    copyState.value = 'copied'
+    copyTimer = setTimeout(() => {
+      copyState.value = 'idle'
+    }, 2000)
+  } catch {
+    copyState.value = 'error'
+  }
+}
+
+onUnmounted(() => clearTimeout(copyTimer))
 
 const copy = computed(() =>
   isEnglish.value
@@ -39,6 +58,11 @@ const copy = computed(() =>
         albumsSuffix: '.',
         contact: 'Contact',
         email: 'Email',
+        support: 'Support my writing',
+        qrAlt: 'QR code for the Solana receiving address',
+        copyAddress: 'Copy address',
+        copied: 'Copied',
+        copyError: 'Copy failed. Please copy the address manually.',
       }
     : {
         title: '关于我',
@@ -70,6 +94,11 @@ const copy = computed(() =>
         albumsSuffix: '。',
         contact: '联系方式',
         email: '邮箱',
+        support: '支持写作',
+        qrAlt: 'Solana 收款地址二维码',
+        copyAddress: '复制地址',
+        copied: '已复制',
+        copyError: '复制失败，请手动复制地址。',
       }
 )
 </script>
@@ -152,6 +181,28 @@ const copy = computed(() =>
         </a>
       </nav>
     </footer>
+
+    <section id="support" class="support" aria-labelledby="support-title">
+      <div class="support-details">
+        <h2 id="support-title" class="support-title">{{ copy.support }}</h2>
+        <p class="support-network">Solana · SOL</p>
+        <code class="support-address">{{ solanaAddress }}</code>
+        <button class="copy-address" type="button" @click="copyAddress">
+          <span aria-live="polite">
+            {{ copyState === 'copied' ? copy.copied : copy.copyAddress }}
+          </span>
+        </button>
+        <p v-if="copyState === 'error'" class="copy-error" role="alert">
+          {{ copy.copyError }}
+        </p>
+      </div>
+      <img
+        class="support-qr"
+        :src="withBase('/images/solana-support.png')"
+        :alt="copy.qrAlt"
+        width="164"
+        height="164" />
+    </section>
   </main>
 </template>
 
@@ -235,9 +286,104 @@ const copy = computed(() =>
   opacity: 0.4;
 }
 
+.support {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 164px;
+  align-items: center;
+  gap: 32px;
+  margin-top: 64px;
+  scroll-margin-top: calc(var(--vp-nav-height) + 24px);
+}
+
+.support-title {
+  margin: 0;
+  color: var(--vp-c-text-1);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.support-network {
+  margin: 12px 0 8px;
+  color: var(--vp-c-text-2);
+  font-size: 14px;
+}
+
+.support-address {
+  display: block;
+  color: var(--vp-c-text-2);
+  font-family: var(--vp-font-family-mono);
+  font-size: 13px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.copy-address {
+  min-height: 44px;
+  margin-top: 8px;
+  color: var(--vp-c-brand-1);
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.copy-address:hover {
+  color: var(--vp-c-brand-2);
+}
+
+.copy-error {
+  margin: 4px 0 0;
+  color: var(--vp-c-danger-1);
+  font-size: 13px;
+}
+
+.support-qr {
+  display: block;
+  width: 164px;
+  height: 164px;
+  background: #fff;
+}
+
 @media (max-width: 640px) {
   .about-paper {
     padding-top: calc(var(--vp-nav-height) + 32px);
+  }
+
+  .support {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    margin-top: 48px;
+  }
+
+  .support-details {
+    display: contents;
+  }
+
+  .support-title {
+    margin-bottom: 16px;
+  }
+
+  .support-qr {
+    order: 1;
+    margin-bottom: 8px;
+  }
+
+  .support-network {
+    order: 2;
+  }
+
+  .support-address {
+    order: 3;
+  }
+
+  .copy-address {
+    order: 4;
+    justify-self: start;
+  }
+
+  .copy-error {
+    order: 5;
   }
 }
 </style>
