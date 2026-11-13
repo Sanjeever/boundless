@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref } from 'vue'
 import { useData, withBase } from 'vitepress'
+import { CheckIcon, CopyIcon } from 'tdesign-icons-vue-next'
 
 const { lang } = useData()
 const isEnglish = computed(() => lang.value.startsWith('en'))
 const solanaAddress = 'C5zyA7QViWxX6UWNtBCpzKvP4aW3xCmi7TCyQ9J4GeLF'
 const copyState = ref<'idle' | 'copied' | 'error'>('idle')
+const copyAnnouncement = ref('')
+let lastCopyAnnouncement = ''
 let copyTimer: ReturnType<typeof setTimeout> | undefined
 
 async function copyAddress() {
@@ -14,8 +17,13 @@ async function copyAddress() {
   try {
     await navigator.clipboard.writeText(solanaAddress)
     copyState.value = 'copied'
+    const message = copy.value.copied
+    copyAnnouncement.value =
+      lastCopyAnnouncement === message ? `${message}\u00a0` : message
+    lastCopyAnnouncement = copyAnnouncement.value
     copyTimer = setTimeout(() => {
       copyState.value = 'idle'
+      copyAnnouncement.value = ''
     }, 2000)
   } catch {
     copyState.value = 'error'
@@ -59,6 +67,7 @@ const copy = computed(() =>
         contact: 'Contact',
         email: 'Email',
         support: 'Support my writing',
+        network: 'Solana network',
         qrAlt: 'QR code for the Solana receiving address',
         copyAddress: 'Copy address',
         copied: 'Copied',
@@ -95,6 +104,7 @@ const copy = computed(() =>
         contact: '联系方式',
         email: '邮箱',
         support: '支持写作',
+        network: 'Solana 网络',
         qrAlt: 'Solana 收款地址二维码',
         copyAddress: '复制地址',
         copied: '已复制',
@@ -185,16 +195,26 @@ const copy = computed(() =>
     <section id="support" class="support" aria-labelledby="support-title">
       <div class="support-details">
         <h2 id="support-title" class="support-title">{{ copy.support }}</h2>
-        <p class="support-network">Solana · SOL</p>
-        <code class="support-address">{{ solanaAddress }}</code>
-        <button class="copy-address" type="button" @click="copyAddress">
-          <span aria-live="polite">
-            {{ copyState === 'copied' ? copy.copied : copy.copyAddress }}
+        <p class="support-network">{{ copy.network }}</p>
+        <p class="support-tokens">SOL / USDC / USDT</p>
+        <div class="support-wallet">
+          <code class="support-address">{{ solanaAddress }}</code>
+          <button
+            class="copy-address"
+            type="button"
+            :aria-label="copy.copyAddress"
+            :title="copyState === 'copied' ? copy.copied : copy.copyAddress"
+            @click="copyAddress">
+            <CheckIcon v-if="copyState === 'copied'" aria-hidden="true" />
+            <CopyIcon v-else aria-hidden="true" />
+          </button>
+          <span class="copy-announcement" role="status">
+            {{ copyAnnouncement }}
           </span>
-        </button>
-        <p v-if="copyState === 'error'" class="copy-error" role="alert">
-          {{ copy.copyError }}
-        </p>
+          <p v-if="copyState === 'error'" class="copy-error" role="alert">
+            {{ copy.copyError }}
+          </p>
+        </div>
       </div>
       <img
         class="support-qr"
@@ -304,9 +324,26 @@ const copy = computed(() =>
 }
 
 .support-network {
-  margin: 12px 0 8px;
-  color: var(--vp-c-text-2);
+  margin: 16px 0 2px;
+  color: var(--vp-c-text-1);
   font-size: 14px;
+  font-weight: 500;
+}
+
+.support-tokens {
+  margin: 0;
+  color: var(--vp-c-text-2);
+  font-size: 13px;
+}
+
+.support-wallet {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: center;
+  column-gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 16px;
 }
 
 .support-address {
@@ -319,21 +356,39 @@ const copy = computed(() =>
 }
 
 .copy-address {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
   min-height: 44px;
-  margin-top: 8px;
   color: var(--vp-c-brand-1);
-  font-size: 14px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
   cursor: pointer;
 }
 
-.copy-address:hover {
-  color: var(--vp-c-brand-2);
+.copy-address .t-icon {
+  flex: none;
+  font-size: 18px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .copy-address:hover {
+    color: var(--vp-c-brand-2);
+  }
+}
+
+.copy-announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .copy-error {
-  margin: 4px 0 0;
+  grid-column: 1 / -1;
+  margin: 8px 0 0;
   color: var(--vp-c-danger-1);
   font-size: 13px;
 }
@@ -342,7 +397,14 @@ const copy = computed(() =>
   display: block;
   width: 164px;
   height: 164px;
+  padding: 8px;
+  border-radius: 8px;
   background: #fff;
+}
+
+.dark .support-qr {
+  filter: invert(1);
+  mix-blend-mode: screen;
 }
 
 @media (max-width: 640px) {
@@ -352,38 +414,8 @@ const copy = computed(() =>
 
   .support {
     grid-template-columns: minmax(0, 1fr);
-    gap: 0;
+    gap: 24px;
     margin-top: 48px;
-  }
-
-  .support-details {
-    display: contents;
-  }
-
-  .support-title {
-    margin-bottom: 16px;
-  }
-
-  .support-qr {
-    order: 1;
-    margin-bottom: 8px;
-  }
-
-  .support-network {
-    order: 2;
-  }
-
-  .support-address {
-    order: 3;
-  }
-
-  .copy-address {
-    order: 4;
-    justify-self: start;
-  }
-
-  .copy-error {
-    order: 5;
   }
 }
 </style>
