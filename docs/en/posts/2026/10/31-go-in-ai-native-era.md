@@ -104,6 +104,8 @@ Two pieces of kit bridge that gap: the standard library's [`embed`](https://pkg.
 
 Together they create a remarkably natural division of labor. Layout, table filtering, dialogs, and animations stay in React, Vue, and TypeScript—the tools best suited for UI work. Step one layer below the view, and file I/O, databases, concurrent streams, cryptography, and operating system calls belong entirely to Go.
 
+[Docker](https://docs.docker.com/get-started/docker-overview/#the-underlying-technology) is a familiar example of how far that reach into the system can go. Its core container engine is written in Go. Behind an everyday `docker run` sit image management, container lifecycles, networking, and storage—systems work packaged into a tool used widely across local development, CI, and production. Go's plain syntax has already proved capable of supporting that engineering complexity.
+
 When I built Port Sentinel 1.0 in January, I used Flutter. When I rewrote 2.0 in October with Go and Wails, the reason was simple: the deeper you take a port and process manager, the closer you get to the operating system.
 
 On Windows, you call `GetExtendedTcpTable` and `GetExtendedUdpTable`. On macOS, you spawn `lsof` and parse its machine-readable output. On Linux, you read `/proc/net` and walk process file descriptors. To prevent PID reuse from killing an innocent process in the few seconds between refreshing the table and clicking "Terminate," you record and re-verify the process creation timestamp right before acting. And when a port belongs to a privileged process, you invoke Windows UAC, the macOS administrator prompt, or Linux `polkit` on demand.

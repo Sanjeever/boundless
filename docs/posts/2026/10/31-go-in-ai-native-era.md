@@ -104,6 +104,8 @@ Go 当年在 Google 立项时，就把[极速编译](https://go.dev/doc/faq#What
 
 它们促成了一种很舒服的分工。界面排版、表格过滤、弹窗交互与动画，依然交给最擅长干这行活的 React、Vue 和 TypeScript；越过视图层往下走，文件读写、数据库、并发流、加密通信与操作系统底层调用，全数由 Go 接管。
 
+说到贴近系统，有个更熟悉的例子是 [Docker](https://docs.docker.com/get-started/docker-overview/#the-underlying-technology)。它的核心容器引擎用 Go 编写，日常一句 `docker run` 背后，是镜像管理、容器生命周期、网络与存储这些系统工程。从本地开发到 CI，再到生产部署，这套工具早已被广泛使用。Go 那套看起来朴素的语法，撑得起这样的工程复杂度。
+
 年初写 Port Sentinel 1.0 时，我选了 Flutter。等到十月做 2.0，之所以彻底推倒换用 Go 加 Wails，是因为端口管理工具越往深处写，离操作系统越近。
 
 Windows 下得调 `GetExtendedTcpTable` 和 `GetExtendedUdpTable`；macOS 得拉起 `lsof` 解析机器可读输出；Linux 得去读 `/proc/net` 和进程文件描述符。为了防止在列表刷新到点击“结束”的几秒钟里操作系统复用了同一个 PID 杀错无辜进程，动手前还得比对进程创建时间；遇到高权限进程，又要按需唤起 Windows UAC、macOS 管理员对话框或 Linux 的 `polkit`。
