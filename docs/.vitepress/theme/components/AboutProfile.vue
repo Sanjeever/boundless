@@ -5,19 +5,42 @@ import { CheckIcon, CopyIcon } from 'tdesign-icons-vue-next'
 
 const { lang } = useData()
 const isEnglish = computed(() => lang.value.startsWith('en'))
-const solanaAddress = 'C5zyA7QViWxX6UWNtBCpzKvP4aW3xCmi7TCyQ9J4GeLF'
+const wallets = [
+  {
+    id: 'solana',
+    name: 'Solana',
+    address: 'C5zyA7QViWxX6UWNtBCpzKvP4aW3xCmi7TCyQ9J4GeLF',
+    tokens: [
+      { symbol: 'USDC', icon: 'usdc.svg' },
+      { symbol: 'USDT', icon: 'usdt.svg' },
+      { symbol: 'SOL', icon: 'solana.svg' },
+    ],
+  },
+  {
+    id: 'base',
+    name: 'Base',
+    address: '0xfae7d32e759e9feb4e61acd1dbba7b362ec2361e',
+    tokens: [
+      { symbol: 'USDC', icon: 'usdc.svg' },
+      { symbol: 'ETH', icon: 'eth.png' },
+    ],
+  },
+]
+const activeWallet = ref('')
 const copyState = ref<'idle' | 'copied' | 'error'>('idle')
 const copyAnnouncement = ref('')
 let lastCopyAnnouncement = ''
 let copyTimer: ReturnType<typeof setTimeout> | undefined
 
-async function copyAddress() {
+async function copyAddress(wallet: (typeof wallets)[number]) {
   clearTimeout(copyTimer)
+  activeWallet.value = wallet.id
+  copyState.value = 'idle'
 
   try {
-    await navigator.clipboard.writeText(solanaAddress)
+    await navigator.clipboard.writeText(wallet.address)
     copyState.value = 'copied'
-    const message = copy.value.copied
+    const message = `${wallet.name}: ${copy.value.copied}`
     copyAnnouncement.value =
       lastCopyAnnouncement === message ? `${message}\u00a0` : message
     lastCopyAnnouncement = copyAnnouncement.value
@@ -67,8 +90,7 @@ const copy = computed(() =>
         contact: 'Contact',
         email: 'Email',
         support: 'Support my writing',
-        network: 'Solana network',
-        qrAlt: 'QR code for the Solana receiving address',
+        qrAlt: 'receiving address QR code',
         copyAddress: 'Copy address',
         copied: 'Copied',
         copyError: 'Copy failed. Please copy the address manually.',
@@ -104,8 +126,7 @@ const copy = computed(() =>
         contact: '联系方式',
         email: '邮箱',
         support: '支持写作',
-        network: 'Solana 网络',
-        qrAlt: 'Solana 收款地址二维码',
+        qrAlt: '收款地址二维码',
         copyAddress: '复制地址',
         copied: '已复制',
         copyError: '复制失败，请手动复制地址。',
@@ -193,35 +214,69 @@ const copy = computed(() =>
     </footer>
 
     <section id="support" class="support" aria-labelledby="support-title">
-      <div class="support-details">
-        <h2 id="support-title" class="support-title">{{ copy.support }}</h2>
-        <p class="support-network">{{ copy.network }}</p>
-        <p class="support-tokens">SOL / USDC / USDT</p>
-        <div class="support-wallet">
-          <code class="support-address">{{ solanaAddress }}</code>
-          <button
-            class="copy-address"
-            type="button"
-            :aria-label="copy.copyAddress"
-            :title="copyState === 'copied' ? copy.copied : copy.copyAddress"
-            @click="copyAddress">
-            <CheckIcon v-if="copyState === 'copied'" aria-hidden="true" />
-            <CopyIcon v-else aria-hidden="true" />
-          </button>
-          <span class="copy-announcement" role="status">
-            {{ copyAnnouncement }}
-          </span>
-          <p v-if="copyState === 'error'" class="copy-error" role="alert">
-            {{ copy.copyError }}
-          </p>
-        </div>
+      <h2 id="support-title" class="support-title">{{ copy.support }}</h2>
+      <div class="support-wallets">
+        <section
+          v-for="wallet in wallets"
+          :key="wallet.id"
+          class="support-wallet"
+          :aria-labelledby="`${wallet.id}-title`">
+          <div class="wallet-details">
+            <div class="wallet-heading">
+              <img
+                class="network-logo"
+                :src="withBase(`/images/crypto/${wallet.id}.svg`)"
+                alt=""
+                width="24"
+                height="24" />
+              <h3 :id="`${wallet.id}-title`">{{ wallet.name }}</h3>
+            </div>
+            <ul class="support-tokens">
+              <li v-for="token in wallet.tokens" :key="token.symbol">
+                <img
+                  :src="withBase(`/images/crypto/${token.icon}`)"
+                  alt=""
+                  width="20"
+                  height="20" />
+                <span>{{ token.symbol }}</span>
+              </li>
+            </ul>
+            <div class="wallet-address">
+              <code class="support-address">{{ wallet.address }}</code>
+              <button
+                class="copy-address"
+                type="button"
+                :aria-label="`${wallet.name}: ${copy.copyAddress}`"
+                :title="
+                  activeWallet === wallet.id && copyState === 'copied'
+                    ? copy.copied
+                    : copy.copyAddress
+                "
+                @click="copyAddress(wallet)">
+                <CheckIcon
+                  v-if="activeWallet === wallet.id && copyState === 'copied'"
+                  aria-hidden="true" />
+                <CopyIcon v-else aria-hidden="true" />
+              </button>
+            </div>
+            <p
+              v-if="activeWallet === wallet.id && copyState === 'error'"
+              class="copy-error"
+              role="alert">
+              {{ copy.copyError }}
+            </p>
+          </div>
+          <img
+            class="support-qr"
+            :src="withBase(`/images/${wallet.id}-support.png`)"
+            :alt="`${wallet.name} ${copy.qrAlt}`"
+            width="112"
+            height="112" />
+        </section>
       </div>
-      <img
-        class="support-qr"
-        :src="withBase('/images/solana-support.png')"
-        :alt="copy.qrAlt"
-        width="164"
-        height="164" />
+      <span class="copy-announcement" role="status">
+        {{ copyAnnouncement }}
+      </span>
     </section>
   </main>
 </template>
@@ -307,10 +362,6 @@ const copy = computed(() =>
 }
 
 .support {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 164px;
-  align-items: center;
-  gap: 32px;
   margin-top: 64px;
   scroll-margin-top: calc(var(--vp-nav-height) + 24px);
 }
@@ -323,27 +374,74 @@ const copy = computed(() =>
   line-height: 1.4;
 }
 
-.support-network {
-  margin: 16px 0 2px;
-  color: var(--vp-c-text-1);
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.support-tokens {
-  margin: 0;
-  color: var(--vp-c-text-2);
-  font-size: 13px;
+.support-wallets {
+  display: grid;
+  gap: 36px;
+  margin-top: 28px;
 }
 
 .support-wallet {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  align-items: center;
+  gap: 28px;
+}
+
+.wallet-details {
+  min-inline-size: 0;
+}
+
+.wallet-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.network-logo {
+  display: block;
+  inline-size: 24px;
+  block-size: 24px;
+  object-fit: contain;
+}
+
+.wallet-heading h3 {
+  margin: 0;
+  color: var(--vp-c-text-1);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.support-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--vp-c-text-2);
+  font-size: 13px;
+}
+
+.support-tokens li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.support-tokens img {
+  display: block;
+  inline-size: 20px;
+  block-size: 20px;
+  object-fit: contain;
+}
+
+.wallet-address {
+  display: grid;
   grid-template-columns: minmax(0, 1fr) 44px;
   align-items: center;
-  column-gap: 4px;
-  width: fit-content;
-  max-width: 100%;
-  margin-top: 16px;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .support-address {
@@ -353,6 +451,7 @@ const copy = computed(() =>
   font-size: 13px;
   line-height: 1.8;
   overflow-wrap: anywhere;
+  user-select: all;
 }
 
 .copy-address {
@@ -361,7 +460,8 @@ const copy = computed(() =>
   justify-content: center;
   min-width: 44px;
   min-height: 44px;
-  color: var(--vp-c-brand-1);
+  border-radius: 6px;
+  color: var(--vp-c-text-2);
   cursor: pointer;
 }
 
@@ -372,7 +472,8 @@ const copy = computed(() =>
 
 @media (hover: hover) and (pointer: fine) {
   .copy-address:hover {
-    color: var(--vp-c-brand-2);
+    color: var(--vp-c-text-1);
+    background: var(--vp-c-default-soft);
   }
 }
 
@@ -387,7 +488,6 @@ const copy = computed(() =>
 }
 
 .copy-error {
-  grid-column: 1 / -1;
   margin: 8px 0 0;
   color: var(--vp-c-danger-1);
   font-size: 13px;
@@ -395,16 +495,10 @@ const copy = computed(() =>
 
 .support-qr {
   display: block;
-  width: 164px;
-  height: 164px;
-  padding: 8px;
-  border-radius: 8px;
+  inline-size: 112px;
+  block-size: 112px;
+  padding: 4px;
   background: #fff;
-}
-
-.dark .support-qr {
-  filter: invert(1);
-  mix-blend-mode: screen;
 }
 
 @media (max-width: 640px) {
@@ -413,9 +507,18 @@ const copy = computed(() =>
   }
 
   .support {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 24px;
     margin-top: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .support-wallet {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .support-qr {
+    justify-self: start;
   }
 }
 </style>
