@@ -25,6 +25,12 @@ const wallets = [
       { symbol: 'ETH', icon: 'eth.png' },
     ],
   },
+  {
+    id: 'bitcoin',
+    name: 'Bitcoin Native SegWit',
+    address: 'bc1qct6a0npyqqqf8q4c94rth6536xkqjrtrrseph2',
+    tokens: [{ symbol: 'BTC', icon: 'bitcoin.svg' }],
+  },
 ]
 const activeWallet = ref('')
 const copyState = ref<'idle' | 'copied' | 'error'>('idle')
