@@ -148,23 +148,91 @@ icacls.exe $path /inheritance:r /grant '*S-1-5-32-544:F' /grant 'SYSTEM:F'
 
 ## 第四步：需要直登 root 时怎么配
 
-日常维护用普通账号登录再 `sudo` 最省心；如果自动化脚本非得直接连 `root`，只建议开放公钥登录。
+日常维护用普通账号登录再 `sudo` 最省心。需要直接连 `root` 时，优先使用公钥；如果需要密码登录，也可以按下面的步骤开启。
 
 ### Ubuntu / Debian 的 root
 
-先看生效配置（参见 [Debian `sshd_config` 手册](https://manpages.debian.org/trixie/openssh-server/sshd_config.5.en.html)）：
+以下配置命令都在**目标 Ubuntu / Debian 机器**上执行。先确认 `/etc/ssh/sshd_config` 开头包含这行，系统默认通常已有：
+
+```text
+Include /etc/ssh/sshd_config.d/*.conf
+```
+
+OpenSSH 多数配置项采用最先读取的值，配置片段按文件名字典序加载。因此，下面使用 `00-root-login.conf`，让它先于常见的 `50-cloud-init.conf` 读取。直接编辑主文件也可以用 `sudoedit /etc/ssh/sshd_config`，但要检查前面加载的配置是否已经设置同名选项（参见 [Debian `sshd_config` 手册](https://manpages.debian.org/trixie/openssh-server/sshd_config.5.en.html)）。
+
+#### 使用公钥登录（推荐）
+
+先看生效配置：
 
 ```bash
 sudo sshd -T | grep '^permitrootlogin '
 ```
 
-只要输出是 `prohibit-password`（默认常见值），就已经允许 `root` 用公钥登录了；若是 `no`，则在配置文件中改为 `PermitRootLogin prohibit-password` 并重启 `ssh`。随后把公钥放进 `/root/.ssh/authorized_keys`：
+`prohibit-password` 是默认常见值，允许 root 使用公钥，禁止 root 使用密码和键盘交互认证。如果需要调整为这个值，可以写入配置片段；下面的 `tee` 命令会覆盖同名文件：
+
+```bash
+sudo mkdir -p /etc/ssh/sshd_config.d
+sudo tee /etc/ssh/sshd_config.d/00-root-login.conf > /dev/null <<'EOF'
+PermitRootLogin prohibit-password
+EOF
+sudo sshd -t && sudo systemctl restart ssh
+```
+
+随后把客户端公钥放进 `/root/.ssh/authorized_keys`，替换示例中的整行公钥：
 
 ```bash
 sudo install -d -m 700 /root/.ssh
 printf '%s\n' 'ssh-ed25519 AAAA... my-laptop' | sudo tee -a /root/.ssh/authorized_keys > /dev/null
 sudo chmod 600 /root/.ssh/authorized_keys
 ```
+
+保持现有连接，在**客户端另开终端**测试，把示例 IP 换成目标机地址：
+
+```bash
+ssh -o PreferredAuthentications=publickey -i ~/.ssh/id_ed25519 root@192.168.1.20
+```
+
+#### 使用密码登录
+
+需要 root 密码登录时，将配置片段改为下面两项。此命令会覆盖同名文件：
+
+```bash
+sudo mkdir -p /etc/ssh/sshd_config.d
+sudo tee /etc/ssh/sshd_config.d/00-root-login.conf > /dev/null <<'EOF'
+PermitRootLogin yes
+PasswordAuthentication yes
+EOF
+```
+
+`PermitRootLogin yes` 允许 root 登录；这里的 `PasswordAuthentication yes` 是全局设置，也会允许其他符合登录条件的账号使用密码。
+
+给 root 设置密码，再校验配置并重启服务。`&&` 保证校验通过后才执行重启：
+
+```bash
+sudo passwd root
+sudo sshd -t && sudo systemctl restart ssh
+```
+
+检查两项配置是否按预期读取：
+
+```bash
+sudo sshd -T | grep -E '^(permitrootlogin|passwordauthentication) '
+```
+
+预期输出：
+
+```text
+permitrootlogin yes
+passwordauthentication yes
+```
+
+保持现有连接，在**客户端另开终端**测试密码登录，把示例 IP 换成目标机地址：
+
+```bash
+ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no root@192.168.1.20
+```
+
+如果配置值符合预期仍无法登录，再检查 `AllowUsers`、`DenyUsers` 或 `Match` 等额外限制。配置包含 `Match` 时，可以用 `sshd -T -C` 带上实际连接条件检查（参见 [Debian `sshd` 手册](https://manpages.debian.org/trixie/openssh-server/sshd.8.en.html)）。
 
 ### macOS 的 root
 
@@ -182,7 +250,7 @@ macOS 默认禁用 `root`（参见 [Apple 说明](https://support.apple.com/en-u
 ssh -o PreferredAuthentications=publickey -i ~/.ssh/id_ed25519 alice@192.168.1.20
 ```
 
-确认免密畅通后，要是想彻底关掉目标机的密码登录，再把目标机 `sshd_config` 里的 `PasswordAuthentication` 设为 `no`，用 `sshd -t` 校验语法后重启服务。
+确认公钥登录畅通后，要是想关闭目标机的密码认证，再把生效配置中的 `PasswordAuthentication` 设为 `no`，用 `sshd -t` 校验语法后重启服务。Ubuntu / Debian 若采用上面的 `00-root-login.conf`，应在该文件中修改，避免被更早读取的值覆盖。
 
 万一连不上，按报错对号入座：
 

@@ -148,23 +148,91 @@ Using SID `*S-1-5-32-544` targets the built-in Administrators group regardless o
 
 ## Step 4: Direct Root Login (When Needed)
 
-Logging in as a regular user and running `sudo` is almost always simpler. When automation genuinely needs direct `root` access, restrict it to public keys.
+Logging in as a regular user and running `sudo` is usually simpler. Prefer public keys when you need direct `root` access; if you need password login, the steps below cover that too.
 
 ### Root on Ubuntu / Debian
 
-Check the effective setting first (see the [Debian `sshd_config` manual](https://manpages.debian.org/trixie/openssh-server/sshd_config.5.en.html)):
+Run the configuration commands below on the **target Ubuntu / Debian machine**. First, confirm that `/etc/ssh/sshd_config` includes this line near the beginning. It is normally present by default:
+
+```text
+Include /etc/ssh/sshd_config.d/*.conf
+```
+
+OpenSSH uses the first value read for most options, and loads configuration snippets in filename lexical order. The examples use `00-root-login.conf` so it is read before common files such as `50-cloud-init.conf`. You can also edit the main file with `sudoedit /etc/ssh/sshd_config`, but check whether an earlier snippet already sets the same option (see the [Debian `sshd_config` manual](https://manpages.debian.org/trixie/openssh-server/sshd_config.5.en.html)).
+
+#### Public-Key Login (Recommended)
+
+Check the effective setting first:
 
 ```bash
 sudo sshd -T | grep '^permitrootlogin '
 ```
 
-`prohibit-password` (the common default) already allows key-based root login. If it prints `no`, set `PermitRootLogin prohibit-password` in `sshd_config` and restart `ssh`. Then install the key into `/root/.ssh/authorized_keys`:
+`prohibit-password`, the common default, allows public-key login for root while disabling password and keyboard-interactive authentication for root. To change the setting to this value, write a configuration snippet. The `tee` command below overwrites any existing file at that path:
+
+```bash
+sudo mkdir -p /etc/ssh/sshd_config.d
+sudo tee /etc/ssh/sshd_config.d/00-root-login.conf > /dev/null <<'EOF'
+PermitRootLogin prohibit-password
+EOF
+sudo sshd -t && sudo systemctl restart ssh
+```
+
+Then install the client's public key into `/root/.ssh/authorized_keys`, replacing the entire example key line:
 
 ```bash
 sudo install -d -m 700 /root/.ssh
 printf '%s\n' 'ssh-ed25519 AAAA... my-laptop' | sudo tee -a /root/.ssh/authorized_keys > /dev/null
 sudo chmod 600 /root/.ssh/authorized_keys
 ```
+
+Keep your current connection open and test from **another terminal on the client**, replacing the example IP with the target address:
+
+```bash
+ssh -o PreferredAuthentications=publickey -i ~/.ssh/id_ed25519 root@192.168.1.20
+```
+
+#### Password Login
+
+For root password login, set these two options in the snippet. This command overwrites any existing file at that path:
+
+```bash
+sudo mkdir -p /etc/ssh/sshd_config.d
+sudo tee /etc/ssh/sshd_config.d/00-root-login.conf > /dev/null <<'EOF'
+PermitRootLogin yes
+PasswordAuthentication yes
+EOF
+```
+
+`PermitRootLogin yes` permits root login. The `PasswordAuthentication yes` setting here is global, so it also enables password authentication for other accounts that meet the login requirements.
+
+Set a password for root, then validate the configuration and restart the service. The `&&` ensures that the restart runs only if validation succeeds:
+
+```bash
+sudo passwd root
+sudo sshd -t && sudo systemctl restart ssh
+```
+
+Check that both options are read as intended:
+
+```bash
+sudo sshd -T | grep -E '^(permitrootlogin|passwordauthentication) '
+```
+
+Expected output:
+
+```text
+permitrootlogin yes
+passwordauthentication yes
+```
+
+Keep your current connection open and test password login from **another terminal on the client**, replacing the example IP with the target address:
+
+```bash
+ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no root@192.168.1.20
+```
+
+If the values are correct but login still fails, check additional restrictions such as `AllowUsers`, `DenyUsers`, or `Match`. When the configuration contains `Match` blocks, use `sshd -T -C` with the actual connection parameters to check the applicable settings (see the [Debian `sshd` manual](https://manpages.debian.org/trixie/openssh-server/sshd.8.en.html)).
 
 ### Root on macOS
 
@@ -182,7 +250,7 @@ Keep your current session open and test public-key login from a second terminal 
 ssh -o PreferredAuthentications=publickey -i ~/.ssh/id_ed25519 alice@192.168.1.20
 ```
 
-Once key login succeeds, you can disable password logins on the target by setting `PasswordAuthentication no` in `sshd_config`, validating with `sshd -t`, and restarting the service.
+Once key login succeeds, you can disable password authentication on the target by setting `PasswordAuthentication no` in the effective configuration, validating with `sshd -t`, and restarting the service. On Ubuntu / Debian, if you used `00-root-login.conf` above, change the setting in that file so an earlier value does not take precedence.
 
 When a connection fails, the error message tells you which layer to check:
 
