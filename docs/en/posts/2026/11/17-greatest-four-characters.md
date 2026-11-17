@@ -1,6 +1,10 @@
 ---
 title: What Are the Greatest Four Chinese Characters in the World?
 date: 2026-11-17
+author: Mao Buming (茅不明)
+source:
+  name: Zhihu
+  url: https://www.zhihu.com/question/12059939292/answer/2059908939689600193
 tags:
   - Repost
   - Essay

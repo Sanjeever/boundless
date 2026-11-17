@@ -1,6 +1,10 @@
 ---
 title: 世界上最伟大的四个字到底是什么
 date: 2026-11-17
+author: 茅不明
+source:
+  name: 知乎
+  url: https://www.zhihu.com/question/12059939292/answer/2059908939689600193
 tags:
   - 转载
   - 随笔

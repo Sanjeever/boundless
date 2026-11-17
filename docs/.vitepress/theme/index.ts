@@ -16,6 +16,7 @@ import HomeIndex from './components/HomeIndex.vue'
 import ProjectIndex from './components/ProjectIndex.vue'
 import MermaidDiagram from './components/MermaidDiagram.vue'
 import FooterStats from './components/FooterStats.vue'
+import SelectionTools from './components/SelectionTools.vue'
 import { startDeployUpdateNotifier } from './utils/deployVersion'
 
 export default {
@@ -25,7 +26,7 @@ export default {
       // https://vitepress.dev/guide/extending-default-theme#layout-slots
       'doc-before': () => h(ArticleMeta),
       'doc-after': () => h(Comment),
-      'doc-top': () => h(ImageViewer),
+      'doc-top': () => [h(ImageViewer), h(SelectionTools)],
       'aside-top': () => h(GoBack),
       'layout-bottom': () => h(FooterStats),
     })
