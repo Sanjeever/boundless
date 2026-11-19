@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useData } from 'vitepress'
+import ResumeReading from './ResumeReading.vue'
 
 const { frontmatter, lang, page } = useData()
 const isPost = computed(() => /(^|\/)posts\//.test(page.value.relativePath))
@@ -39,6 +40,7 @@ const displayDate = computed(() => {
       :aria-label="lang.startsWith('en') ? 'Tags' : '标签'">
       <span v-for="tag in tags" :key="tag">{{ tag }}</span>
     </div>
+    <ResumeReading :key="page.relativePath" :path="page.relativePath" />
   </div>
 </template>
 
