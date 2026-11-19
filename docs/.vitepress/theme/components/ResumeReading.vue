@@ -11,11 +11,15 @@ const label = ref('')
 let article: HTMLElement | null
 let headings: HTMLElement[] = []
 
+function clear() {
+  localStorage.removeItem(key)
+  saved.value = undefined
+}
+
 function save() {
   if (!article?.isConnected) return
   if (article.getBoundingClientRect().bottom <= innerHeight + 1) {
-    localStorage.removeItem(key)
-    saved.value = undefined
+    clear()
     return
   }
   if (scrollY < innerHeight) return
@@ -60,12 +64,14 @@ onMounted(() => {
   }
   window.addEventListener('scrollend', save)
   window.addEventListener('pagehide', save)
+  window.addEventListener('boundless:article-top', clear)
 })
 
 onBeforeUnmount(() => {
   save()
   window.removeEventListener('scrollend', save)
   window.removeEventListener('pagehide', save)
+  window.removeEventListener('boundless:article-top', clear)
 })
 </script>
 
