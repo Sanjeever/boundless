@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useData } from 'vitepress'
+import { BookmarkIcon } from 'tdesign-icons-vue-next'
 
 const props = defineProps<{ path: string }>()
 const { lang } = useData()
@@ -76,18 +77,36 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <button v-if="saved" class="resume" type="button" @click="resume">
+  <button
+    v-if="saved"
+    class="resume"
+    type="button"
+    :title="label || undefined"
+    :aria-description="label || undefined"
+    @click="resume">
+    <BookmarkIcon aria-hidden="true" size="14px" />
     {{ lang.startsWith('en') ? 'Continue reading' : '继续阅读' }}
-    <template v-if="label">· {{ label }}</template>
   </button>
 </template>
 
 <style scoped>
 .resume {
-  color: var(--vp-c-brand-1);
-  text-align: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  margin-inline-start: auto;
+  color: var(--vp-c-text-2);
+  font-family: var(--vp-font-family-base);
+  font-size: 12px;
+  white-space: nowrap;
 }
-.resume:hover {
-  text-decoration: underline;
+.resume:hover,
+.resume:focus-visible {
+  color: var(--vp-c-brand-1);
+}
+.resume:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
 }
 </style>

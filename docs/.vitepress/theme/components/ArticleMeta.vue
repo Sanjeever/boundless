@@ -73,5 +73,16 @@ const displayDate = computed(() => {
     flex-direction: column;
     margin-bottom: 22px;
   }
+
+  .article-meta:has(.resume) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .article-meta > .resume {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
 }
 </style>
